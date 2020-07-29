@@ -15,16 +15,6 @@ GameMode activeMode = GameMode::None;
 std::function<void()> fadeOutCompleteFunc = nullptr;
 bool fadingOut = false, fadingIn = false;
 
-void DoFadeOutFrame()
-{
-    fadingOut = FadeStepOut();
-}
-
-void DoFadeInFrame()
-{
-    fadingIn = FadeStepIn();
-}
-
 void RunModeBasic()
 {
     switch (activeMode)
@@ -48,25 +38,38 @@ void RunModeBasic()
     }
 }
 
-void JumpModeInstant(GameMode mode, std::function<void()> init = nullptr)
+void JumpModeInstant(GameMode mode, std::function<void()> init /*= nullptr*/)
 {
     activeMode = mode;
     if (init) init();
 }
 
-void JumpMode(GameMode mode, std::function<void()> init = nullptr)
+void JumpMode(GameMode mode, std::function<void()> init /*= nullptr*/)
 {
-    fadingOut = true;
     fadeOutCompleteFunc = [=]() {
         if (init) init();
         fadingIn = true;
         fadeOutCompleteFunc = nullptr;
     };
+    if (fadingOut = mode != GameMode::None)
+        is_fading = true;
+    else
+        fadeOutCompleteFunc();
 }
 
 void RunFrame()
 {
-    if (fadingOut) fadingOut = FadeStepOut();
-    else if (fadingIn) fadingIn = FadeStepIn();
+    if (fadingOut)
+    {
+        if (!(fadingOut = FadeStepOut()))
+            fadeOutCompleteFunc();
+        is_fading = fadingOut || fadingIn;
+    }
+    else if (fadingIn) 
+    {
+        if (!(fadingIn = FadeStepIn()))
+            FadeReset();
+        is_fading = fadingOut || fadingIn;
+    }
     else RunModeBasic();
 }

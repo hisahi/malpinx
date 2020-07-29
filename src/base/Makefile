@@ -1,12 +1,12 @@
 .PHONY: all clean
 
-OBJS = vbase.o abase.o
+default: all
 
-%.o: $(BACKEND)/%.cc
+vbase.o: $(VBACKEND)/vbase.cc
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+abase.o: $(ABACKEND)/abase.cc
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-all: $(OBJS)
+all: vbase.o abase.o
 clean:
 	$(RM) *.o
-
-default: all

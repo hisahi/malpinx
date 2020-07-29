@@ -4,17 +4,13 @@
 /*   SEE THE LICENSE FILE IN THE SOURCE ROOT DIRECTORY FOR LICENSE INFO.    */
 /*                                                                          */
 /****************************************************************************/
-// sdl2/abase.cc: implementation of base audio library on SDL2
+// formats.hh: includes for format loading
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_audio.h>
-#include "base/sdl2.hh"
+#ifndef M_FORMATS_HH
+#define M_FORMATS_HH
 
-void abase_init()
-{
-    SDL_InitSubSystem(SDL_INIT_AUDIO);
-}
+#include "layer.hh"
 
-void abase_quit()
-{
-}
+void LoadDFP(Background &bkg, const std::string &);
+
+#endif // M_FORMATS_HH

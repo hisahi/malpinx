@@ -4,18 +4,16 @@
 /*   SEE THE LICENSE FILE IN THE SOURCE ROOT DIRECTORY FOR LICENSE INFO.    */
 /*                                                                          */
 /****************************************************************************/
-// logic.hh: includes for logic.cc
+// config.hh: includes for config.cc
 
-#ifndef M_LOGIC_HH
-#define M_LOGIC_HH
+#ifndef M_CONFIG_HH
+#define M_CONFIG_HH
 
-#include <functional>
-#include "modes.hh"
+void LoadConfig();
+void ApplySettingsToBackend();
+void SaveConfig();
+int GetConfigSampleRate();
 
-extern GameMode activeMode;
+extern bool highQualityAudio;
 
-void JumpModeInstant(GameMode mode, std::function<void()> init = nullptr);
-void JumpMode(GameMode mode, std::function<void()> init = nullptr);
-void RunFrame();
-
-#endif // M_LOGIC_HH
+#endif // M_CONFIG_HH

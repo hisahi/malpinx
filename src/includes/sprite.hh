@@ -4,18 +4,22 @@
 /*   SEE THE LICENSE FILE IN THE SOURCE ROOT DIRECTORY FOR LICENSE INFO.    */
 /*                                                                          */
 /****************************************************************************/
-// logic.hh: includes for logic.cc
+// sprite.hh: includes for sprite.cc
 
-#ifndef M_LOGIC_HH
-#define M_LOGIC_HH
+#ifndef M_SPRITE_HH
+#define M_SPRITE_HH
 
-#include <functional>
-#include "modes.hh"
+#include <vector>
+#include "defs.hh"
+#include "maths.hh"
+#include "render.hh"
 
-extern GameMode activeMode;
+// unpacked 16-bit sprite
+class Sprite
+{
+    Sprite(Image &img);
+private:
+    std::shared_ptr<Image> _img;
+};
 
-void JumpModeInstant(GameMode mode, std::function<void()> init = nullptr);
-void JumpMode(GameMode mode, std::function<void()> init = nullptr);
-void RunFrame();
-
-#endif // M_LOGIC_HH
+#endif // M_SPRITE_HH

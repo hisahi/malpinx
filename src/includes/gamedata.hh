@@ -4,18 +4,14 @@
 /*   SEE THE LICENSE FILE IN THE SOURCE ROOT DIRECTORY FOR LICENSE INFO.    */
 /*                                                                          */
 /****************************************************************************/
-// logic.hh: includes for logic.cc
+// gamedata.hh: includes for gamedata.cc
 
-#ifndef M_LOGIC_HH
-#define M_LOGIC_HH
+#ifndef M_GAMEDATA_HH
+#define M_GAMEDATA_HH
 
-#include <functional>
-#include "modes.hh"
+#define DIR_SEPARATOR "/"
 
-extern GameMode activeMode;
+void OpenDataDir();
+void PageInBaseData();
 
-void JumpModeInstant(GameMode mode, std::function<void()> init = nullptr);
-void JumpMode(GameMode mode, std::function<void()> init = nullptr);
-void RunFrame();
-
-#endif // M_LOGIC_HH
+#endif // M_GAMEDATA_HH

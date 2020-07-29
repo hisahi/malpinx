@@ -16,6 +16,7 @@ Framebuffer fb_back;
 Framebuffer fb_front;
 Color flashColor, fadeColor;
 const Color normalizingColor = Color(1, 1, 1);
+bool is_fading = false;
 
 void FadeReset()
 {
@@ -83,6 +84,6 @@ void DrawFrameFront()
 
 void DrawFrame()
 {
-    DrawFrameBack();
+    if (!is_fading) DrawFrameBack();
     DrawFrameFront();
 }

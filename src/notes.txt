@@ -1,0 +1,32 @@
+malpinx formats, all numbers little-endian
+	.dfp	decompressed background
+			width 16-bit
+			height 16-bit
+			raw 16-bit values
+	.cfp	compressed background
+			width 16-bit
+			height 16-bit
+			00-7F: next N+1 are raw 16-bit values
+			80-FF: repeat last 16-bit value N+1 times (or 0 if none)
+	.tsp	tile/spritemap, shared palette
+			number of tiles/sprites 16-bit
+			palette 256*2 bytes
+			for every tile:
+				width 16-bit
+				height 16-bit
+				data 8-bit width*height
+	.tip	tile/spritemap, individual palettes
+			number of tiles/sprites 16-bit
+			for every tile:
+				width 16-bit
+				height 16-bit
+				data 16-bit width*height
+	.sxp	sound effect package; sound effects are 
+			number of sound effects (16-bit)
+			sample rate of sound effects (16-bit)
+			for every sound:
+				number of samples (32-bit)		
+	.txp	encoded text
+			control character 0x00-0x1F encoded as-is
+			otherwise x'=ab[i&255]^(x+i)
+				  x=ab[i&255]^(x'-i)

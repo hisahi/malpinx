@@ -10,7 +10,7 @@
 #define M_ABASE_HH
 
 // guaranteed to be called after vbase_init
-void abase_init();
+void abase_init(int sampleRate);
 // guaranteed to be called before vbase_quit
 void abase_quit();
 

@@ -21,15 +21,15 @@ struct Color
     Color(int r, int g, int b) 
         : v((clamp(r, 0, 31) << 10) 
           | (clamp(g, 0, 31) << 5) 
-          | (clamp(b, 0, 31))) { }
+          | (clamp(b, 0, 31)) | 0x8000) { }
     int getR() const { return (v >> 10) & 31; }
     int getG() const { return (v >>  5) & 31; }
     int getB() const { return (v      ) & 31; }
     void setR(int r) { v = (clamp(r, 0, 31) << 10) | (v & 0x03FF); }
     void setG(int g) { v = (clamp(g, 0, 31) <<  5) | (v & 0x7C1F); }
     void setB(int b) { v = (clamp(b, 0, 31)      ) | (v & 0x7FE0); }
-    bool isTransparent() const { return v == 0xFFFF; }
-    static Color transparent() { return Color(0xFFFF); }
+    bool isTransparent() const { return v == 0; }
+    static Color transparent() { return Color(0); }
     
     friend Color operator+(const Color& lhs, const Color &rhs);
     friend Color operator-(const Color& lhs, const Color &rhs);
@@ -65,6 +65,7 @@ private:
 
 extern Framebuffer fb_back;
 extern Framebuffer fb_front;
+extern bool is_fading;
 
 void FadeReset();
 bool FadeStepOut();

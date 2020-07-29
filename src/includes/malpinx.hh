@@ -9,6 +9,10 @@
 #ifndef M_MALPINX_HH
 #define M_MALPINX_HH
 
+#include "defs.hh"
 #include "holders.hh"
+
+extern GameBackend backend;
+extern int sampleRate;
 
 #endif // M_MALPINX_HH

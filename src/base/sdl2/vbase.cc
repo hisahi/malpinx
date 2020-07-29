@@ -94,6 +94,7 @@ void vbase_flip()
         for (int x = 0; x < S_WIDTH; ++x)
             dst[y * stride + x] = palette[src[y * S_STRIDE + x].v & 32767];
     SDL_UnlockSurface(surface);
+    SDL_RenderPresent(renderer);
 }
 
 // waits for tick to pass

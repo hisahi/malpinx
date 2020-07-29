@@ -10,15 +10,28 @@
 #include "holders.hh"
 #include "logic.hh"
 #include "render.hh"
+#include "config.hh"
+#include "gamedata.hh"
+
+int sampleRate;
+GameBackend backend = nullptr;
 
 void DoGame()
 {
-    auto backend = GameBackend();
+    LoadConfig();
+    backend = GameBackend(GetConfigSampleRate());
+    ApplySettingsToBackend();
+    OpenDataDir();
+    PageInBaseData();
+    JumpMode(GameMode::Logo);
+    
     while (backend.run())
     {
         RunFrame();
         DrawFrame();
     }
+
+    SaveConfig();
 }
 
 void DoArgs(int argc, char **argv)

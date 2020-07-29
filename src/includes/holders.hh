@@ -15,11 +15,11 @@
 class GameBackend
 {
 public:
-    GameBackend() : scale(1)
+    GameBackend(int sampleRate) : _scale(1)
     {
         vbase_init();
-        abase_init();
-        vbase_set_scale(scale);
+        abase_init(sampleRate);
+        vbase_set_scale(_scale);
     }
 
     ~GameBackend()
@@ -34,15 +34,14 @@ public:
         return vbase_loop();
     }
 
-    int get_scale() const { return scale; }
-    void set_scale(int s)
+    int scale() const { return _scale; }
+    void setScale(int s)
     {
-        scale = s;
-        vbase_set_scale(scale);
+        vbase_set_scale(_scale = s);
     }
 
 private:
-    int scale;
+    int _scale;
 };
 
 #endif // M_HOLDERS_HH
