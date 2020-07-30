@@ -10,6 +10,7 @@
 #include "config.hh"
 #include "cfg.hh"
 #include "defs.hh"
+#include "malpinx.hh"
 
 static ConfigFile cfg;
 constexpr char configFileName[] = "malpinx.cfg";
@@ -27,9 +28,9 @@ void LoadConfig()
     highQualityAudio = cfg.get("HQAudio", true);
 }
 
-void ApplySettingsToBackend(GameBackend &backend)
+void ApplySettingsToBackend()
 {
-    backend.set_scale(cfg.get("Scale", 1));
+    backend->setScale(cfg.get("Scale", 1));
 }
 
 void SaveConfig()

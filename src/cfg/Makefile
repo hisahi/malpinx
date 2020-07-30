@@ -1,10 +1,12 @@
+default: all
 .PHONY: all clean
 
-default: all
+OBJS = cfg.o
+DEPS = ../includes/cfg.hh
 
-%.o: $(VBACKEND)/%.cc
+%.o: %.cc $(DEPS)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-all: cfg.o
+all: $(OBJS)
 clean:
 	$(RM) *.o

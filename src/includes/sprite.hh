@@ -13,11 +13,14 @@
 #include "defs.hh"
 #include "maths.hh"
 #include "render.hh"
+#include "layer.hh"
 
 // unpacked 16-bit sprite
 class Sprite
 {
-    Sprite(Image &img);
+public:
+    Sprite(std::shared_ptr<Image> img);
+    void draw(Framebuffer &fb, int x, int y);
 private:
     std::shared_ptr<Image> _img;
 };

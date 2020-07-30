@@ -14,6 +14,7 @@
 static SDL_Window *window;
 static SDL_Renderer *renderer;
 static SDL_Surface *surface;
+static SDL_Texture *screen;
 static bool quit = false;
 static Uint32 palette[32768];
 static unsigned int ticks = 0;
@@ -50,8 +51,11 @@ void vbase_init()
     if (!(surface = SDL_CreateRGBSurface(0, S_WIDTH, S_HEIGHT, 32,
                     0, 0, 0, 0)))
         throw SDLException("Could not initialize SDL2 surface");
+    if (!(screen = SDL_CreateTextureFromSurface(renderer, surface)))
+        throw SDLException("Could not initialize SDL2 texture");
     ticks = SDL_GetTicks();
     sdl_build_palette();
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
 }
 
 void vbase_set_scale(int scale)
@@ -93,7 +97,9 @@ void vbase_flip()
     for (int y = 0; y < S_HEIGHT; ++y)
         for (int x = 0; x < S_WIDTH; ++x)
             dst[y * stride + x] = palette[src[y * S_STRIDE + x].v & 32767];
+    SDL_UpdateTexture(screen, NULL, surface->pixels, surface->pitch);
     SDL_UnlockSurface(surface);
+    SDL_RenderCopy(renderer, screen, NULL, NULL);
     SDL_RenderPresent(renderer);
 }
 

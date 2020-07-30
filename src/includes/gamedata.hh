@@ -9,8 +9,12 @@
 #ifndef M_GAMEDATA_HH
 #define M_GAMEDATA_HH
 
+#include <fstream>
+#include "defs.hh"
+
 #define DIR_SEPARATOR "/"
 
+std::ifstream OpenDataFile(const std::string& path);
 void OpenDataDir();
 void PageInBaseData();
 

@@ -31,3 +31,6 @@
 *.out
 *.app
 
+# for Python tools folder
+__pycache__/
+*.py[cod]

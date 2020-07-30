@@ -1,10 +1,12 @@
+default: all
 .PHONY: all clean
 
-default: all
+OBJS = stream.o txp.o cfp.o
+DEPS = ../includes/formats.hh
 
-%.o: $(VBACKEND)/%.cc
+%.o: %.cc $(DEPS)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-all: txp.o cfp.o dfp.o
+all: $(OBJS)
 clean:
 	$(RM) *.o

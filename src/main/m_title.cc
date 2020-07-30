@@ -4,19 +4,13 @@
 /*   SEE THE LICENSE FILE IN THE SOURCE ROOT DIRECTORY FOR LICENSE INFO.    */
 /*                                                                          */
 /****************************************************************************/
-// logic.hh: includes for logic.cc
+// m_title.cc: code for the title screen
 
-#ifndef M_LOGIC_HH
-#define M_LOGIC_HH
+#include <memory>
+#include "defs.hh"
+#include "layer.hh"
+#include "render.hh"
 
-#include <functional>
-#include "modes.hh"
-
-extern GameMode activeMode;
-
-void StartFadeOut(std::function<void()> onFadeOutDone = nullptr);
-void JumpModeInstant(GameMode mode, std::function<void()> init = nullptr);
-void JumpMode(GameMode mode, std::function<void()> init = nullptr);
-void RunFrame();
-
-#endif // M_LOGIC_HH
+void InitTitleScreen()
+{
+}

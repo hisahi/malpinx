@@ -11,15 +11,20 @@
 
 #include <vector>
 #include <istream>
+#include <memory>
 #include "defs.hh"
 #include "maths.hh"
 #include "render.hh"
 
 class Image
 {
-    Image(int width, int height, std::istream data);
+public:
+    Image(int width, int height, std::vector<Color> &&data);
     void draw(Framebuffer &fb);
     void draw(Framebuffer &fb, int x, int y);
+    void draw(Framebuffer &fb, int dx, int dy, int sx, int sy, int sw, int sh);
+    const int &width() const { return _width; }
+    const int &height() const { return _height; }
 private:
     int _width;
     int _height;
@@ -29,9 +34,11 @@ private:
 // background layer
 class BackgroundLayer
 {
-    BackgroundLayer(Image &bg, int sx, int sy);
+public:
+    BackgroundLayer(std::shared_ptr<Image> bg, int sx, int sy);
+    void draw(Framebuffer &fb, int sx, int sy);
 private:
-    std::shared_ptr<Image> _bg;
+    std::shared_ptr<Image> _img;
     int _scrollXMul;
     int _scrollYMul;
 };

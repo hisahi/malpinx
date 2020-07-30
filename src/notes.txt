@@ -7,7 +7,8 @@ malpinx formats, all numbers little-endian
 			width 16-bit
 			height 16-bit
 			00-7F: next N+1 are raw 16-bit values
-			80-FF: repeat last 16-bit value N+1 times (or 0 if none)
+			80-FE: repeat last 16-bit value N+1 times (or 0 if none)
+			FF: end of stream
 	.tsp	tile/spritemap, shared palette
 			number of tiles/sprites 16-bit
 			palette 256*2 bytes
@@ -27,6 +28,5 @@ malpinx formats, all numbers little-endian
 			for every sound:
 				number of samples (32-bit)		
 	.txp	encoded text
-			control character 0x00-0x1F encoded as-is
-			otherwise x'=ab[i&255]^(x+i)
-				  x=ab[i&255]^(x'-i)
+			encoding: x'=ab[i&255]^((x^i)-(i>>8))
+				  x=ab[i&255]^((x'^i)+(i>>8))

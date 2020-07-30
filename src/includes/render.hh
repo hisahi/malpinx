@@ -30,6 +30,8 @@ struct Color
     void setB(int b) { v = (clamp(b, 0, 31)      ) | (v & 0x7FE0); }
     bool isTransparent() const { return v == 0; }
     static Color transparent() { return Color(0); }
+    explicit operator bool() const { return !isTransparent(); }
+    bool operator!() const { return isTransparent(); }
     
     friend Color operator+(const Color& lhs, const Color &rhs);
     friend Color operator-(const Color& lhs, const Color &rhs);
@@ -65,11 +67,13 @@ private:
 
 extern Framebuffer fb_back;
 extern Framebuffer fb_front;
-extern bool is_fading;
+extern bool isFading;
 
 void FadeReset();
+void FadeResetToBlack();
 bool FadeStepOut();
 bool FadeStepIn();
+void ClearScreen();
 void DrawFrame();
 
 #endif // M_RENDER_HH

@@ -4,19 +4,16 @@
 /*   SEE THE LICENSE FILE IN THE SOURCE ROOT DIRECTORY FOR LICENSE INFO.    */
 /*                                                                          */
 /****************************************************************************/
-// logic.hh: includes for logic.cc
+// sprite.cc: sprite implementations
 
-#ifndef M_LOGIC_HH
-#define M_LOGIC_HH
+#include <memory>
+#include "sprite.hh"
 
-#include <functional>
-#include "modes.hh"
+Sprite::Sprite(std::shared_ptr<Image> img) : _img(img)
+{
+}
 
-extern GameMode activeMode;
-
-void StartFadeOut(std::function<void()> onFadeOutDone = nullptr);
-void JumpModeInstant(GameMode mode, std::function<void()> init = nullptr);
-void JumpMode(GameMode mode, std::function<void()> init = nullptr);
-void RunFrame();
-
-#endif // M_LOGIC_HH
+void Sprite::draw(Framebuffer &fb, int x, int y)
+{
+    _img->draw(fb, x, y, 0, 0, _img->width(), _img->height());
+}

@@ -7,6 +7,7 @@
 // logic.cc: top-level class for game logic
 
 #include <functional>
+#include <iostream>
 #include "logic.hh"
 #include "modes.hh"
 #include "render.hh"
@@ -38,21 +39,38 @@ void RunModeBasic()
     }
 }
 
+void StartFadeOut(std::function<void()> onFadeOutDone /*= nullptr*/)
+{
+    if (fadingOut) return;
+    fadeOutCompleteFunc = [=]() {
+        if (onFadeOutDone) onFadeOutDone();
+        fadeOutCompleteFunc = nullptr;
+    };
+    if (fadingOut = activeMode != GameMode::None)
+        isFading = true;
+    else
+        fadeOutCompleteFunc();
+}
+
 void JumpModeInstant(GameMode mode, std::function<void()> init /*= nullptr*/)
 {
     activeMode = mode;
+    ClearScreen();
     if (init) init();
 }
 
 void JumpMode(GameMode mode, std::function<void()> init /*= nullptr*/)
 {
+    if (fadingOut) return;
     fadeOutCompleteFunc = [=]() {
+        activeMode = mode;
+        ClearScreen();
         if (init) init();
         fadingIn = true;
         fadeOutCompleteFunc = nullptr;
     };
-    if (fadingOut = mode != GameMode::None)
-        is_fading = true;
+    if (fadingOut = activeMode != GameMode::None)
+        isFading = true;
     else
         fadeOutCompleteFunc();
 }
@@ -62,14 +80,19 @@ void RunFrame()
     if (fadingOut)
     {
         if (!(fadingOut = FadeStepOut()))
+        {
             fadeOutCompleteFunc();
-        is_fading = fadingOut || fadingIn;
+            isFading = fadingOut || fadingIn;
+        }
     }
     else if (fadingIn) 
     {
         if (!(fadingIn = FadeStepIn()))
+        {
             FadeReset();
-        is_fading = fadingOut || fadingIn;
+            isFading = fadingOut || fadingIn;
+        }
     }
-    else RunModeBasic();
+    if (!isFading)
+        RunModeBasic();
 }

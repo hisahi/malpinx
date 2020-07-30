@@ -9,10 +9,11 @@
 #ifndef M_MALPINX_HH
 #define M_MALPINX_HH
 
+#include <memory>
 #include "defs.hh"
-#include "holders.hh"
+#include "backend.hh"
 
-extern GameBackend backend;
+extern std::unique_ptr<GameBackend> backend;
 extern int sampleRate;
 
 #endif // M_MALPINX_HH

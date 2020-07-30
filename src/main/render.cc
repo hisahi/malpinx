@@ -15,17 +15,23 @@
 Framebuffer fb_back;
 Framebuffer fb_front;
 Color flashColor, fadeColor;
+const Color transparentColor = Color::transparent();
 const Color normalizingColor = Color(1, 1, 1);
-bool is_fading = false;
+bool isFading = false;
 
 void FadeReset()
 {
     fadeColor = Color(0);
 }
 
+void FadeResetToBlack()
+{
+    fadeColor = Color(S_MAXCLR, S_MAXCLR, S_MAXCLR);
+}
+
 bool FadeStepOut()
 {
-    if (fadeColor.getR() < 31)
+    if (fadeColor.getR() >= S_MAXCLR)
         return false;
     fadeColor += normalizingColor;
     return true;
@@ -34,7 +40,7 @@ bool FadeStepOut()
 bool FadeStepIn()
 {
     fadeColor -= normalizingColor;
-    return fadeColor.v != 0;
+    return static_cast<bool>(fadeColor);
 }
 
 void DrawFrameBack()
@@ -62,13 +68,13 @@ void DrawFrameBack()
 
 void DrawFrameFront()
 {
-    if (fadeColor.v)
+    if (fadeColor)
     {
         std::transform(fb_back.buffer().begin(), fb_back.buffer().end(),
             fb_front.buffer().begin(),
             [](const Color& c) { return c - fadeColor; });
     }
-    else if (flashColor.v)
+    else if (flashColor)
     {
         std::transform(fb_back.buffer().begin(), fb_back.buffer().end(), 
             fb_front.buffer().begin(),
@@ -82,8 +88,14 @@ void DrawFrameFront()
     }
 }
 
+void ClearScreen()
+{
+    std::fill(fb_back.buffer().begin(), fb_back.buffer().end(),
+            transparentColor);
+}
+
 void DrawFrame()
 {
-    if (!is_fading) DrawFrameBack();
+    if (!isFading) DrawFrameBack();
     DrawFrameFront();
 }

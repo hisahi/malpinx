@@ -6,29 +6,33 @@
 /****************************************************************************/
 // malpinx.cc: main game executable
 
+#include <memory>
 #include "malpinx.hh"
-#include "holders.hh"
+#include "backend.hh"
 #include "logic.hh"
 #include "render.hh"
 #include "config.hh"
 #include "gamedata.hh"
 
 int sampleRate;
-GameBackend backend = nullptr;
+std::unique_ptr<GameBackend> backend;
 
 void DoGame()
 {
     LoadConfig();
-    backend = GameBackend(GetConfigSampleRate());
+    backend = std::make_unique<GameBackend>(GetConfigSampleRate());
     ApplySettingsToBackend();
     OpenDataDir();
     PageInBaseData();
+    FadeResetToBlack();
     JumpMode(GameMode::Logo);
+    InitLogo(0, "logo");
     
-    while (backend.run())
+    while (backend->run())
     {
         RunFrame();
         DrawFrame();
+        backend->blit();
     }
 
     SaveConfig();

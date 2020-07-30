@@ -4,10 +4,10 @@
 /*   SEE THE LICENSE FILE IN THE SOURCE ROOT DIRECTORY FOR LICENSE INFO.    */
 /*                                                                          */
 /****************************************************************************/
-// holders.hh: RAII classes
+// backend.hh: RAII class for backend
 
-#ifndef M_HOLDERS_HH
-#define M_HOLDERS_HH
+#ifndef M_BACKEND_HH
+#define M_BACKEND_HH
 
 #include "vbase.hh"
 #include "abase.hh"
@@ -30,8 +30,13 @@ public:
 
     bool run() const
     {
-        vbase_flip();
         return vbase_loop();
+    }
+
+    void blit() const
+    {
+        vbase_flip();
+        vbase_sync();
     }
 
     int scale() const { return _scale; }
@@ -44,4 +49,4 @@ private:
     int _scale;
 };
 
-#endif // M_HOLDERS_HH
+#endif // M_BACKEND_HH

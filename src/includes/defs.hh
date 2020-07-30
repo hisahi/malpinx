@@ -9,6 +9,8 @@
 #ifndef M_DEFS_HH
 #define M_DEFS_HH
 
+constexpr bool M_DEBUG = true;
+
 // native screen resolution
 constexpr int S_WIDTH = 320;
 constexpr int S_HEIGHT = 240;
@@ -19,6 +21,7 @@ constexpr unsigned long long S_TICK_US = 1000000ULL / S_TICKS;
 
 // number of distinct values in a color channel
 constexpr int S_COLORS = 32;
+constexpr int S_MAXCLR = S_COLORS - 1;
 constexpr int S_FADEOUT_MS = (S_COLORS * 1000) / S_TICKS;
 
 constexpr int S_SAMPLE_RATE_LO = 22050;

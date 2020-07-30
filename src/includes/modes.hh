@@ -9,6 +9,9 @@
 #ifndef M_MODES_HH
 #define M_MODES_HH
 
+#include <string>
+#include "render.hh"
+
 enum class GameMode
 {
     None,
@@ -22,7 +25,8 @@ enum class GameMode
     Credits,
 };
 
-#include "render.hh"
+void InitLogo(int seqnum, const std::string &name);
+void InitTitleScreen();
 
 void DrawLogoFrame(Framebuffer &fb);
 
