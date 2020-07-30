@@ -68,10 +68,10 @@ def main(*argv):
 
         rle = encode_rle(pixarray)
         for header, start, end in rle:
-            dest_file.write(header)
+            dest_file.write(bytes([header]))
             if header < 0x80:
                 pixarray[start:end].tofile(dest_file)
-        dest_file.write(0xFF)
+        dest_file.write(bytes([0xFF]))
 
     return 0
 
