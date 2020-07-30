@@ -34,3 +34,5 @@
 # for Python tools folder
 __pycache__/
 *.py[cod]
+
+.vscode/
