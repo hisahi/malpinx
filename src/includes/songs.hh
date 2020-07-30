@@ -4,34 +4,39 @@
 /*   SEE THE LICENSE FILE IN THE SOURCE ROOT DIRECTORY FOR LICENSE INFO.    */
 /*                                                                          */
 /****************************************************************************/
-// modes.hh: includes for mode run/draw calls
+// songs.hh: includes for songs.cc
 
-#ifndef M_MODES_HH
-#define M_MODES_HH
+#ifndef M_SONGS_HH
+#define M_SONGS_HH
 
-#include <string>
-#include "render.hh"
+#include <defs.hh>
 
-enum class GameMode
+enum class MusicTrack
 {
-    None,
-    Logo,
-    TitleScreen,
-    HighScoreScreen,
-    NameEntry,
-    SelectLevel,
+    Title,
+    Options,
     Cutscene,
-    Game,
+    LevelSelect,
+    Ending,
     Credits,
+    Level1,
+    Level2,
+    Level3,
+    Level4,
+    Level5,
+    Level6,
+    Level7,
+    Level8,
+    Boss1,
+    Boss2,
+    FinalBoss,
 };
 
-void InitLogo(int seqnum, const std::string &name);
-void InitTitleScreen();
+void LoadSongList();
+void PlaySong(MusicTrack track);
+void PauseSound();
+void ResumeSound();
+void FadeOutSong(int fadeMs = S_FADEOUT_MS);
+void StopSong();
 
-void DrawLogoFrame(Image &fb);
-void DrawTitleFrame(Image &fb);
-
-void RunLogoFrame();
-void RunTitleFrame();
-
-#endif // M_MODES_HH
+#endif // M_SONGS_HH

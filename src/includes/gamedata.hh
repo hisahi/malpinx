@@ -14,7 +14,8 @@
 
 #define DIR_SEPARATOR "/"
 
-std::ifstream OpenDataFile(const std::string& path);
+std::string GetDataPath(const std::string &path);
+std::ifstream OpenDataFile(const std::string &path);
 void OpenDataDir();
 void PageInBaseData();
 

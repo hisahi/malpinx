@@ -4,21 +4,11 @@
 /*   SEE THE LICENSE FILE IN THE SOURCE ROOT DIRECTORY FOR LICENSE INFO.    */
 /*                                                                          */
 /****************************************************************************/
-// colmath.cc: color math
+// main.hh: include for MalpinxMain, intended to be used by backend if needed
 
-#include "render.hh"
-#include "maths.hh"
+#ifndef M_MAIN_HH
+#define M_MAIN_HH
 
-Color operator+(const Color& lhs, const Color &rhs)
-{
-    return Color(lhs.getR() + rhs.getR(),
-                lhs.getG() + rhs.getG(),
-                lhs.getB() + rhs.getB());
-}
+int MalpinxMain(int argc, char **argv);
 
-Color operator-(const Color& lhs, const Color &rhs)
-{
-    return Color(lhs.getR() - rhs.getR(),
-                lhs.getG() - rhs.getG(),
-                lhs.getB() - rhs.getB());
-}
+#endif // M_MAIN_HH

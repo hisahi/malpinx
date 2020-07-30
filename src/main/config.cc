@@ -30,7 +30,7 @@ void LoadConfig()
 
 void ApplySettingsToBackend()
 {
-    backend->setScale(cfg.get("Scale", 1));
+    backend->scale(cfg.get("Scale", 1));
 }
 
 void SaveConfig()

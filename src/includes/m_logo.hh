@@ -4,26 +4,21 @@
 /*   SEE THE LICENSE FILE IN THE SOURCE ROOT DIRECTORY FOR LICENSE INFO.    */
 /*                                                                          */
 /****************************************************************************/
-// m_title.cc: code for the title screen
+// m_logo.hh: header for m_logo.cc
 
-#include <memory>
-#include "defs.hh"
-#include "layer.hh"
-#include "render.hh"
-#include "songs.hh"
-#include "m_title.hh"
+#ifndef M_MLOGO_HH
+#define M_MLOGO_HH
 
-void InitTitleScreen()
+class LogoScreen
 {
-    PlaySong(MusicTrack::Title);
-}
+public:
+    LogoScreen(int sequence, Image &&image);
+    bool fadeOut();
+    int sequence;
+    void blit(Image &fb);
+private:
+    int _ticks;
+    std::unique_ptr<Image> _image;
+};
 
-void DrawTitleFrame(Image &fb)
-{
-
-}
-
-void RunTitleFrame()
-{
-
-}
+#endif // M_MLOGO_HH

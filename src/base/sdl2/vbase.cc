@@ -10,25 +10,31 @@
 #include "defs.hh"
 #include "render.hh"
 #include "base/sdl2.hh"
+#include "main.hh"
 
 static SDL_Window *window;
 static SDL_Renderer *renderer;
 static SDL_Surface *surface;
 static SDL_Texture *screen;
 static bool quit = false;
-static Uint32 palette[32768];
+static Uint32 palette[0x1000];
 static unsigned int ticks = 0;
 static unsigned long long frac = 0ULL;
 
+int SDL_main(int argc, char **argv)
+{
+    return MalpinxMain(argc, argv);
+}
+
 static inline int extend_color_channel(int v)
 {
-    return (v << 3) | (v >> 5);
+    return (v << 4) | v;
 }
 
 void sdl_build_palette()
 {
     Color clr;
-    for (int i = 0; i < 32768; ++i)
+    for (int i = 0; i < 0x1000; ++i)
     {
         clr = Color(i);
         palette[i] = SDL_MapRGB(surface->format,
@@ -96,7 +102,7 @@ void vbase_flip()
     Uint32 *dst = static_cast<Uint32 *>(surface->pixels);
     for (int y = 0; y < S_HEIGHT; ++y)
         for (int x = 0; x < S_WIDTH; ++x)
-            dst[y * stride + x] = palette[src[y * S_STRIDE + x].v & 32767];
+            dst[y * stride + x] = palette[src[y * S_STRIDE + x].v & 0x0FFF];
     SDL_UpdateTexture(screen, NULL, surface->pixels, surface->pitch);
     SDL_UnlockSurface(surface);
     SDL_RenderCopy(renderer, screen, NULL, NULL);

@@ -7,7 +7,6 @@
 // stream.cc: code for loading values from streams
 
 #include <fstream>
-#include "layer.hh"
 #include "gamedata.hh"
 #include "formats.hh"
 

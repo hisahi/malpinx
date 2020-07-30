@@ -14,28 +14,41 @@
 #include "render.hh"
 #include "modes.hh"
 #include "logic.hh"
+#include "m_logo.hh"
 
-static int logoFrames = 0;
-static int logoSequence = 0;
-static std::unique_ptr<Image> logoScreen;
+static std::unique_ptr<LogoScreen> logo;
+
+LogoScreen::LogoScreen(int sequence, Image &&image)
+    : sequence(sequence), _ticks(S_TICKS * 5),
+        _image(std::make_unique<Image>(image))
+{
+}
+
+bool LogoScreen::fadeOut()
+{
+    return --_ticks < 0;
+}
+
+void LogoScreen::blit(Image &fb)
+{
+    _image->blit(fb);
+}
 
 void InitLogo(int seqnum, const std::string &name)
 {
-    logoFrames = S_TICKS * 5;
-    logoSequence = seqnum;
-    logoScreen = std::move(LoadPIC(name));
+    logo = std::make_unique<LogoScreen>(seqnum, LoadPIC(name));
 }
 
 static inline void UnloadLogo()
 {
-    logoScreen = nullptr;
+    logo = nullptr;
 }
 
 static inline void EndOfLogo()
 {
-    switch (logoSequence)
+    switch (logo->sequence)
     {
-    case 0:
+    case 1:
         JumpMode(GameMode::TitleScreen, []() {
             InitTitleScreen();
             UnloadLogo();
@@ -44,13 +57,14 @@ static inline void EndOfLogo()
     }
 }
 
-void DrawLogoFrame(Framebuffer &fb)
+void DrawLogoFrame(Image &fb)
 {
-    logoScreen->draw(fb);
+    if (logo)
+        logo->blit(fb);
 }
 
 void RunLogoFrame()
 {
-    if (--logoFrames <= 0)
+    if (logo->fadeOut())
         EndOfLogo();
 }

@@ -26,7 +26,7 @@ ConfigFile::ConfigFile(std::istream &stream) : ConfigFile()
         key = line.substr(0, pos);
         value = line.substr(pos + 1);
         keys.insert(std::pair<std::string, std::string>(key, value));
-    }    
+    }
 }
 
 void ConfigFile::write(std::ostream &stream)

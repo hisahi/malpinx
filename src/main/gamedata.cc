@@ -10,16 +10,23 @@
 #include <iostream>
 #include <stdexcept>
 #include "gamedata.hh"
+#include "songs.hh"
 
 void CanonicalizePath(std::string &path)
 {
     // no changes right now
 }
 
-std::ifstream OpenDataFile(const std::string &path)
+std::string GetDataPath(const std::string &path)
 {
     std::string xpath = "data/" + path;
     CanonicalizePath(xpath);
+    return xpath;
+}
+
+std::ifstream OpenDataFile(const std::string &path)
+{
+    std::string xpath = GetDataPath(path);
     if (M_DEBUG) std::cerr << "Opening data file " << xpath << std::endl;
     auto stream = std::ifstream(xpath, std::ios::in | std::ios::binary);
     if (!stream.fail())
@@ -36,4 +43,5 @@ void OpenDataDir()
 // load in as little as we can get away with
 void PageInBaseData()
 {
+    LoadSongList();
 }

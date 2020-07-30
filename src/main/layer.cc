@@ -4,70 +4,55 @@
 /*   SEE THE LICENSE FILE IN THE SOURCE ROOT DIRECTORY FOR LICENSE INFO.    */
 /*                                                                          */
 /****************************************************************************/
-// layer.cc: image and layer implementations
+// layer.cc: layer implementations
 
 #include <memory>
 #include <algorithm>
 #include "layer.hh"
-
-Image::Image(int width, int height, std::vector<Color> &&data)
-    : _width(width), _height(height), _data()
-{
-    _data.reserve(data.size());
-    std::copy(data.begin(), data.end(), _data.begin());
-}
-
-void Image::draw(Framebuffer &fb)
-{
-    draw(fb, 0, 0);
-}
-
-void Image::draw(Framebuffer &fb, int x, int y)
-{
-    draw(fb, 0, 0, 0, 0, _width, _height);
-}
-
-void Image::draw(Framebuffer &fb, int dx, int dy,
-                int sx, int sy, int sw, int sh)
-{
-    // sprite clipping
-    if (dx < 0)
-    {
-        sx += dx;
-        sw += dx;
-        dx = 0;
-    }
-    if (dy < 0)
-    {
-        sy += dy;
-        sh += dy;
-        dy = 0;
-    }
-    sw = std::min({ sw, _width - sx, S_WIDTH - sx });
-    sh = std::min({ sh, _height - sy, S_HEIGHT - sy });
-
-    if (sw <= 0 || sh <= 0) return;
-
-    int xo, yo, stripe_off = S_WIDTH - sw;
-    auto dst = fb.buffer().begin() + (dy * S_STRIDE + dx);
-    auto src = _data.begin() + (sy * _width + sx);
-    for (yo = 0; yo < sh; ++yo)
-    {
-        for (xo = 0; xo < sw; ++xo, ++src, ++dst)
-            if (!(*src).isTransparent())
-                *dst = *src;
-
-        dst += stripe_off;
-        src += stripe_off;
-    }
-}
+#include "sprite.hh"
 
 BackgroundLayer::BackgroundLayer(std::shared_ptr<Image> bg, int sx, int sy)
     : _img(bg), _scrollXMul(sx), _scrollYMul(sy)
 {
 }
 
-void BackgroundLayer::draw(Framebuffer &fb, int sx, int sy)
+void BackgroundLayer::blit(Image &fb, int sx, int sy) const
 {
-    _img->draw(fb, 0, 0, sx, sy, S_WIDTH, S_HEIGHT);
+    _img->blitTiled(fb, 0, 0, sx, sy, S_WIDTH, S_HEIGHT);
+}
+
+ColorWindow::ColorWindow(Color clr, int x, int y, int w, int h)
+    : _color(clr), _x(x), _y(y), _width(w), _height(h)
+{
+}
+
+void ColorWindow::blit(Image &fb)
+{
+    auto dst = fb.buffer().begin() + (_y * S_STRIDE + _x);
+    int y;
+    Color m = _color;
+    for (y = 0; y < _height; ++y)
+    {
+        std::transform(dst, dst + _width, dst,
+            [=](const Color &c) { return c + m; });
+        dst += _height;
+    }
+}
+
+bool ColorWindow::fade(int n/* = 1*/)
+{
+    return static_cast<bool>(_color -= Color(n, n, n));
+}
+
+template <int FontWidth, int FontHeight>
+void TextLayer<FontWidth, FontHeight>::blit(Image &fb) const
+{
+    _img->blit(fb, 0, 0, 0, 0, S_WIDTH, S_HEIGHT);
+}
+
+template <int FontWidth, int FontHeight>
+void TextLayer<FontWidth, FontHeight>::writeChar
+    (const Spritesheet &font, char c, int x, int y)
+{
+    font.blitFast(*_img.get(), c, x * FontWidth, y * FontHeight);
 }

@@ -4,26 +4,19 @@
 /*   SEE THE LICENSE FILE IN THE SOURCE ROOT DIRECTORY FOR LICENSE INFO.    */
 /*                                                                          */
 /****************************************************************************/
-// m_title.cc: code for the title screen
+// m_title.hh: header for m_title.cc
 
-#include <memory>
-#include "defs.hh"
-#include "layer.hh"
-#include "render.hh"
-#include "songs.hh"
-#include "m_title.hh"
+#ifndef M_MTITLE_HH
+#define M_MTITLE_HH
 
-void InitTitleScreen()
+enum class TitleMode
 {
-    PlaySong(MusicTrack::Title);
-}
+    InitAnimationScale,
+    MainMenu,
+    Options,
+    OptionsControlKeyboard,
+    OptionsControlGamepad,
+    SoundTest,
+};
 
-void DrawTitleFrame(Image &fb)
-{
-
-}
-
-void RunTitleFrame()
-{
-
-}
+#endif // M_MTITLE_HH

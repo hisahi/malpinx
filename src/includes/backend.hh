@@ -40,10 +40,7 @@ public:
     }
 
     int scale() const { return _scale; }
-    void setScale(int s)
-    {
-        vbase_set_scale(_scale = s);
-    }
+    void scale(int s) { vbase_set_scale(_scale = s); }
 
 private:
     int _scale;

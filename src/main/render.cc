@@ -12,8 +12,8 @@
 #include "logic.hh"
 #include "modes.hh"
 
-Framebuffer fb_back;
-Framebuffer fb_front;
+Image fb_back(S_WIDTH, S_HEIGHT);
+Image fb_front(S_WIDTH, S_HEIGHT);
 Color flashColor, fadeColor;
 const Color transparentColor = Color::transparent();
 const Color normalizingColor = Color(1, 1, 1);
@@ -43,14 +43,14 @@ bool FadeStepIn()
     return static_cast<bool>(fadeColor);
 }
 
-void DrawFrameBack()
+static inline void DrawFrameBack()
 {
     switch (activeMode)
     {
     case GameMode::Logo:
         DrawLogoFrame(fb_back); break;
     case GameMode::TitleScreen:
-        break;
+        DrawTitleFrame(fb_back); break;
     case GameMode::HighScoreScreen:
         break;
     case GameMode::NameEntry:
@@ -66,20 +66,13 @@ void DrawFrameBack()
     }
 }
 
-void DrawFrameFront()
+static inline void DrawFrameFront()
 {
     if (fadeColor)
     {
         std::transform(fb_back.buffer().begin(), fb_back.buffer().end(),
             fb_front.buffer().begin(),
-            [](const Color& c) { return c - fadeColor; });
-    }
-    else if (flashColor)
-    {
-        std::transform(fb_back.buffer().begin(), fb_back.buffer().end(), 
-            fb_front.buffer().begin(),
-            [](const Color& c) { return c + flashColor; });
-        flashColor -= normalizingColor;
+            [](const Color &c) { return c - fadeColor; });
     }
     else
     {
@@ -92,6 +85,11 @@ void ClearScreen()
 {
     std::fill(fb_back.buffer().begin(), fb_back.buffer().end(),
             transparentColor);
+}
+
+void UpdateBackbuffer()
+{
+    DrawFrameBack();
 }
 
 void DrawFrame()

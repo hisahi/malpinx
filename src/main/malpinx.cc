@@ -26,7 +26,7 @@ void DoGame()
     PageInBaseData();
     FadeResetToBlack();
     JumpMode(GameMode::Logo);
-    InitLogo(0, "logo");
+    InitLogo(1, "logo");
     
     while (backend->run())
     {
@@ -43,10 +43,15 @@ void DoArgs(int argc, char **argv)
 
 }
 
-int main(int argc, char **argv)
+int MalpinxMain(int argc, char **argv)
 {
     if (argc > 1)
         DoArgs(argc, argv);
     DoGame();
     return 0;
+}
+
+int main(int argc, char **argv)
+{
+    return MalpinxMain(argc, argv);
 }

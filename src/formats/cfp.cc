@@ -13,7 +13,7 @@
 #include <memory>
 #include <cstdint>
 #include "render.hh"
-#include "layer.hh"
+#include "image.hh"
 #include "gamedata.hh"
 #include "formats.hh"
 
@@ -25,7 +25,7 @@ inline std::string PIC_build_message(const std::string& message,
     return stream.str();
 }
 
-std::unique_ptr<Image> LoadPIC(const std::string &path)
+Image LoadPIC(const std::string &path)
 {
     auto stream = OpenDataFile(path + ".cfp");
     bool compressed = true;
@@ -72,5 +72,5 @@ std::unique_ptr<Image> LoadPIC(const std::string &path)
         if (colors.size() != size)
             throw std::runtime_error("invalid compressed image");
     }
-    return std::make_unique<Image>(width, height, std::move(colors));
+    return Image(width, height, std::move(colors));
 }

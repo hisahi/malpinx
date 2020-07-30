@@ -22,11 +22,12 @@ malpinx formats, all numbers little-endian
 				width 16-bit
 				height 16-bit
 				data 16-bit width*height
-	.sxp	sound effect package; sound effects are 
+	.sxp	sound effect package; sound effects are signed 8-bit mono
 			number of sound effects (16-bit)
 			sample rate of sound effects (16-bit)
 			for every sound:
 				number of samples (32-bit)		
+				samples
 	.txp	encoded text
 			encoding: x'=ab[i&255]^((x^i)-(i>>8))
 				  x=ab[i&255]^((x'^i)+(i>>8))
