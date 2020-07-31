@@ -277,7 +277,7 @@ void TitleScreen::decreaseSelectedOption()
         case 0:
         {
             int newDl = static_cast<int>(difficulty) - 1;
-            if (newDl < 0) newDl = nDifficultyLevels - 1;
+            if (newDl < 0) newDl = maxDifficultyLevel;
             difficulty = static_cast<DifficultyLevel>(newDl);
             break;
         }
@@ -316,7 +316,7 @@ void TitleScreen::increaseSelectedOption()
         case 0:
         {
             int newDl = static_cast<int>(difficulty) + 1;
-            if (newDl > nDifficultyLevels) newDl = 0;
+            if (newDl > maxDifficultyLevel) newDl = 0;
             difficulty = static_cast<DifficultyLevel>(newDl);
             break;
         }

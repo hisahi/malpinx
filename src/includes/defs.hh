@@ -36,7 +36,7 @@ enum class DifficultyLevel
 {
     EASY, NORMAL, HARD
 };
-constexpr int nDifficultyLevels = static_cast<int>(DifficultyLevel::HARD);
+constexpr int maxDifficultyLevel = static_cast<int>(DifficultyLevel::HARD);
 
 template <bool debug = M_DEBUG, typename... Args,
             typename std::enable_if<debug>::type* = nullptr>
