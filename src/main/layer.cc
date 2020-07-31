@@ -21,6 +21,11 @@ void BackgroundLayer::blit(Image &fb, int sx, int sy) const
     _img->blitTiled(fb, 0, 0, sx, sy, S_WIDTH, S_HEIGHT);
 }
 
+ColorWindow::ColorWindow(int x, int y, int w, int h)
+    : ColorWindow(Color::transparent, x, y, w, h)
+{
+}
+
 ColorWindow::ColorWindow(Color clr, int x, int y, int w, int h)
     : _color(clr), _x(x), _y(y), _width(w), _height(h)
 {
@@ -28,14 +33,16 @@ ColorWindow::ColorWindow(Color clr, int x, int y, int w, int h)
 
 void ColorWindow::blit(Image &fb)
 {
-    auto dst = fb.buffer().begin() + (_y * S_STRIDE + _x);
-    int y;
     Color m = _color;
+    if (!m) return;
+    int stride = fb.width();
+    auto dst = fb.buffer().begin() + (_y * stride + _x);
+    int y;
     for (y = 0; y < _height; ++y)
     {
         std::transform(dst, dst + _width, dst,
             [=](const Color &c) { return c + m; });
-        dst += _height;
+        dst += stride;
     }
 }
 
@@ -44,15 +51,7 @@ bool ColorWindow::fade(int n/* = 1*/)
     return static_cast<bool>(_color -= Color(n, n, n));
 }
 
-template <int FontWidth, int FontHeight>
-void TextLayer<FontWidth, FontHeight>::blit(Image &fb) const
+void ColorWindow::flash(Color clr)
 {
-    _img->blit(fb, 0, 0, 0, 0, S_WIDTH, S_HEIGHT);
-}
-
-template <int FontWidth, int FontHeight>
-void TextLayer<FontWidth, FontHeight>::writeChar
-    (const Spritesheet &font, char c, int x, int y)
-{
-    font.blitFast(*_img.get(), c, x * FontWidth, y * FontHeight);
+    _color += clr;
 }

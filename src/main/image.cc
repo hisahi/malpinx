@@ -21,6 +21,11 @@ Image::Image(int width, int height, std::vector<Color> &&data)
 {
 }
 
+void Image::clear()
+{
+    std::fill(_data.begin(), _data.end(), Color::transparent);
+}
+
 template <bool tiled, bool fast>
 static inline REALLY_INLINE void doBlit(Image &fb,
                 int mw, int mh, std::vector<Color> &_data,
@@ -55,31 +60,31 @@ static inline REALLY_INLINE void doBlit(Image &fb,
 
     if (sw <= 0 || sh <= 0) return;
 
-    int xo, yo, stripe_off = S_WIDTH - sw;
-    auto dst = fb.buffer().begin() + (dy * S_STRIDE + dx);
+    int fbs = fb.width();
+    int xo, yo, stripe_off = fbs - sw;
+    auto dst = fb.buffer().begin() + (dy * fbs + dx);
     auto src = _data.begin() + ((sy % mh) * mw + (sx % mw));
     int gap = mw - sx;
     auto row_end = src;
     for (yo = 0; yo < sh; ++yo)
     {
-        if (tiled)
-            row_end = src + gap;
+        row_end = src + sw;
         if (fast)
         {
-            std::copy(src, src + sw, dst);
+            std::copy(src, row_end, dst);
             src += mw;
-            dst += mw;
+            dst += fbs;
         }
         else
         {
-            for (xo = sx; xo < sx + sw; ++xo, ++src, ++dst)
+            for (xo = 0; xo < sw; ++xo, ++src, ++dst)
             {
                 if (!(*src).isTransparent())
                     *dst = *src;
                 if (tiled && src == row_end)
-                    src -= mw;
+                    src -= sw;
             }
-            src += stripe_off;
+            src = row_end;
             dst += stripe_off;
         }
         if (tiled && dst >= _data.end())

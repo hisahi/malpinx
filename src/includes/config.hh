@@ -9,11 +9,17 @@
 #ifndef M_CONFIG_HH
 #define M_CONFIG_HH
 
+#include "defs.hh"
+
 void LoadConfig();
 void ApplySettingsToBackend();
 void SaveConfig();
+void RestoreConfigDefaults();
 int GetConfigSampleRate();
 
 extern bool highQualityAudio;
+extern DifficultyLevel difficulty;
+extern bool musicEnabled;
+extern bool sfxEnabled;
 
 #endif // M_CONFIG_HH

@@ -19,9 +19,22 @@
 using std::cerr;
 using std::endl;
 
+struct SDLSoundClip
+{
+    SDLSoundClip(Mix_Chunk *chunk,
+            std::unique_ptr<std::vector<unsigned char>> ptr)
+        : sdl(chunk), data(std::move(ptr)) { }
+    SDLSoundClip(SDLSoundClip &&src)
+        : sdl(src.sdl), data(std::move(src.data)) { }
+    SDLSoundClip(const SDLSoundClip&) = delete;
+    SDLSoundClip& operator = (const SDLSoundClip&) = delete;
+    Mix_Chunk *sdl;
+    std::unique_ptr<std::vector<unsigned char>> data;
+};
+
 bool audio_init = false;
 Mix_Music *music = nullptr;
-std::vector<Mix_Chunk *> sounds;
+std::vector<SDLSoundClip> sounds;
 int outSampleRate;
 Uint16 outFormat;
 int outChannels;
@@ -51,6 +64,7 @@ void abase_init(int sampleRate)
         cerr << "Could not initialize SDL_mixer; no music/sound" << endl;
         return;
     }
+    Mix_AllocateChannels(8);
     audio_init = true;
 }
 
@@ -59,6 +73,11 @@ void abase_quit()
     if (!audio_init) return;
     Mix_CloseAudio();
     audio_init = false;
+}
+
+bool abase_ready()
+{
+    return audio_init;
 }
 
 void abase_music_play(const std::string &file, int loopCount)
@@ -113,20 +132,31 @@ std::unique_ptr<std::vector<unsigned char>> abase_convert(
         for (const char &c: data)
             for (i = 0; i < outChannels; ++i)
                 result->push_back(static_cast<unsigned char>(c));
+        break;
     case AUDIO_U8:
         result->reserve(data.size() * outChannels);
         for (const char &c: data)
             for (i = 0; i < outChannels; ++i)
                 result->push_back(static_cast<unsigned char>(c + 0x80));
+        break;
     case AUDIO_S16LSB:
+        result->reserve(data.size() * outChannels * 2);
+        for (const char &c: data)
+            for (i = 0; i < outChannels; ++i)
+            {
+                result->push_back(static_cast<unsigned char>(c ^ 0x80));
+                result->push_back(static_cast<unsigned char>(c));
+            }
+        break;
     case AUDIO_S16MSB:
         result->reserve(data.size() * outChannels * 2);
         for (const char &c: data)
             for (i = 0; i < outChannels; ++i)
             {
                 result->push_back(static_cast<unsigned char>(c));
-                result->push_back(static_cast<unsigned char>(c));
+                result->push_back(static_cast<unsigned char>(c ^ 0x80));
             }
+        break;
     case AUDIO_U16LSB:
     case AUDIO_U16MSB:
         result->reserve(data.size() * outChannels * 2);
@@ -140,6 +170,7 @@ std::unique_ptr<std::vector<unsigned char>> abase_convert(
                 result->push_back(t);
             }
         }
+        break;
     default:
         throw std::runtime_error("unrecognized output audio format");
     }
@@ -147,7 +178,8 @@ std::unique_ptr<std::vector<unsigned char>> abase_convert(
     return result;
 }
 
-int abase_sound_load(const std::vector<char> &data)
+// data = 8-bit signed mono at given samplerate
+int abase_sound_load(const std::vector<char> &data, int sampleRate)
 {
     if (!audio_init) return -1;
     int index = sounds.size();
@@ -160,14 +192,19 @@ int abase_sound_load(const std::vector<char> &data)
                 << Mix_GetError() << endl;
         return -1;
     }
-    sounds.push_back(sample);
+    sounds.push_back(SDLSoundClip(sample, std::move(pcm)));
     return index;
 }
 
-int abase_sound_play(int soundNum, float volume, float pan, int loopCount)
+int abase_sound_play(int soundNum, float volume, float pan, int playCount,
+                     int channel)
 {
     if (!audio_init) return -1;
-    int ch = Mix_PlayChannel(-1, sounds[soundNum], loopCount || -1);
+    if (soundNum >= sounds.size()) return -1;
+    int ch = Mix_PlayChannel(channel, sounds[soundNum].sdl, 
+                    playCount ? playCount - 1 : -1);
+    if (M_DEBUG && ch < 0)
+        cerr << "Could not play sound: " << Mix_GetError() << endl;
     Mix_UnregisterAllEffects(ch);
     Uint8 left = static_cast<Uint8>(255 * volume * std::min(1.f, 1.f - pan));
     Uint8 right = static_cast<Uint8>(255 * volume * std::min(1.f, 1.f + pan));

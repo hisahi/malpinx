@@ -35,4 +35,5 @@
 __pycache__/
 *.py[cod]
 
+src/data/test*
 .vscode/

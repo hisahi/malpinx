@@ -38,6 +38,7 @@ private:
 class Spritesheet
 {
 public:
+    Spritesheet();
     Spritesheet(const std::vector<std::shared_ptr<Image>> &images);
     std::shared_ptr<Image> getImage(int index) const;
     template <class T, class... Args>

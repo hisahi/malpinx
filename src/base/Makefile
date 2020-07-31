@@ -7,7 +7,9 @@ vbase.o: $(VBACKEND)/vbase.cc $(DEPS)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 abase.o: $(ABACKEND)/abase.cc $(DEPS)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
+ibase.o: $(IBACKEND)/ibase.cc $(DEPS)
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-all: vbase.o abase.o
+all: vbase.o abase.o ibase.o
 clean:
 	$(RM) *.o

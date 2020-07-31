@@ -15,13 +15,12 @@
 Image fb_back(S_WIDTH, S_HEIGHT);
 Image fb_front(S_WIDTH, S_HEIGHT);
 Color flashColor, fadeColor;
-const Color transparentColor = Color::transparent();
 const Color normalizingColor = Color(1, 1, 1);
 bool isFading = false;
 
 void FadeReset()
 {
-    fadeColor = Color(0);
+    fadeColor = Color::transparent;
 }
 
 void FadeResetToBlack()
@@ -84,7 +83,7 @@ static inline void DrawFrameFront()
 void ClearScreen()
 {
     std::fill(fb_back.buffer().begin(), fb_back.buffer().end(),
-            transparentColor);
+            Color::transparent);
 }
 
 void UpdateBackbuffer()

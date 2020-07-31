@@ -9,6 +9,8 @@
 #include "color.hh"
 #include "maths.hh"
 
+const Color Color::transparent = Color(0);
+
 Color operator+(const Color& lhs, const Color &rhs)
 {
     return Color(lhs.getR() + rhs.getR(),

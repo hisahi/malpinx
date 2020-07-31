@@ -26,5 +26,6 @@ std::uint32_t ReadUInt32(std::istream &stream);
 Image LoadPIC(const std::string &path);
 std::string LoadTXP(const std::string &path);
 Spritesheet LoadSpritesheet(const std::string &path);
+int LoadSounds(const std::string &path);
 
 #endif // M_FORMATS_HH

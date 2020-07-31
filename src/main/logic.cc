@@ -12,11 +12,13 @@
 #include "modes.hh"
 #include "render.hh"
 #include "songs.hh"
+#include "input.hh"
 
 GameMode activeMode = GameMode::None;
 std::function<void()> fadeOutCompleteFunc = nullptr;
 bool fadingOut = false, fadingIn = false;
-int fadeTicks = 0;
+static int fadeTicks = 0;
+static bool fastFade = false;
 
 void RunModeBasic()
 {
@@ -49,9 +51,10 @@ void StartFadeOut(std::function<void()> onFadeOutDone /*= nullptr*/)
         fadeOutCompleteFunc = nullptr;
     };
     fadeTicks = 0;
+    fastFade = false;
     if (fadingOut = activeMode != GameMode::None)
     {
-        isFading = true;   
+        isFading = true;
         FadeOutSong();
     }
     else
@@ -75,10 +78,12 @@ void JumpMode(GameMode mode, std::function<void()> init /*= nullptr*/)
         if (init) init();
         UpdateBackbuffer();
         fadingIn = true;
+        fastFade = false;
         fadeOutCompleteFunc = nullptr;
         fadeTicks = 0;
     };
     fadeTicks = 0;
+    fastFade = false;
     if (fadingOut = activeMode != GameMode::None)
     {
         isFading = true;
@@ -92,21 +97,25 @@ void RunFrame()
 {
     if (fadingOut)
     {
-        if (!fadeTicks && !(fadingOut = FadeStepOut()))
+        if ((fastFade || !fadeTicks) && !(fadingOut = FadeStepOut()))
         {
             fadeOutCompleteFunc();
             isFading = fadingOut || fadingIn;
+            fastFade = false;
         }
         fadeTicks = (fadeTicks + 1) & 3;
+        fastFade |= menuInput.select;
     }
     else if (fadingIn) 
     {
-        if (!fadeTicks && !(fadingIn = FadeStepIn()))
+        if ((fastFade || !fadeTicks) && !(fadingIn = FadeStepIn()))
         {
             FadeReset();
             isFading = fadingOut || fadingIn;
+            fastFade = false;
         }
         fadeTicks = (fadeTicks + 1) & 3;
+        fastFade |= menuInput.select;
     }
     if (!isFading)
         RunModeBasic();

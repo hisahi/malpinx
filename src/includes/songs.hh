@@ -19,6 +19,7 @@ enum class MusicTrack
     LevelSelect,
     Ending,
     Credits,
+    NameEntry,
     Level1,
     Level2,
     Level3,

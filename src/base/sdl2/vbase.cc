@@ -46,7 +46,7 @@ void sdl_build_palette()
 
 void vbase_init()
 {
-    if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER))
+    if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO))
         throw SDLException("Could not initialize SDL2");
     if (!(window = SDL_CreateWindow("MALPINX", 50, 50,
                     S_WIDTH, S_HEIGHT, SDL_WINDOW_SHOWN)))
@@ -74,6 +74,7 @@ void vbase_set_scale(int scale)
 bool vbase_loop()
 {
     if (quit) return false;
+    ibase_before_events();
     SDL_Event event;
     while (SDL_PollEvent(&event)) 
     {
@@ -83,10 +84,10 @@ bool vbase_loop()
             quit = true;
             break;
         case SDL_KEYDOWN:
-            // event.key.keysym
-            break;
         case SDL_KEYUP:
-            // event.key.keysym
+        case SDL_CONTROLLERBUTTONDOWN:
+        case SDL_CONTROLLERBUTTONUP:
+            ibase_handle_event(event);
             break;
         }
     }

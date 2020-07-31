@@ -1,18 +1,17 @@
 default: all
 .PHONY: clean
 
-OBJS = config.o gamedata.o \
-	color.o image.o layer.o sprite.o \
-	m_logo.o m_title.o \
-	logic.o render.o songs.o \
+OBJS = config.o gamedata.o color.o image.o layer.o sprite.o songs.o sfx.o \
+	input.o m_logo.o m_title.o fonts.o logic.o render.o \
 	malpinx.o
-
-DEPS = ../includes/abase.hh ../includes/cfg.hh ../includes/config.hh \
- 	   ../includes/defs.hh ../includes/formats.hh ../includes/gamedata.hh \
- 	   ../includes/backend.hh ../includes/layer.hh ../includes/logic.hh \
- 	   ../includes/malpinx.hh ../includes/maths.hh ../includes/modes.hh \
- 	   ../includes/render.hh ../includes/sprite.hh ../includes/vbase.hh \
-	   ../includes/songs.hh ../includes/image.hh ../includes/color.hh
+HDIR = ../includes
+INCLUDES = $(HDIR)/cfg.hh $(HDIR)/config.hh $(HDIR)/backend.hh $(HDIR)/defs.hh \
+	    $(HDIR)/formats.hh $(HDIR)/vbase.hh $(HDIR)/abase.hh $(HDIR)/input.hh \
+		$(HDIR)/layer.hh $(HDIR)/logic.hh $(HDIR)/malpinx.hh $(HDIR)/maths.hh \
+		$(HDIR)/modes.hh $(HDIR)/render.hh $(HDIR)/sprite.hh $(HDIR)/color.hh \
+		$(HDIR)/songs.hh $(HDIR)/image.hh $(HDIR)/gamedata.hh $(HDIR)/fonts.hh \
+		$(HDIR)/sfx.hh
+DEPS = $(INCLUDES)
 
 %.o: %.cc $(DEPS)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<

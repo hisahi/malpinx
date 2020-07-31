@@ -86,3 +86,8 @@ void ConfigFile::set(const std::string &key, const std::string &value)
 {
     keys[key] = value;
 }
+
+void ConfigFile::reset()
+{
+    keys.clear();
+}

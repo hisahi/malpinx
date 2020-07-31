@@ -19,6 +19,10 @@ void Sprite::blit(Image &fb) const
     _img->blit(fb, _x, _y, 0, 0, _img->width(), _img->height());
 }
 
+Spritesheet::Spritesheet() : sprites()
+{
+}
+
 Spritesheet::Spritesheet(const std::vector<std::shared_ptr<Image>> &images)
     : sprites(images)
 {

@@ -22,7 +22,7 @@ def nearest_color(palette, color):
     if color in palette:
         return palette.index(color)
     return min(((i, p, color_distance(p, color))
-            for i, p in enumerate(palette)), key = lambda x: x[2])[0]
+                for i, p in enumerate(palette)), key=lambda x: x[2])[0]
 
 
 def convert_tip_sprite(img):

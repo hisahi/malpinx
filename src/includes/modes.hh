@@ -26,7 +26,7 @@ enum class GameMode
 };
 
 void InitLogo(int seqnum, const std::string &name);
-void InitTitleScreen();
+void InitTitleScreen(bool instant);
 
 void DrawLogoFrame(Image &fb);
 void DrawTitleFrame(Image &fb);

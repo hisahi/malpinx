@@ -11,6 +11,8 @@
 #include <stdexcept>
 #include "gamedata.hh"
 #include "songs.hh"
+#include "fonts.hh"
+#include "formats.hh"
 
 void CanonicalizePath(std::string &path)
 {
@@ -44,4 +46,6 @@ void OpenDataDir()
 void PageInBaseData()
 {
     LoadSongList();
+    menuFont = LoadSpritesheet("menufont");
+    LoadSounds("malpinx");
 }

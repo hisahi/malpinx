@@ -27,6 +27,7 @@ public:
     void set(const std::string &key, int value);
     void set(const std::string &key, double value);
     void set(const std::string &key, const std::string &value);
+    void reset();
 private:
     std::map<std::string, std::string> keys;
 };

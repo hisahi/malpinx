@@ -27,6 +27,7 @@ public:
     void blitTiled(Image &dst, int dx, int dy, int sx, int sy, int sw, int sh);
     // ignores transparency on this (source) image
     void blitFast(Image &dst, int dx, int dy, int sx, int sy, int sw, int sh);
+    void clear();
     int width() const { return _width; }
     int height() const { return _height; }
     std::vector<Color> &buffer() { return _data; }

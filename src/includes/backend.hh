@@ -11,6 +11,7 @@
 
 #include "vbase.hh"
 #include "abase.hh"
+#include "ibase.hh"
 
 class GameBackend
 {
@@ -18,19 +19,23 @@ public:
     GameBackend(int sampleRate) : _scale(1)
     {
         vbase_init();
-        abase_init(sampleRate);
         vbase_set_scale(_scale);
+        abase_init(sampleRate);
+        ibase_init();
     }
 
     ~GameBackend()
     {
+        ibase_quit();
         abase_quit();
         vbase_quit();
     }
 
     bool run() const
     {
-        return vbase_loop();
+        bool ret = vbase_loop();
+        ibase_tick();
+        return ret;
     }
 
     void blit() const

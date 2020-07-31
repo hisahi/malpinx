@@ -23,6 +23,7 @@ malpinx formats, all numbers little-endian
 				height 16-bit
 				data 16-bit width*height
 	.sxp	sound effect package; sound effects are signed 8-bit mono
+		.sxq 44K, .sxp 22K
 			number of sound effects (16-bit)
 			sample rate of sound effects (16-bit)
 			for every sound:

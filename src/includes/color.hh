@@ -29,8 +29,8 @@ struct Color
     void setR(int r) { v = (clamp(r, 0, S_MAXCLR) << 8) | (v & 0xF0FF); }
     void setG(int g) { v = (clamp(g, 0, S_MAXCLR) << 4) | (v & 0xFF0F); }
     void setB(int b) { v = (clamp(b, 0, S_MAXCLR)     ) | (v & 0xFFF0); }
+    static const Color transparent;
     bool isTransparent() const { return v == 0; }
-    static Color transparent() { return Color(0); }
     explicit operator bool() const { return !isTransparent(); }
     bool operator!() const { return isTransparent(); }
     

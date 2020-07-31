@@ -4,18 +4,13 @@
 /*   SEE THE LICENSE FILE IN THE SOURCE ROOT DIRECTORY FOR LICENSE INFO.    */
 /*                                                                          */
 /****************************************************************************/
-// malpinx.hh: includes for malpinx.cc
+// fonts.hh: include for fonts
 
-#ifndef M_MALPINX_HH
-#define M_MALPINX_HH
+#ifndef M_FONTS_HH
+#define M_FONTS_HH
 
-#include <memory>
-#include "defs.hh"
-#include "backend.hh"
+#include "sprite.hh"
 
-extern std::unique_ptr<GameBackend> backend;
-extern int sampleRate;
+extern Spritesheet menuFont;
 
-void QuitGame();
-
-#endif // M_MALPINX_HH
+#endif // M_FONTS_HH

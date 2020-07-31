@@ -15,7 +15,12 @@
 #include "gamedata.hh"
 
 int sampleRate;
+DifficultyLevel difficulty;
 std::unique_ptr<GameBackend> backend;
+static bool running;
+
+// always 10 chars           ----------
+const std::string VERSION = "PREALPHA 1";
 
 void DoGame()
 {
@@ -27,15 +32,22 @@ void DoGame()
     FadeResetToBlack();
     JumpMode(GameMode::Logo);
     InitLogo(1, "logo");
+    running = true;
     
-    while (backend->run())
+    while (running && backend->run())
     {
+        UpdateInput();
         RunFrame();
         DrawFrame();
         backend->blit();
     }
 
     SaveConfig();
+}
+
+void QuitGame()
+{
+    running = false;
 }
 
 void DoArgs(int argc, char **argv)

@@ -4,15 +4,18 @@
 /*   SEE THE LICENSE FILE IN THE SOURCE ROOT DIRECTORY FOR LICENSE INFO.    */
 /*                                                                          */
 /****************************************************************************/
-// songs.cc: class for playing music songs
+// songs.cc: code for playing music
 
 #include <vector>
 #include "songs.hh"
 #include "gamedata.hh"
 #include "abase.hh"
+#include "config.hh"
 
 std::vector<std::string> songFiles;
 std::vector<int> songFileLoops;
+bool musicEnabled;
+bool sfxEnabled;
 
 void LoadSongList()
 {
@@ -39,7 +42,7 @@ void LoadSongList()
 void PlaySong(MusicTrack track)
 {
     int trackIndex = static_cast<int>(track);
-    if (trackIndex < songFiles.size())
+    if (musicEnabled && trackIndex < songFiles.size())
         abase_music_play(GetDataPath(songFiles[trackIndex]),
                         songFileLoops[trackIndex]);
 }

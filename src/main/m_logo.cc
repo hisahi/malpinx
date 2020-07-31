@@ -15,6 +15,7 @@
 #include "modes.hh"
 #include "logic.hh"
 #include "m_logo.hh"
+#include "input.hh"
 
 static std::unique_ptr<LogoScreen> logo;
 
@@ -50,7 +51,7 @@ static inline void EndOfLogo()
     {
     case 1:
         JumpMode(GameMode::TitleScreen, []() {
-            InitTitleScreen();
+            InitTitleScreen(false);
             UnloadLogo();
         });
         break;
@@ -65,6 +66,6 @@ void DrawLogoFrame(Image &fb)
 
 void RunLogoFrame()
 {
-    if (logo->fadeOut())
+    if (logo->fadeOut() || menuInput.select)
         EndOfLogo();
 }

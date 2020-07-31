@@ -29,4 +29,7 @@ public:
     }
 };
 
+void ibase_before_events();
+void ibase_handle_event(const SDL_Event& evt);
+
 #endif // M_SDL2_HH

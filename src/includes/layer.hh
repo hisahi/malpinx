@@ -22,9 +22,11 @@
 class ColorWindow
 {
 public:
+    ColorWindow(int x, int y, int w, int h);
     ColorWindow(Color clr, int x, int y, int w, int h);
     void blit(Image &fb);
     bool fade(int n = 1);
+    void flash(Color clr);
 private:
     Color _color;
     int _x;
@@ -37,7 +39,7 @@ private:
 class BackgroundLayer
 {
 public:
-    BackgroundLayer(std::shared_ptr<Image> bg, int sx, int sy);
+    BackgroundLayer(std::shared_ptr<Image> bg, int sxm, int sym);
     void blit(Image &fb, int sx, int sy) const;
 private:
     std::shared_ptr<Image> _img;
@@ -50,11 +52,46 @@ template <int FontWidth, int FontHeight>
 class TextLayer
 {
 public:
-    TextLayer() : _img(S_WIDTH, S_HEIGHT) { }
-    void blit(Image &fb) const;
-    void writeChar(const Spritesheet &font, char c, int x, int y);
+    constexpr static int Columns = (S_WIDTH + FontWidth - 1) / FontWidth;
+    constexpr static int Rows = (S_HEIGHT + FontHeight - 1) / FontHeight;
+    TextLayer() : _img(std::make_unique<Image>(S_WIDTH, S_HEIGHT)),
+            _textBuf() { 
+        clear();
+    }
+    void blit(Image &fb) const
+    {
+        _img->blit(fb, 0, 0, 0, 0, S_WIDTH, S_HEIGHT);
+    }
+    void clear()
+    {
+        _img->clear();
+    }
+    void writeChar(const Spritesheet &font, int x, int y, char c)
+    {
+        font.blitFast(*_img.get(), c, x * FontWidth, y * FontHeight);
+    }
+    void writeString
+        (const Spritesheet &font, int x, int y, const std::string &s)
+    {
+        Image &fb = *_img.get();
+        int tx = x * FontWidth;
+        for (const char &c : s)
+        {
+            font.blitFast(fb, c, tx, y * FontHeight);
+            if (tx > S_WIDTH)
+                break;
+            tx += FontWidth;
+        }
+    }
+    void writeStringRightAlign
+        (const Spritesheet &font, int x, int y, const std::string &s)
+    {
+        writeString(font, x - s.length() + 1, y, s);
+    }
+
 private:
     std::unique_ptr<Image> _img;
+    std::array<char, Rows * Columns> _textBuf;
 };
 
 #endif // M_LAYER_HH
