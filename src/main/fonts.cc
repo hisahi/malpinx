@@ -11,3 +11,4 @@
 #include "sprite.hh"
 
 Spritesheet menuFont;
+Spritesheet hudFont;

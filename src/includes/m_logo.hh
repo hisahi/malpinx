@@ -9,6 +9,8 @@
 #ifndef M_MLOGO_HH
 #define M_MLOGO_HH
 
+#include "image.hh"
+
 class LogoScreen
 {
 public:

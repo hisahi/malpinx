@@ -16,6 +16,7 @@
 static ConfigFile cfg;
 constexpr char configFileName[] = "malpinx.cfg";
 bool highQualityAudio;
+int startContinues;
 
 static void LoadConfigInternal()
 {
@@ -23,8 +24,12 @@ static void LoadConfigInternal()
     musicEnabled = cfg.get("Music", true);
     sfxEnabled = cfg.get("SoundEffects", true);
     difficulty = static_cast<DifficultyLevel>(cfg.get("Difficulty", 1));
-    if (static_cast<int>(difficulty) > 2)
+    if (static_cast<int>(difficulty) > maxDifficultyLevel)
         difficulty = DifficultyLevel::NORMAL;
+    pmode = static_cast<PlaybackMode>(cfg.get("Mode", 0));
+    if (static_cast<int>(pmode) > maxPlaybackMode)
+        pmode = PlaybackMode::NORMAL;
+    startContinues = cfg.get("Continues", 3);
     ReadInputControls(cfg);   
 }
 
@@ -63,8 +68,10 @@ void SaveConfig()
     cfg.set("HQAudio", highQualityAudio);
     cfg.set("Scale", backend->scale());
     cfg.set("Difficulty", static_cast<int>(difficulty));
+    cfg.set("Mode", static_cast<int>(pmode));
     cfg.set("Music", musicEnabled);
     cfg.set("SoundEffects", sfxEnabled);
+    cfg.set("Continues", startContinues);
     SaveInputControls(cfg);
     SaveConfigToFile();
 }

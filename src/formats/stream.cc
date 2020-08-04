@@ -29,6 +29,14 @@ void ReadUInt32(std::istream &stream, std::uint32_t &value)
     value |= static_cast<std::uint32_t>(stream.get()) << 24;
 }
 
+void ReadInt32(std::istream &stream, std::int32_t &value)
+{
+    value = static_cast<std::int32_t>(stream.get());
+    value |= static_cast<std::int32_t>(stream.get()) << 8;
+    value |= static_cast<std::int32_t>(stream.get()) << 16;
+    value |= static_cast<std::int32_t>(stream.get()) << 24;
+}
+
 std::uint8_t ReadUInt8(std::istream &stream)
 { 
     std::uint8_t v; 
@@ -47,5 +55,12 @@ std::uint32_t ReadUInt32(std::istream &stream)
 { 
     std::uint32_t v;
     ReadUInt32(stream, v);
+    return v; 
+}
+
+std::int32_t ReadInt32(std::istream &stream)
+{ 
+    std::int32_t v;
+    ReadInt32(stream, v);
     return v; 
 }

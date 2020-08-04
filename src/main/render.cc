@@ -50,34 +50,21 @@ static inline void DrawFrameBack()
         DrawLogoFrame(fb_back); break;
     case GameMode::TitleScreen:
         DrawTitleFrame(fb_back); break;
-    case GameMode::HighScoreScreen:
+    case GameMode::Game:
+        RenderGame(fb_back); break;
+    case GameMode::Ending:
         break;
     case GameMode::NameEntry:
-        break;
-    case GameMode::SelectLevel:
-        break;
-    case GameMode::Cutscene:
-        break;
-    case GameMode::Game:
-        break;
-    case GameMode::Credits:
         break;
     }
 }
 
 static inline void DrawFrameFront()
 {
+    std::copy(fb_back.buffer().begin(), fb_back.buffer().end(), 
+            fb_front.buffer().begin());
     if (fadeColor)
-    {
-        std::transform(fb_back.buffer().begin(), fb_back.buffer().end(),
-            fb_front.buffer().begin(),
-            [](const Color &c) { return c - fadeColor; });
-    }
-    else
-    {
-        std::copy(fb_back.buffer().begin(), fb_back.buffer().end(), 
-                fb_front.buffer().begin());
-    }
+        fb_front.subtract(fadeColor);
 }
 
 void ClearScreen()

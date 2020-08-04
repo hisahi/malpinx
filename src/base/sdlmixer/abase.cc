@@ -64,7 +64,8 @@ void abase_init(int sampleRate)
         cerr << "Could not initialize SDL_mixer; no music/sound" << endl;
         return;
     }
-    Mix_AllocateChannels(8);
+    Mix_AllocateChannels(10);
+    Mix_ReserveChannels(2);
     audio_init = true;
 }
 

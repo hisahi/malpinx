@@ -12,17 +12,20 @@
 #include <string>
 #include "render.hh"
 
+enum class DifficultyLevel { EASY, NORMAL, HARD, BIZARRE };
+constexpr int maxDifficultyLevel = static_cast<int>(DifficultyLevel::BIZARRE);
+
+enum class PlaybackMode { NORMAL, INFINITE };
+constexpr int maxPlaybackMode = static_cast<int>(PlaybackMode::INFINITE);
+
 enum class GameMode
 {
     None,
     Logo,
     TitleScreen,
-    HighScoreScreen,
-    NameEntry,
-    SelectLevel,
-    Cutscene,
     Game,
-    Credits,
+    Ending,
+    NameEntry,
 };
 
 void InitLogo(int seqnum, const std::string &name);
@@ -33,5 +36,8 @@ void DrawTitleFrame(Image &fb);
 
 void RunLogoFrame();
 void RunTitleFrame();
+
+void RenderGame(Image &fb);
+void DoGameTick();
 
 #endif // M_MODES_HH

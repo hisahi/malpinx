@@ -1,2 +1,5 @@
 crmove.wav
 select.wav
+pause.wav
+wpnchng.wav
+spedchng.wav

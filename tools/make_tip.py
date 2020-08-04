@@ -24,7 +24,7 @@ def main(*argv):
             file, region = line, None
             if ':' in line:
                 tok = line.split(':', 1)
-                file, region = tok[0], tuple(int(i) for i in tok.split(','))
+                file, region = tok[0], tuple(int(i) for i in tok[1].split(','))
                 assert len(region) == 4
             tasks.append((file, region))
 
@@ -55,6 +55,7 @@ def main(*argv):
             tip.write_tip_palette(f, palette)
         for image in images:
             tip.write_tip_sprite(f, image)
+    print(len(images))
 
     return 0
 

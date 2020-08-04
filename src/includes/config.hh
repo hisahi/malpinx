@@ -10,6 +10,7 @@
 #define M_CONFIG_HH
 
 #include "defs.hh"
+#include "modes.hh"
 
 void LoadConfig();
 void ApplySettingsToBackend();
@@ -19,6 +20,8 @@ int GetConfigSampleRate();
 
 extern bool highQualityAudio;
 extern DifficultyLevel difficulty;
+extern PlaybackMode pmode;
+extern int startContinues;
 extern bool musicEnabled;
 extern bool sfxEnabled;
 

@@ -13,6 +13,7 @@
 #include "songs.hh"
 #include "fonts.hh"
 #include "formats.hh"
+#include "explode.hh"
 
 void CanonicalizePath(std::string &path)
 {
@@ -47,5 +48,7 @@ void PageInBaseData()
 {
     LoadSongList();
     menuFont = LoadSpritesheet("menufont");
+    hudFont = LoadSpritesheet("hudfont");
     LoadSounds("malpinx");
+    explosionSprites = LoadSpritesheet("explanim");
 }

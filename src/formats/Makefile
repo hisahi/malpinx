@@ -1,7 +1,7 @@
 default: all
 .PHONY: all clean
 
-OBJS = cfg.o stream.o txp.o cfp.o tip.o sxp.o
+OBJS = cfg.o stream.o txp.o cfp.o tip.o sxp.o tlp.o slp.o
 DEPS = ../includes/formats.hh
 
 %.o: %.cc $(DEPS)

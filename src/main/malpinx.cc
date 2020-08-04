@@ -15,12 +15,11 @@
 #include "gamedata.hh"
 
 int sampleRate;
-DifficultyLevel difficulty;
 std::unique_ptr<GameBackend> backend;
 static bool running;
 
 // always 10 chars           ----------
-const std::string VERSION = "PREALPHA 1";
+const std::string VERSION = "PREALPHA 2";
 
 void DoGame()
 {

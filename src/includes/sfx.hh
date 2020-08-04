@@ -14,7 +14,16 @@
 enum class SoundEffect
 {
     MenuChangeOption,
-    MenuSelectOption
+    MenuSelectOption,
+    Pause,
+    WeaponChange,
+    SpeedChange,
+    ExplosionSmall1,
+    ExplosionSmall2,
+    ExplosionMedium1,
+    ExplosionMedium2,
+    ExplosionLarge1,
+    ExplosionLarge2,
 };
 
 int PlaySound(int soundNum, float volume = 1.0f, float pan = 0.0f,

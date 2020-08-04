@@ -31,9 +31,12 @@ enum class GameInput
     MoveLeft,
     MoveRight,
     Fire,
-    FireAux,
-    Bomb,
-    Pause
+    Drone,
+    WeaponUp,
+    WeaponDown,
+    SpeedUp,
+    SpeedDown,
+    Pause,
 };
 
 struct MenuInputState
@@ -67,8 +70,11 @@ struct GameInputState
     bool left;
     bool right;
     bool fire;
-    bool fireAux;
-    bool bomb;
+    bool drone;
+    bool weaponUp;
+    bool weaponDown;
+    bool speedUp;
+    bool speedDown;
     bool pause;
 
     bool &value(GameInput inp)
@@ -80,8 +86,11 @@ struct GameInputState
         case GameInput::MoveLeft:   return left;
         case GameInput::MoveRight:  return right;
         case GameInput::Fire:       return fire;
-        case GameInput::FireAux:    return fireAux;
-        case GameInput::Bomb:       return bomb;
+        case GameInput::Drone:      return drone;
+        case GameInput::WeaponUp:   return weaponUp;
+        case GameInput::WeaponDown: return weaponDown;
+        case GameInput::SpeedUp:    return speedUp;
+        case GameInput::SpeedDown:  return speedDown;
         case GameInput::Pause:      return pause;
         }
         return pause;
@@ -95,8 +104,11 @@ struct GameInputControls
     int left;
     int right;
     int fire;
-    int fireAux;
-    int bomb;
+    int drone;
+    int weaponUp;
+    int weaponDown;
+    int speedUp;
+    int speedDown;
     int pause;
 
     int &control(GameInput inp)
@@ -108,8 +120,11 @@ struct GameInputControls
         case GameInput::MoveLeft:   return left;
         case GameInput::MoveRight:  return right;
         case GameInput::Fire:       return fire;
-        case GameInput::FireAux:    return fireAux;
-        case GameInput::Bomb:       return bomb;
+        case GameInput::Drone:      return drone;
+        case GameInput::WeaponUp:   return weaponUp;
+        case GameInput::WeaponDown: return weaponDown;
+        case GameInput::SpeedUp:    return speedUp;
+        case GameInput::SpeedDown:  return speedDown;
         case GameInput::Pause:      return pause;
         }
         return pause;
@@ -118,6 +133,7 @@ struct GameInputControls
 
 extern MenuInputState menuInput;
 extern GameInputState gameInput;
+extern GameInputState gameInputEdge;
 extern GameInputControls gameInputKeyb;
 extern GameInputControls gameInputPad;
 extern const std::vector<MenuInput> menuInputs;

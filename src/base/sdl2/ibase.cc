@@ -17,6 +17,9 @@ using std::endl;
 
 const Uint8* keyboardState;
 SDL_GameController* controller;
+bool hasNextInput = false;
+int nextKeyb = 0;
+int nextPad = 0;
 
 struct MenuEventTickState {
     MenuEventTickState() : up(false), down(false), left(false), right(false),
@@ -87,8 +90,11 @@ int ibase_default_keyb(GameInput input)
     case GameInput::MoveLeft:   return SDL_SCANCODE_LEFT;
     case GameInput::MoveRight:  return SDL_SCANCODE_RIGHT;
     case GameInput::Fire:       return SDL_SCANCODE_Z;
-    case GameInput::FireAux:    return SDL_SCANCODE_X;
-    case GameInput::Bomb:       return SDL_SCANCODE_C;
+    case GameInput::Drone:      return SDL_SCANCODE_X;
+    case GameInput::WeaponUp:   return SDL_SCANCODE_S;
+    case GameInput::WeaponDown: return SDL_SCANCODE_A;
+    case GameInput::SpeedUp:    return SDL_SCANCODE_D;
+    case GameInput::SpeedDown:  return SDL_SCANCODE_C;
     case GameInput::Pause:      return SDL_SCANCODE_P;
     }
     return 0;
@@ -103,8 +109,11 @@ int ibase_default_pad(GameInput input)
     case GameInput::MoveLeft:   return SDL_CONTROLLER_BUTTON_DPAD_LEFT;
     case GameInput::MoveRight:  return SDL_CONTROLLER_BUTTON_DPAD_RIGHT;
     case GameInput::Fire:       return SDL_CONTROLLER_BUTTON_A;
-    case GameInput::FireAux:    return SDL_CONTROLLER_BUTTON_X;
-    case GameInput::Bomb:       return SDL_CONTROLLER_BUTTON_B;
+    case GameInput::Drone:      return SDL_CONTROLLER_BUTTON_X;
+    case GameInput::WeaponUp:   return SDL_CONTROLLER_BUTTON_B;
+    case GameInput::WeaponDown: return SDL_CONTROLLER_BUTTON_Y;
+    case GameInput::SpeedUp:    return SDL_CONTROLLER_BUTTON_RIGHTSHOULDER;
+    case GameInput::SpeedDown:  return SDL_CONTROLLER_BUTTON_LEFTSHOULDER;
     case GameInput::Pause:      return SDL_CONTROLLER_BUTTON_START;
     }
     return 0;
@@ -117,6 +126,8 @@ void ibase_handle_event(const SDL_Event& evt)
     case SDL_KEYDOWN:
     {
         SDL_Scancode scan = evt.key.keysym.scancode;
+        hasNextInput = true;
+        nextKeyb = static_cast<int>(scan);
         switch (scan)
         {
         case SDL_SCANCODE_UP:
@@ -145,6 +156,8 @@ void ibase_handle_event(const SDL_Event& evt)
     {
         SDL_GameControllerButton button = 
                 static_cast<SDL_GameControllerButton>(evt.cbutton.button);
+        hasNextInput = true;
+        nextPad = static_cast<int>(button);
         switch (button)
         {
         case SDL_CONTROLLER_BUTTON_DPAD_UP:
@@ -193,6 +206,23 @@ bool ibase_menu_down(MenuInput input)
         return thisTickMenuEvents.exit;
     }
     return false;
+}
+
+void ibase_clear_next()
+{
+    hasNextInput = false;
+}
+
+bool ibase_next_keyb_input(int &out)
+{
+    out = nextKeyb;
+    return hasNextInput;
+}
+
+bool ibase_next_pad_input(int &out)
+{
+    out = nextPad;
+    return hasNextInput;
 }
 
 std::string ibase_get_key_name(int scanCode)

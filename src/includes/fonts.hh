@@ -12,5 +12,6 @@
 #include "sprite.hh"
 
 extern Spritesheet menuFont;
+extern Spritesheet hudFont;
 
 #endif // M_FONTS_HH

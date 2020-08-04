@@ -27,6 +27,10 @@ bool ibase_pad_down(int buttonCode);
 int ibase_default_keyb(GameInput input);
 int ibase_default_pad(GameInput input);
 
+void ibase_clear_next();
+bool ibase_next_keyb_input(int &out);
+bool ibase_next_pad_input(int &out);
+
 std::string ibase_get_key_name(int scanCode);
 std::string ibase_get_pad_button_name(int buttonCode);
 

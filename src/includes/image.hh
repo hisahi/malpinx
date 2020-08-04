@@ -28,9 +28,16 @@ public:
     // ignores transparency on this (source) image
     void blitFast(Image &dst, int dx, int dy, int sx, int sy, int sw, int sh);
     void clear();
+    bool overlaps(Image &other, int x, int y, int ox, int oy, int w, int h);
+    bool overlapsTiled(Image &other, int x, int y, int ox, int oy,
+                        int w, int h);
     int width() const { return _width; }
     int height() const { return _height; }
     std::vector<Color> &buffer() { return _data; }
+    void add(Color color);
+    void subtract(Color color);
+    void addSolid(Color color);
+    void subtractSolid(Color color);
     
     inline void blit(Image &fb)
     {

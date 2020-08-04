@@ -26,6 +26,8 @@ void Image::clear()
     std::fill(_data.begin(), _data.end(), Color::transparent);
 }
 
+constexpr static std::uint16_t maskTable[] = { 0xffff, 0x0000 };
+
 template <bool tiled, bool fast>
 static inline REALLY_INLINE void doBlit(Image &fb,
                 int mw, int mh, std::vector<Color> &_data,
@@ -66,6 +68,8 @@ static inline REALLY_INLINE void doBlit(Image &fb,
     auto src = _data.begin() + ((sy % mh) * mw + (sx % mw));
     int gap = mw - sx;
     auto row_end = src;
+    auto img_end = _data.end();
+    int mask;
     for (yo = 0; yo < sh; ++yo)
     {
         row_end = src + sw;
@@ -79,15 +83,17 @@ static inline REALLY_INLINE void doBlit(Image &fb,
         {
             for (xo = 0; xo < sw; ++xo, ++src, ++dst)
             {
-                if (!(*src).isTransparent())
-                    *dst = *src;
+                mask = maskTable[(*src).isTransparent()];
+                *dst = ((*dst).v & ~mask) | ((*src).v & mask);
+                //if (!(*src).isTransparent())
+                //    *dst = *src;
                 if (tiled && src == row_end)
                     src -= sw;
             }
             src = row_end;
             dst += stripe_off;
         }
-        if (tiled && dst >= _data.end())
+        if (tiled && dst >= img_end)
             dst -= _data.size();
     }
 }
@@ -111,4 +117,79 @@ void Image::blitFast(Image &fb, int dx, int dy,
 {
     doBlit<false, true>(fb, _width, _height, _data,
             dx, dy, sx, sy, sw, sh);
+}
+
+void Image::add(Color color)
+{
+    std::transform(_data.begin(), _data.end(), _data.begin(),
+            [color](const Color &c) { return c + color; });
+}
+
+void Image::subtract(Color color)
+{
+    std::transform(_data.begin(), _data.end(), _data.begin(),
+            [color](const Color &c) { return c - color; });
+}
+
+void Image::addSolid(Color color)
+{
+    std::transform(_data.begin(), _data.end(), _data.begin(),
+            [color](const Color &c) { return c ? c + color : c; });
+}
+
+void Image::subtractSolid(Color color)
+{
+    std::transform(_data.begin(), _data.end(), _data.begin(),
+            [color](const Color &c) { return c ? c - color : c; });
+}
+
+// only *this* image will be tiled
+template <bool tiled>
+static inline REALLY_INLINE bool overlapsImage(Image &other,
+                    int mw, int mh, std::vector<Color> &_data,
+                    int x, int y, int ox, int oy, int w, int h)
+{
+    int fbs = other.width();
+    auto self = _data.begin() + ((y % mh) * mw + (x % mw));
+    auto row_end = self + (mw - (x % mw));
+    auto othr = other.buffer().begin() + (y * fbs + x);
+    auto img_end = _data.end();
+    int self_off = mw - w, othr_off = fbs - w;
+    int xo, yo;
+    for (yo = 0; yo < h; ++yo)
+    {
+        for (xo = 0; xo < w; ++xo, ++self, ++othr)
+        {
+            if (*self && *othr)
+                return true;
+            if (tiled && self == row_end)
+                self -= mw;
+        }
+
+        self += self_off;
+        othr += othr_off;
+        row_end += mw;
+        if (tiled && self >= img_end)
+        {
+            self -= _data.size();
+            row_end -= _data.size();
+        }
+    }
+
+    return false;
+}
+
+bool Image::overlaps(Image &other, int x, int y,
+                        int ox, int oy, int w, int h)
+{
+    return overlapsImage<false>(other, _width, _height, _data,
+                                x, y, ox, oy, w, h);
+}
+
+// only *this* image will be tiled
+bool Image::overlapsTiled(Image &other, int x, int y,
+                        int ox, int oy, int w, int h)
+{
+    return overlapsImage<true>(other, _width, _height, _data,
+                                x, y, ox, oy, w, h);
 }

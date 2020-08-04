@@ -19,9 +19,11 @@
 #include "formats.hh"
 #include "malpinx.hh"
 #include "config.hh"
+#include "m_game.hh"
+#include "logic.hh"
+#include "strutil.hh"
 
 std::unique_ptr<TitleScreen> title;
-constexpr int malpinxLogoTargetHeight = 144;
 
 void InitTitleScreen(bool instant)
 {
@@ -35,12 +37,15 @@ void InitTitleScreen(bool instant)
 
 TitleScreen::TitleScreen()
     : textLayer(), mode(TitleMode::InitAnimationScale),
-      logoStretch(malpinxLogoTargetHeight + 16 * 48),
       flash(0, 0, S_WIDTH, S_HEIGHT),
-      ticks(0), drawCursor(false)
+      logoStretchFrames(128),
+      ticks(0), drawCursor(false),
+      testMusic(0), testSound(0)
 {
     menuSprites = LoadSpritesheet("menuspr");
     titleBackground = std::make_unique<Image>(LoadPIC("titlebg"));
+    gameLogo = std::make_unique<Image>(LoadPIC("gamelogo"));
+    logoHeight = gameLogo->height();
 }
 
 void TitleScreen::mainMenu(int cursorAt /*= 0*/)
@@ -92,18 +97,38 @@ void TitleScreen::options(int cursorAt /*= 0*/)
     cursorOption = cursorAt;
     cursorX = 2 * 8 - 4;
     cursorY = 4 * 8 - 4 + cursorAt * cursorOptionHeight;
-    cursorMaxOptions = 9;
+    cursorMaxOptions = 11;
     if (cursorOption < 0 || cursorOption > cursorMaxOptions)
         cursorOption = 0;
     drawCursor = true;
 
     textLayer.writeString(menuFont, 2, 2, "OPTIONS");
-    int y;  
     for (int i = 0; i <= cursorMaxOptions; ++i)
         drawOption(i);
 }
 
-const std::string difficultyNames[] = { "EASY", "NORMAL", "HARD" };
+void TitleScreen::controlOptions(bool gamepad)
+{
+    mode = gamepad ? TitleMode::OptionsControlGamepad
+                    : TitleMode::OptionsControlKeyboard;
+    textLayer.clear();
+    
+    drawCursor = true;
+    cursorOptionHeight = 16;
+    cursorOption = 0;
+    cursorX = 2 * 8 - 4;
+    cursorY = 4 * 8 - 4;
+    cursorMaxOptions = gameInputs.size();
+    drawCursor = true;
+
+    textLayer.writeString(menuFont, 2, 2,
+        gamepad ? "GAMEPAD OPTIONS" : "KEYBOARD OPTIONS");
+    for (int i = 0; i <= cursorMaxOptions; ++i)
+        drawControlOption(i);
+}
+
+const std::string difficultyNames[] = { "EASY", "NORMAL", "HARD", "BIZARRE" };
+const std::string playbackModeNames[] = { "STANDARD", "INFINITE" };
 
 void TitleScreen::drawOption(int option)
 {
@@ -120,52 +145,94 @@ void TitleScreen::drawOption(int option)
         return;
     case 1:
         textLayer.writeString(menuFont, leftX, y,
+            "MODE                                ");
+        textLayer.writeStringRightAlign(menuFont,
+            rightX, y, playbackModeNames[static_cast<int>(pmode)]);
+        return;
+    case 2:
+        textLayer.writeString(menuFont, leftX, y, 
+            "CONTINUES                           ");
+        textLayer.writeStringRightAlign(menuFont,
+            rightX, y, std::to_string(startContinues));
+        return;
+    case 3:
+        textLayer.writeString(menuFont, leftX, y,
             "MUSIC                               ");
         textLayer.writeStringRightAlign(menuFont,
             rightX, y, musicEnabled ? "ON" : "OFF");
         return;
-    case 2:
+    case 4:
         textLayer.writeString(menuFont, leftX, y,
             "SOUND EFFECTS                       ");
         textLayer.writeStringRightAlign(menuFont,
             rightX, y, sfxEnabled ? "ON" : "OFF");
         return;
-    case 3:
+    case 5:
         textLayer.writeString(menuFont, leftX, y, 
             "SCALE                               ");
         textLayer.writeStringRightAlign(menuFont,
             rightX, y, std::to_string(backend->scale()));
         return;
-    case 4:
+    case 6:
         textLayer.writeString(menuFont, leftX, y, 
             "KEYBOARD CONTROL");
         return;
-    case 5:
+    case 7:
         textLayer.writeString(menuFont, leftX, y, 
             "GAME PAD CONTROL");
         return;
-    case 6:
+    case 8:
         textLayer.writeString(menuFont, leftX, y, 
             "MUSIC TEST                          ");
         textLayer.writeStringRightAlign(menuFont,
             rightX, y, std::to_string(testMusic));
         return;
-    case 7:
+    case 9:
         textLayer.writeString(menuFont, leftX, y, 
             "SOUND TEST                          ");
         textLayer.writeStringRightAlign(menuFont,
             rightX, y, std::to_string(testSound));
         return;
-    case 8:
+    case 10:
         textLayer.writeString(menuFont, leftX, y,
             "RESET TO DEFAULTS                   ");
         if (confirmReset)
             textLayer.writeString(menuFont, 24, y, "CONFIRM?");
         return;
-    case 9:
+    case 11:
         textLayer.writeString(menuFont, leftX, y, "BACK");
         return;
     }
+}
+
+const std::string controlNames[] = { 
+    "UP", "DOWN", "LEFT", "RIGHT", "FIRE", "DRONE", "NEXT WPN",
+    "PREV WPN", "FASTER", "SLOWER", "PAUSE"
+};
+
+void TitleScreen::drawControlOption(int option)
+{
+    int y = 4 + option * 2;
+    int leftX = 4;
+    int rightX = 33;
+    if (option == gameInputs.size())
+    {
+        textLayer.writeString(menuFont, leftX, y, "BACK");
+        return;
+    }
+    std::string inputName = controlNames[option];
+    GameInput input = static_cast<GameInput>(option);
+    std::string control;
+    if (waitingControl && static_cast<int>(waitingControlFor) == option)
+        control = "...";
+    else if (mode == TitleMode::OptionsControlKeyboard)
+        control = FormatKeyboardCode(gameInputKeyb.control(input));
+    else if (mode == TitleMode::OptionsControlGamepad)
+        control = FormatGamepadCode(gameInputPad.control(input));
+    textLayer.writeString(menuFont, leftX, y,
+                        leftAlignPad(inputName, 36));
+    textLayer.writeStringRightAlign(menuFont, rightX, y + 1,
+                        rightAlignPad(control, 36));
 }
 
 void TitleScreen::exitMenu()
@@ -185,6 +252,24 @@ void TitleScreen::exitMenu()
         mainMenu(2);
         PlaySong(MusicTrack::Title);
         return;
+    case TitleMode::OptionsControlKeyboard:
+        if (waitingControl)
+        {
+            waitingControl = false;
+            drawControlOption(cursorOption);
+            return;
+        }
+        options(6);
+        return;
+    case TitleMode::OptionsControlGamepad:
+        if (waitingControl)
+        {
+            waitingControl = false;
+            drawControlOption(cursorOption);
+            return;
+        }
+        options(7);
+        return;
     }
 }
 
@@ -193,7 +278,7 @@ bool TitleScreen::cancelConfirm()
     if (mode == TitleMode::Options && confirmReset)
     {
         confirmReset = false;
-        drawOption(8);
+        drawOption(10);
         return true;
     }
     return false;
@@ -208,7 +293,12 @@ void TitleScreen::selectMenu()
         switch (cursorOption)
         {
         case 0:
-            // TODO
+            FadeOutSong();
+            JumpMode(GameMode::Game, []() {
+                title = nullptr;
+                StartNewGame();
+            });
+            return;
         case 1:
             highScores();
             return;
@@ -222,30 +312,38 @@ void TitleScreen::selectMenu()
             return;
         }
         return;
+    case TitleMode::HighScore:
+        PlayMenuSound(SoundEffect::MenuSelectOption);
+        exitMenu();
+        break;
     case TitleMode::Options:
         switch (cursorOption)
         {
         case 0:
         case 1:
-        case 2:
+        case 3:
+        case 4:
             increaseSelectedOption();
             break;
-        case 3:
-            break;
-        case 4:
-            // keyb ctrl
-            break;
+        case 2:
         case 5:
-            // gamepad ctrl
             break;
         case 6:
+            PlayMenuSound(SoundEffect::MenuSelectOption);
+            controlOptions(false);
+            return;
+        case 7:
+            PlayMenuSound(SoundEffect::MenuSelectOption);
+            controlOptions(true);
+            return;
+        case 8:
             StopSong();
             PlaySong(static_cast<MusicTrack>(testMusic));
             return;
-        case 7:
+        case 9:
             PlayMenuSound(testSound);
             return;
-        case 8:
+        case 10:
             if (confirmReset)
             {
                 confirmReset = false;
@@ -257,11 +355,24 @@ void TitleScreen::selectMenu()
             confirmReset = true;
             drawOption(8);
             break;
-        case 9:
+        case 11:
             exitMenu();
             return;
         }
         drawOption(cursorOption);
+        PlayMenuSound(SoundEffect::MenuSelectOption);
+        return;
+    case TitleMode::OptionsControlKeyboard:
+    case TitleMode::OptionsControlGamepad:
+        if (cursorOption == gameInputs.size())
+            exitMenu();
+        else
+        {
+            waitingControl = true;
+            waitingControlFor = static_cast<GameInput>(cursorOption);
+            drawControlOption(cursorOption);
+            ibase_clear_next();
+        }
         PlayMenuSound(SoundEffect::MenuSelectOption);
         return;
     }
@@ -282,22 +393,33 @@ void TitleScreen::decreaseSelectedOption()
             break;
         }
         case 1:
+        {
+            int newPm = static_cast<int>(pmode) - 1;
+            if (newPm < 0) newPm = maxPlaybackMode;
+            pmode = static_cast<PlaybackMode>(newPm);
+            break;
+        }
         case 2:
-            increaseSelectedOption();
+            if (startContinues > 0)
+                --startContinues;
             break;
         case 3:
+        case 4:
+            increaseSelectedOption();
+            break;
+        case 5:
             backend->scale(std::max(1, backend->scale() - 1));
             break;
-        case 6:
+        case 8:
             testMusic = (testMusic - 1) & 31;
             break;
-        case 7:
+        case 9:
             testSound = (testSound - 1) & 255;
             break;
-        case 4:
-        case 5:
-        case 8:
-        case 9:
+        case 6:
+        case 7:
+        case 10:
+        case 11:
             break;
         }
         drawOption(cursorOption);
@@ -321,24 +443,34 @@ void TitleScreen::increaseSelectedOption()
             break;
         }
         case 1:
-            musicEnabled = !musicEnabled;
+        {
+            int newPm = static_cast<int>(pmode) + 1;
+            if (newPm > maxPlaybackMode) newPm = 0;
+            pmode = static_cast<PlaybackMode>(newPm);
             break;
+        }
         case 2:
-            sfxEnabled = !sfxEnabled;
+            startContinues = std::min(startContinues + 1, 9);
             break;
         case 3:
-            backend->scale(std::min(8, backend->scale() + 1));
-            break;
-        case 6:
-            testMusic = (testMusic + 1) & 31;
-            break;
-        case 7:
-            testSound = (testSound + 1) & 255;
+            musicEnabled = !musicEnabled;
             break;
         case 4:
+            sfxEnabled = !sfxEnabled;
+            break;
         case 5:
+            backend->scale(std::min(8, backend->scale() + 1));
+            break;
         case 8:
+            testMusic = (testMusic + 1) & 31;
+            break;
         case 9:
+            testSound = (testSound + 1) & 255;
+            break;
+        case 6:
+        case 7:
+        case 10:
+        case 11:
             break;
         }
         drawOption(cursorOption);
@@ -352,11 +484,35 @@ void TitleScreen::draw(Image &fb)
     switch (mode)
     {
     case TitleMode::InitAnimationScale:
+    {
+        fb.subtract(Color(1, 1, 1));
+        int yScale = 256 - (logoStretchFrames << 1);
+        int logoWidth = gameLogo->width();
+        int y = -128;
+        int yt;
+        for (;;)
+        {
+            yt = ((y - 32) * yScale) >> 8;
+            if (y >= 0 && yt >= 0)
+            {
+                if (yt >= logoHeight || y >= S_HEIGHT)
+                    break;
+                gameLogo->blit(fb, 32, y, 0, yt, logoWidth, 1);
+            }
+            ++y;
+        }
         break;
+    }
     case TitleMode::MainMenu:
+        titleBackground->blit(fb);
+        gameLogo->blit(fb, 32, 32);
+        goto rest;
     case TitleMode::HighScore:
     case TitleMode::Options:
+    case TitleMode::OptionsControlKeyboard:
+    case TitleMode::OptionsControlGamepad:
         titleBackground->blit(fb);
+    rest:
         textLayer.blit(fb);
         flash.blit(fb);
         if (drawCursor)
@@ -373,10 +529,8 @@ void TitleScreen::tick()
     switch (mode)
     {
     case TitleMode::InitAnimationScale:
-        logoStretch -= 16;
-        if (logoStretch <= malpinxLogoTargetHeight)
+        if (--logoStretchFrames <= 0 || menuInput.select)
         {
-            logoStretch = malpinxLogoTargetHeight;
             flash.flash(Color(S_MAXCLR, S_MAXCLR, S_MAXCLR));
             mainMenu();
         }
@@ -384,7 +538,35 @@ void TitleScreen::tick()
     case TitleMode::HighScore:
         if ((ticks % 4) == 0)
             flash.fade(1);
+        if (menuInput.select)
+            selectMenu();
         break;
+    case TitleMode::OptionsControlKeyboard:
+        if (waitingControl)
+        {
+            int newKey;
+            if (ibase_next_keyb_input(newKey))
+            {
+                PlayMenuSound(SoundEffect::MenuSelectOption);
+                waitingControl = false;
+                gameInputKeyb.control(waitingControlFor) = newKey;
+                drawControlOption(cursorOption);
+                return;
+            }
+        }
+    case TitleMode::OptionsControlGamepad:
+        if (waitingControl)
+        {
+            int newButton;
+            if (ibase_next_pad_input(newButton))
+            {
+                PlayMenuSound(SoundEffect::MenuSelectOption);
+                waitingControl = false;
+                gameInputPad.control(waitingControlFor) = newButton;
+                drawControlOption(cursorOption);
+                return;
+            }
+        }
     case TitleMode::Options:
     case TitleMode::MainMenu:
         if ((ticks % 4) == 0)

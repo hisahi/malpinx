@@ -32,12 +32,6 @@ constexpr int S_FADEOUT_MS = (S_COLORS * 1000 * 4) / S_TICKS;
 constexpr int S_SAMPLE_RATE_LO = 22050;
 constexpr int S_SAMPLE_RATE_HI = 44100;
 
-enum class DifficultyLevel
-{
-    EASY, NORMAL, HARD
-};
-constexpr int maxDifficultyLevel = static_cast<int>(DifficultyLevel::HARD);
-
 template <bool debug = M_DEBUG, typename... Args,
             typename std::enable_if<debug>::type* = nullptr>
 inline void DEBUG_LOG(Args... ignore) { }

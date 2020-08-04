@@ -15,9 +15,12 @@
 #include "input.hh"
 
 GameMode activeMode = GameMode::None;
+DifficultyLevel difficulty;
+PlaybackMode pmode;
 std::function<void()> fadeOutCompleteFunc = nullptr;
 bool fadingOut = false, fadingIn = false;
 static int fadeTicks = 0;
+static int fadeOutId = 0;
 static bool fastFade = false;
 
 void RunModeBasic()
@@ -28,17 +31,11 @@ void RunModeBasic()
         RunLogoFrame(); break;
     case GameMode::TitleScreen:
         RunTitleFrame(); break;
-    case GameMode::HighScoreScreen:
+    case GameMode::Game:
+        DoGameTick(); break;
+    case GameMode::Ending:
         break;
     case GameMode::NameEntry:
-        break;
-    case GameMode::SelectLevel:
-        break;
-    case GameMode::Cutscene:
-        break;
-    case GameMode::Game:
-        break;
-    case GameMode::Credits:
         break;
     }
 }
@@ -47,9 +44,12 @@ void StartFadeOut(std::function<void()> onFadeOutDone /*= nullptr*/)
 {
     if (fadingOut) return;
     fadeOutCompleteFunc = [=]() {
+        int oldFadeOutId = fadeOutId;
         if (onFadeOutDone) onFadeOutDone();
-        fadeOutCompleteFunc = nullptr;
+        if (fadeOutId == oldFadeOutId)
+            fadeOutCompleteFunc = nullptr;
     };
+    ++fadeOutId;
     fadeTicks = 0;
     fastFade = false;
     if (fadingOut = activeMode != GameMode::None)
@@ -73,15 +73,18 @@ void JumpMode(GameMode mode, std::function<void()> init /*= nullptr*/)
 {
     if (fadingOut) return;
     fadeOutCompleteFunc = [=]() {
+        int oldFadeOutId = fadeOutId;
         activeMode = mode;
         ClearScreen();
         if (init) init();
         UpdateBackbuffer();
         fadingIn = true;
         fastFade = false;
-        fadeOutCompleteFunc = nullptr;
         fadeTicks = 0;
+        if (fadeOutId == oldFadeOutId)
+            fadeOutCompleteFunc = nullptr;
     };
+    ++fadeOutId;
     fadeTicks = 0;
     fastFade = false;
     if (fadingOut = activeMode != GameMode::None)

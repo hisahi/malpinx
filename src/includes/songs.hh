@@ -14,23 +14,18 @@
 enum class MusicTrack
 {
     Title,
-    Options,
-    Cutscene,
-    LevelSelect,
     Ending,
-    Credits,
     NameEntry,
-    Level1,
-    Level2,
-    Level3,
-    Level4,
-    Level5,
-    Level6,
-    Level7,
-    Level8,
-    Boss1,
-    Boss2,
+    Stage1,
+    Stage2,
+    Stage3,
+    Stage4,
+    Stage5,
+    FinalStage,
+    Boss,
     FinalBoss,
+    StageClear,
+    GameOver
 };
 
 void LoadSongList();

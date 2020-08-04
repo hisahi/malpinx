@@ -34,7 +34,7 @@ def main(*argv):
     for image in images:
         for color in image[2]:
             used_colors[color] = used_colors.get(color, 0) + 1
-    del used_colors[0]
+    if 0 in used_colors: del used_colors[0]
     most_used_colors = [c[0] for c in list(sorted(
         [(color, count) for color, count in used_colors.items()],
         key=lambda item: item[1], reverse=True))[:255]]

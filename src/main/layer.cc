@@ -11,14 +11,48 @@
 #include "layer.hh"
 #include "sprite.hh"
 
-BackgroundLayer::BackgroundLayer(std::shared_ptr<Image> bg, int sx, int sy)
-    : _img(bg), _scrollXMul(sx), _scrollYMul(sy)
+BackgroundLayer::BackgroundLayer(std::shared_ptr<Image> bg,
+                                int ox, int oy, Fix sx, Fix sy)
+    : _img(bg), _offsetX(ox), _offsetY(oy), _scrollXMul(sx), _scrollYMul(sy)
 {
 }
 
-void BackgroundLayer::blit(Image &fb, int sx, int sy) const
+void BackgroundLayer::blit(Image &fb, LayerScroll scroll) const
 {
-    _img->blitTiled(fb, 0, 0, sx, sy, S_WIDTH, S_HEIGHT);
+    _img->blitTiled(fb, 0, 0,
+        static_cast<int>(scroll.x * _scrollXMul) - _offsetX,
+        static_cast<int>(scroll.y * _scrollYMul) - _offsetY,
+        S_WIDTH, S_HEIGHT);
+}
+
+void NonTiledBackgroundLayer::blit(Image &fb, LayerScroll scroll) const
+{
+    _img->blit(fb, 0, 0,
+        static_cast<int>(scroll.x * _scrollXMul) - _offsetX,
+        static_cast<int>(scroll.y * _scrollYMul) - _offsetY,
+        S_WIDTH, S_HEIGHT);
+}
+
+ForegroundLayer::ForegroundLayer(std::shared_ptr<Image> bg,
+                                int ox, int oy, Fix sx, Fix sy)
+    : _img(bg), _offsetX(ox), _offsetY(oy), _scrollXMul(sx), _scrollYMul(sy)
+{
+}
+
+void ForegroundLayer::blit(Image &fb, LayerScroll scroll) const
+{
+    _img->blitTiled(fb, 0, 0,
+        static_cast<int>(scroll.x * _scrollXMul) - _offsetX,
+        static_cast<int>(scroll.y * _scrollYMul) - _offsetY,
+        S_WIDTH, S_HEIGHT);
+}
+
+void NonTiledForegroundLayer::blit(Image &fb, LayerScroll scroll) const
+{
+    _img->blit(fb, 0, 0,
+        static_cast<int>(scroll.x * _scrollXMul) - _offsetX,
+        static_cast<int>(scroll.y * _scrollYMul) - _offsetY,
+        S_WIDTH, S_HEIGHT);
 }
 
 ColorWindow::ColorWindow(int x, int y, int w, int h)

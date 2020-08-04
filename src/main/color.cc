@@ -11,21 +11,21 @@
 
 const Color Color::transparent = Color(0);
 
-Color operator+(const Color& lhs, const Color &rhs)
+Color operator+(const Color &lhs, const Color &rhs)
 {
     return Color(lhs.getR() + rhs.getR(),
                 lhs.getG() + rhs.getG(),
                 lhs.getB() + rhs.getB());
 }
 
-Color operator-(const Color& lhs, const Color &rhs)
+Color operator-(const Color &lhs, const Color &rhs)
 {
     return Color(lhs.getR() - rhs.getR(),
                 lhs.getG() - rhs.getG(),
                 lhs.getB() - rhs.getB());
 }
 
-Color& Color::operator+=(const Color& rhs)
+Color& Color::operator+=(const Color &rhs)
 {
     setR(getR() + rhs.getR());
     setG(getG() + rhs.getG());
@@ -33,7 +33,7 @@ Color& Color::operator+=(const Color& rhs)
     return *this;
 }
 
-Color& Color::operator-=(const Color& rhs)
+Color& Color::operator-=(const Color &rhs)
 {
     setR(getR() - rhs.getR());
     setG(getG() - rhs.getG());

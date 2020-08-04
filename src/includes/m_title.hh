@@ -9,7 +9,8 @@
 #ifndef M_MTITLE_HH
 #define M_MTITLE_HH
 
-#include "layer.hh"
+#include "image.hh"
+#include "input.hh"
 
 enum class TitleMode
 {
@@ -29,8 +30,10 @@ struct TitleScreen
     void mainMenu(int cursorAt = 0);
     void highScores();
     void options(int cursorAt = 0);
+    void controlOptions(bool gamepad);
 
     void drawOption(int option);
+    void drawControlOption(int option);
     void decreaseSelectedOption();
     void increaseSelectedOption();
     bool cancelConfirm();
@@ -41,8 +44,10 @@ struct TitleScreen
     TitleMode mode;
     ColorWindow flash;
     std::unique_ptr<Image> titleBackground;
+    std::unique_ptr<Image> gameLogo;
     TextLayer<8,8> textLayer;
-    int logoStretch;
+    int logoHeight;
+    int logoStretchFrames;
     int ticks;
     bool drawCursor;
     int cursorX, cursorY, cursorOptionHeight;
@@ -51,6 +56,8 @@ struct TitleScreen
     int testMusic;
     int testSound;
     bool confirmReset;
+    bool waitingControl;
+    GameInput waitingControlFor;
 };
 
 #endif // M_MTITLE_HH

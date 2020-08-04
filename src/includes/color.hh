@@ -34,11 +34,11 @@ struct Color
     explicit operator bool() const { return !isTransparent(); }
     bool operator!() const { return isTransparent(); }
     
-    friend Color operator+(const Color& lhs, const Color &rhs);
-    friend Color operator-(const Color& lhs, const Color &rhs);
+    friend Color operator+(const Color &lhs, const Color &rhs);
+    friend Color operator-(const Color &lhs, const Color &rhs);
 
-    Color& operator+=(const Color& rhs);
-    Color& operator-=(const Color& rhs);
+    Color& operator+=(const Color &rhs);
+    Color& operator-=(const Color &rhs);
 
     std::uint16_t v;
 };

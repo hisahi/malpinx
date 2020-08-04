@@ -1,0 +1,77 @@
+malpinx formats, all numbers little-endian
+	.dfp	decompressed background
+			width 16-bit
+			height 16-bit
+			raw 16-bit values
+	.cfp	compressed background
+			width 16-bit
+			height 16-bit
+			00-7F: next N+1 are raw 16-bit values
+			80-FE: repeat last 16-bit value N+1 times (or 0 if none)
+			FF: end of stream
+	.tsp	tile/spritemap, shared palette
+			number of tiles/sprites 16-bit
+			palette 256*2 bytes
+			for every tile:
+				width 16-bit
+				height 16-bit
+				data 8-bit width*height
+	.tip	tile/spritemap, individual palettes
+			number of tiles/sprites 16-bit
+			for every tile:
+				width 16-bit
+				height 16-bit
+				data 16-bit width*height
+	.sxp	sound effect package; sound effects are signed 8-bit mono
+		.sxq 44K, .sxp 22K
+			number of sound effects (16-bit)
+			sample rate of sound effects (16-bit)
+			for every sound:
+				number of samples (32-bit)		
+				samples
+	.txp	encoded text
+			encoding: x'=ab[i&255]^((x^i)-(i>>8))
+				  x=ab[i&255]^((x'^i)+(i>>8))
+	.tlp	tilemap
+				16-bit tilemap version (1)
+				8-bit reserved
+				char[13] name of tilemap (including extension)
+				16-bit width of map in tiles
+				16-bit height of map in tiles
+				width*height: 16-bit tile. top-bottom, left-right
+										(column-major order)
+	.slp	level format
+				16-bit level version (1)
+				16-bit number of layers
+				for every layer:
+					8-bit layer type
+						low 4 bits: type
+							0 = background
+							1 = foreground
+							2 = terrain (collision enabled)
+						high 4 bits: format
+							0 = cfp/dfp (tiled)
+							1 = tilemap (always tiled)
+							2 = cfp/dfp (not tiled)
+					8-bit layer flags
+					char[14]: filename (without extension)
+					32-bit layer scroll X speed multipler
+					32-bit layer scroll Y speed multipler
+					32-bit left coordinate (0 for full screen background)
+					32-bit top coordinate (usually 0)
+					64-bit reserved
+				x = 0
+				while True:
+					32-bit number describing difference between new and old
+						values of x; x is scroll X position on which sprite spawns
+						(negative value = exit loop)
+					while True:
+						8-bit sprite type (0 = exit loop)
+							for full list of sprite types, see stage.cc
+						24-bit delay in frames before sprite actually spawns
+						16-bit extended sprite flags 
+						16-bit sprite subtype
+						32-bit top Y-coordinate of sprite
+						32-bit left X-coordinate of sprite (relative to
+									right edge of screen)
+

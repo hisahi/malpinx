@@ -17,6 +17,7 @@
 #include "maths.hh"
 #include "render.hh"
 #include "sprite.hh"
+#include "fix.hh"
 
 // additive color layer
 class ColorWindow
@@ -35,16 +36,68 @@ private:
     int _height;
 };
 
+struct LayerScroll
+{
+    LayerScroll() : x(0), y(0) { }
+    LayerScroll(int _x, int _y) : x(_x), y(_y) { }
+    int x;
+    int y;
+};
+
 // background layer
 class BackgroundLayer
 {
 public:
-    BackgroundLayer(std::shared_ptr<Image> bg, int sxm, int sym);
-    void blit(Image &fb, int sx, int sy) const;
-private:
+    BackgroundLayer(std::shared_ptr<Image> bg,
+                    int ox, int oy, Fix sxm, Fix sym);
+    virtual void blit(Image &fb, LayerScroll scroll) const;
+protected:
     std::shared_ptr<Image> _img;
-    int _scrollXMul;
-    int _scrollYMul;
+    int _offsetX;
+    int _offsetY;
+    Fix _scrollXMul;
+    Fix _scrollYMul;
+};
+
+// foreground layer
+class ForegroundLayer
+{
+public:
+    ForegroundLayer(std::shared_ptr<Image> bg,
+                    int ox, int oy, Fix sxm, Fix sym);
+    virtual void blit(Image &fb, LayerScroll scroll) const;
+    inline bool hitsSprite(Image &spriteImage, LayerScroll scroll,
+                int spriteX, int spriteY) const
+    {
+        return _img->overlapsTiled(spriteImage,
+                            scroll.x + spriteX, scroll.y + spriteY,
+                            0, 0,
+                            spriteImage.width(), spriteImage.height());
+    }
+protected:
+    std::shared_ptr<Image> _img;
+    int _offsetX;
+    int _offsetY;
+    Fix _scrollXMul;
+    Fix _scrollYMul;
+};
+
+class NonTiledBackgroundLayer : public BackgroundLayer
+{
+public:
+    NonTiledBackgroundLayer(std::shared_ptr<Image> bg,
+                    int ox, int oy, Fix sxm, Fix sym)
+        : BackgroundLayer(bg, ox, oy, sxm, sym) {}
+    void blit(Image &fb, LayerScroll scroll) const;
+};
+
+class NonTiledForegroundLayer : public ForegroundLayer
+{
+public:
+    NonTiledForegroundLayer(std::shared_ptr<Image> bg,
+                    int ox, int oy, Fix sxm, Fix sym)
+        : ForegroundLayer(bg, ox, oy, sxm, sym) {}
+    void blit(Image &fb, LayerScroll scroll) const;
 };
 
 // text layer; consists of non-overlapping sprites

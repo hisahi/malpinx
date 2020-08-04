@@ -28,7 +28,7 @@ int PlaySound(SoundEffect effect, float volume /*= 1.0f*/,
 void PlayMenuSound(int soundNum,
             float volume /*= 1.0f*/, float pan /*= 0.0f*/)
 {
-    if (!sfxEnabled) return 0;
+    if (!sfxEnabled) return;
     abase_sound_play(soundNum, volume, pan, 1, 0);
 }
 
