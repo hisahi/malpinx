@@ -35,6 +35,8 @@ struct Stage
     std::vector<std::unique_ptr<BackgroundLayer>> foregroundLayers;
     std::forward_list<ObjectSpawn> objectSpawns;
     std::forward_list<ObjectSpawn>::iterator nextSpawn;
+    int levelHeight{S_GHEIGHT};
+    int spawnLevelY{100};
 
     void spawnSprites(LayerScroll scroll);
 };

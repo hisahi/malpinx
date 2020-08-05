@@ -30,6 +30,7 @@ enum class MusicTrack
 
 void LoadSongList();
 void PlaySong(MusicTrack track);
+bool IsSongPlaying();
 void PauseSound();
 void ResumeSound();
 void FadeOutSong(int fadeMs = S_FADEOUT_MS);

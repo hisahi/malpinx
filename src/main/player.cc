@@ -12,17 +12,20 @@
 #include "m_game.hh"
 #include "player.hh"
 #include "input.hh"
+#include "sfx.hh"
+#include "bullet.hh"
 
 PlayerSprite::PlayerSprite(int id, std::shared_ptr<Image> img, int x, int y,
     int flags, std::shared_ptr<Spritesheet> playerSprites,
     std::shared_ptr<Shooter> stg)
-    : Sprite(id, img, x, y, flags), sheet(playerSprites), game(stg),
-        rightEdge(S_WIDTH - img->width()), bottomEdge(S_HEIGHT - img->height()),
-        deltaX(0), deltaY(0)
+    : Sprite(id, img, x, y, flags, SpriteType::Player), fireDelay(0),
+        sheet(playerSprites), game(stg), deltaX(0), deltaY(0), invulTicks(0),
+        rightEdge(S_WIDTH - img->width()),
+        bottomEdge(S_GHEIGHT - img->height())
 {
 }
 
-void PlayerSprite::tick()
+inline void PlayerSprite::moveTick()
 {
     if ((-4 < deltaX && deltaX < 0) || (0 < deltaX && deltaX < 4))
         deltaX *= 2;
@@ -58,8 +61,8 @@ void PlayerSprite::tick()
     else if (deltaY == 4)
         setActiveSprite(4);
 
-    _x += deltaX;
-    _y += deltaY;
+    _x += deltaX * (1 + game->speed) / 4;
+    _y += deltaY * (1 + game->speed) / 4;
     if (_x < 0) {
         _x = 0;
         deltaX = 0;
@@ -67,8 +70,8 @@ void PlayerSprite::tick()
         _x = rightEdge;
         deltaX = 0;
     }
-    if (_y < 32) {
-        _y = 32;
+    if (_y < 0) {
+        _y = 0;
         deltaY = 0;
         setActiveSprite(1);
         resetTicks = 4;
@@ -83,12 +86,55 @@ void PlayerSprite::tick()
         setActiveSprite(0);
 }
 
+void PlayerSprite::updateY(int y, int bottom)
+{
+    _y = y;
+    bottomEdge = bottom - _img->height();
+}
+
+void PlayerSprite::onWeaponChange()
+{
+    fireDelay = S_TICKS / 8;
+}
+
+inline void PlayerSprite::fireTick()
+{
+    if (gameInput.fire && fireDelay == 0)
+        fireDelay = FireWeapon(*stg, stg->activeWeapon,
+                        stg->weaponLevels[stg->activeWeapon],
+                        _x + 31, _y + 10);
+    else if (fireDelay > 0)
+        --fireDelay;
+}
+
+inline void PlayerSprite::collisionTick()
+{
+    if (invulTicks)
+    {
+        _flags ^= SPRITE_NODRAW;
+        if (!--invulTicks)
+            _flags &= ~SPRITE_NODRAW;
+        return;
+    }
+}
+
+void PlayerSprite::tick()
+{
+    moveTick();
+    fireTick();
+    collisionTick();
+}
+
+void PlayerSprite::respawned()
+{
+    invulTicks = S_TICKS * 3;
+}
+
 void PlayerSprite::damage(int dmg)
 {
+    PlaySound(SoundEffect::PlayerHit);
     if (dmg > 0)
-    {
-        // kill player, or kill shield
-    }
+        game->killPlayer();
 }
 
 inline void PlayerSprite::setActiveSprite(int index)

@@ -20,6 +20,9 @@ constexpr bool M_DEBUG = true;
 constexpr int S_WIDTH = 320;
 constexpr int S_HEIGHT = 240;
 
+constexpr int S_HUDHEIGHT = 32;
+constexpr int S_GHEIGHT = S_HEIGHT - S_HUDHEIGHT;
+
 // ticks per second
 constexpr int S_TICKS = 60;
 constexpr unsigned long long S_TICK_US = 1000000ULL / S_TICKS;

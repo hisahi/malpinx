@@ -15,11 +15,19 @@
 #include "layer.hh"
 #include "m_game.hh"
 
+enum class ObjectType
+{
+    Blank,
+    Script,
+    Powerup
+};
+
 Sprite spawnObject(Shooter &stg, ObjectSpawn spawn, LayerScroll scroll);
 
 struct BlankSprite : public Sprite
 {
-    BlankSprite(int id) : Sprite(id, nullptr, 0, 0, SPRITE_NODRAW) { }
+    BlankSprite(int id) : Sprite(id, nullptr, 0, 0, SPRITE_NODRAW,
+            SpriteType::Other) { }
     void tick() { kill(); }
 };
 
@@ -28,7 +36,8 @@ class DelaySpawnSprite : public Sprite
 public:
     DelaySpawnSprite(int id, Sprite sprite, int delay)
         : Sprite(id, nullptr, S_WIDTH, S_HEIGHT,
-            SPRITE_NODRAW | SPRITE_NOSCROLL | SPRITE_SURVIVE_OFF_SCREEN),
+            SPRITE_NODRAW | SPRITE_NOSCROLL | SPRITE_SURVIVE_OFF_SCREEN,
+                SpriteType::Other),
             _sprite(std::make_unique<Sprite>(sprite)), _delay(delay)
     {
     }

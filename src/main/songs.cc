@@ -47,6 +47,11 @@ void PlaySong(MusicTrack track)
                         songFileLoops[trackIndex]);
 }
 
+bool IsSongPlaying()
+{
+    return abase_song_playing();
+}
+
 void PauseSound()
 {
     abase_pause();

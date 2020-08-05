@@ -12,10 +12,12 @@
 
 extern const int gridPoints[256];
 
-Sprite::Sprite(int id, std::shared_ptr<Image> img, int x, int y, int flags)
-    : _id(id), _img(img), _x(x), _y(y), _flags(flags),
-      _width(img->width()), _height(img->height()), _ticks(0), _dead(false)
+Sprite::Sprite(int id, std::shared_ptr<Image> img, int x, int y, int flags,
+                SpriteType type)
+    : _id(id), _x(x), _y(y), _flags(flags), _type(type),
+      _ticks(0), _dead(false)
 {
+    updateImage(img);
 }
 
 void Sprite::blit(Image &fb) const
@@ -23,11 +25,23 @@ void Sprite::blit(Image &fb) const
     _img->blit(fb, _x, _y, 0, 0, _img->width(), _img->height());
 }
 
+void Sprite::blit(Image &fb, int xoff, int yoff) const
+{
+    _img->blit(fb, _x + xoff, _y + yoff, 0, 0, _img->width(), _img->height());
+}
+
 void Sprite::updateImage(const std::shared_ptr<Image>& img)
 {
     _img = img;
-    _width = img->width();
-    _height = img->height();
+    if (!_img)
+    {
+        _width = _height = 0;
+    }
+    else
+    {
+        _width = img->width();
+        _height = img->height();
+    }
 }
 
 void Sprite::computeCollisionGrid()

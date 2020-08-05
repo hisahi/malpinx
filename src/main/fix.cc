@@ -25,7 +25,7 @@ Fix operator-(const Fix &lhs, const Fix &rhs)
 
 Fix operator*(const Fix &lhs, const Fix &rhs)
 {
-    return Fix((lhs._v + rhs._v) >> Fix::SHIFT);
+    return Fix((lhs._v * rhs._v) >> Fix::SHIFT);
 }
 
 Fix operator/(const Fix &lhs, const Fix &rhs)

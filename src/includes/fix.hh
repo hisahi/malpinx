@@ -25,6 +25,8 @@ public:
     Fix(std::int32_t v) : _v(v) {};
     Fix(float f) : _v(static_cast<std::int32_t>(f / (1 << SHIFT))) {};
     explicit operator int() const { return _v >> SHIFT; }
+    explicit operator float() const {
+        return static_cast<float>(_v) / (1 << SHIFT); }
     
     friend Fix operator+(const Fix &lhs, const Fix &rhs);
     friend Fix operator-(const Fix &lhs, const Fix &rhs);

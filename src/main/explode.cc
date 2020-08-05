@@ -9,54 +9,50 @@
 #include <random>
 #include "stage.hh"
 #include "explode.hh"
-#include "sfx.hh"
 
 Spritesheet explosionSprites;
-static std::random_device rngdev;
-static std::mt19937 rngengine(rngdev());
-static std::array<SoundEffect, 6> explosionSounds = {
-    SoundEffect::ExplosionSmall1, SoundEffect::ExplosionSmall2,
-    SoundEffect::ExplosionMedium1, SoundEffect::ExplosionMedium2,
-    SoundEffect::ExplosionLarge1, SoundEffect::ExplosionLarge2
-};
 
-static inline int randomNumber(int a, int b)
-{
-    return (std::uniform_int_distribution<std::mt19937::result_type>(a, b))
-                                                                (rngengine);
-}
-
-ExplosionSprite::ExplosionSprite(int id, int x, int y, ExplosionSize size)
-    : Sprite(id, nullptr, x, y, SPRITE_DEFAULT), _divider(true)
+ExplosionSprite::ExplosionSprite(int id, int x, int y, ExplosionSize size,
+                                bool center)
+    : Sprite(id, nullptr, x, y, SPRITE_NOSCROLL, SpriteType::Explosion)
 {
     int i, si = -1;
     switch (size)
     {
-    case ExplosionSize::SMALL:
-        si = randomNumber(0, 1); i = randomNumber(0, 1); break;
-    case ExplosionSize::MEDIUM:
-        si = randomNumber(2, 3); i = randomNumber(2, 3); break;
-    case ExplosionSize::LARGE:
-        si = randomNumber(4, 5); i = 4; break;
-    case ExplosionSize::TINY_WHITE:
+    case ExplosionSize::Small1:
+        i = 0; break;
+    case ExplosionSize::Small2:
+        i = 1; break;
+    case ExplosionSize::Medium1:
+        i = 2; break;
+    case ExplosionSize::Medium2:
+        i = 3; break;
+    case ExplosionSize::Large:
+        i = 4; break;
+    case ExplosionSize::TinyWhite:
         i = 5; break;
     }
-    if (si >= 0)
-        PlaySound(explosionSounds[si]);
     currentFrame = EXPLOSION_FRAMES_START[i];
     lastFrame = currentFrame + EXPLOSION_FRAMES[i];
-    _img = explosionSprites.getImage(currentFrame);
+    _divider = _dividerInitial = EXPLOSION_SPEED[i];
+    updateImage(explosionSprites.getImage(currentFrame));
+    if (center)
+    {
+        _x -= _img->width() / 2;
+        _y -= _img->height() / 2;
+    }
 }
 
 void ExplosionSprite::tick()
 {
-    if (_divider = !_divider)
+    if (!--_divider)
     {
         if (++currentFrame == lastFrame)
         {
             kill();
             return;
         }
-        _img = explosionSprites.getImage(currentFrame);
+        updateImage(explosionSprites.getImage(currentFrame));
+        _divider = _dividerInitial;
     }
 }

@@ -20,16 +20,16 @@ BackgroundLayer::BackgroundLayer(std::shared_ptr<Image> bg,
 void BackgroundLayer::blit(Image &fb, LayerScroll scroll) const
 {
     _img->blitTiled(fb, 0, 0,
-        static_cast<int>(scroll.x * _scrollXMul) - _offsetX,
-        static_cast<int>(scroll.y * _scrollYMul) - _offsetY,
+        static_cast<int>(Fix(scroll.x * Fix::ONE) * _scrollXMul) - _offsetX,
+        static_cast<int>(Fix(scroll.y * Fix::ONE) * _scrollYMul) - _offsetY,
         S_WIDTH, S_HEIGHT);
 }
 
 void NonTiledBackgroundLayer::blit(Image &fb, LayerScroll scroll) const
 {
     _img->blit(fb, 0, 0,
-        static_cast<int>(scroll.x * _scrollXMul) - _offsetX,
-        static_cast<int>(scroll.y * _scrollYMul) - _offsetY,
+        static_cast<int>(Fix(scroll.x * Fix::ONE) * _scrollXMul) - _offsetX,
+        static_cast<int>(Fix(scroll.y * Fix::ONE) * _scrollYMul) - _offsetY,
         S_WIDTH, S_HEIGHT);
 }
 
@@ -42,16 +42,16 @@ ForegroundLayer::ForegroundLayer(std::shared_ptr<Image> bg,
 void ForegroundLayer::blit(Image &fb, LayerScroll scroll) const
 {
     _img->blitTiled(fb, 0, 0,
-        static_cast<int>(scroll.x * _scrollXMul) - _offsetX,
-        static_cast<int>(scroll.y * _scrollYMul) - _offsetY,
+        static_cast<int>(Fix(scroll.x * Fix::ONE) * _scrollXMul) - _offsetX,
+        static_cast<int>(Fix(scroll.y * Fix::ONE) * _scrollYMul) - _offsetY,
         S_WIDTH, S_HEIGHT);
 }
 
 void NonTiledForegroundLayer::blit(Image &fb, LayerScroll scroll) const
 {
     _img->blit(fb, 0, 0,
-        static_cast<int>(scroll.x * _scrollXMul) - _offsetX,
-        static_cast<int>(scroll.y * _scrollYMul) - _offsetY,
+        static_cast<int>(Fix(scroll.x * Fix::ONE) * _scrollXMul) - _offsetX,
+        static_cast<int>(Fix(scroll.y * Fix::ONE) * _scrollYMul) - _offsetY,
         S_WIDTH, S_HEIGHT);
 }
 
@@ -88,4 +88,34 @@ bool ColorWindow::fade(int n/* = 1*/)
 void ColorWindow::flash(Color clr)
 {
     _color += clr;
+}
+
+FadeWindow::FadeWindow(int x, int y, int w, int h)
+    : _x(x), _y(y), _width(w), _height(h)
+{
+}
+
+void FadeWindow::blit(Image &fb)
+{
+    Color m = _color;
+    if (!m) return;
+    int stride = fb.width();
+    auto dst = fb.buffer().begin() + (_y * stride + _x);
+    int y;
+    for (y = 0; y < _height; ++y)
+    {
+        std::transform(dst, dst + _width, dst,
+            [=](const Color &c) { return c - m; });
+        dst += stride;
+    }
+}
+
+bool FadeWindow::fadeOut(int n/* = 1*/)
+{
+    return (_color += Color(n, n, n)).getR() >= S_MAXCLR;
+}
+
+bool FadeWindow::fadeIn(int n/* = 1*/)
+{
+    return !static_cast<bool>(_color -= Color(n, n, n));
 }

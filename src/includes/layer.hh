@@ -36,6 +36,22 @@ private:
     int _height;
 };
 
+// subtractive color layer
+class FadeWindow
+{
+public:
+    FadeWindow(int x, int y, int w, int h);
+    void blit(Image &fb);
+    bool fadeIn(int n = 1);
+    bool fadeOut(int n = 1);
+private:
+    Color _color;
+    int _x;
+    int _y;
+    int _width;
+    int _height;
+};
+
 struct LayerScroll
 {
     LayerScroll() : x(0), y(0) { }

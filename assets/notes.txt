@@ -41,7 +41,9 @@ malpinx formats, all numbers little-endian
 				width*height: 16-bit tile. top-bottom, left-right
 										(column-major order)
 	.slp	level format
-				16-bit level version (1)
+				16-bit level version (2)
+				16-bit height of level (at least 208)
+				16-bit spawn top Y coordinate
 				16-bit number of layers
 				for every layer:
 					8-bit layer type
@@ -55,8 +57,8 @@ malpinx formats, all numbers little-endian
 							2 = cfp/dfp (not tiled)
 					8-bit layer flags
 					char[14]: filename (without extension)
-					32-bit layer scroll X speed multipler
-					32-bit layer scroll Y speed multipler
+					32-bit layer scroll X speed multiplier
+					32-bit layer scroll Y speed multiplier
 					32-bit left coordinate (0 for full screen background)
 					32-bit top coordinate (usually 0)
 					64-bit reserved

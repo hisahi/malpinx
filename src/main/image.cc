@@ -7,8 +7,10 @@
 // image.cc: class for images and image rendering
 
 #include <vector>
+#include <stdexcept>
 #include "defs.hh"
 #include "image.hh"
+#include "maths.hh"
 #include <iostream>
 
 Image::Image(int width, int height)
@@ -19,6 +21,8 @@ Image::Image(int width, int height)
 Image::Image(int width, int height, std::vector<Color> &&data)
     : _width(width), _height(height), _data(data)
 {
+    if (_data.size() != _width * _height)
+        throw std::runtime_error("invalid image data size");
 }
 
 void Image::clear()
@@ -28,54 +32,61 @@ void Image::clear()
 
 constexpr static std::uint16_t maskTable[] = { 0xffff, 0x0000 };
 
-template <bool tiled, bool fast>
+template <bool tiled, bool fast, bool additive>
 static inline REALLY_INLINE void doBlit(Image &fb,
                 int mw, int mh, std::vector<Color> &_data,
                 int dx, int dy, int sx, int sy, int sw, int sh)
 {
     static_assert(!(tiled && fast), "cannot use tiling with fast blit");
+    static_assert(!additive || fast, "additive must be used with fast blit");
 
     // sprite clipping
     if (dx < 0)
     {
-        sx += dx;
+        sx -= dx;
         sw += dx;
         dx = 0;
     }
     if (dy < 0)
     {
-        sy += dy;
+        sy -= dy;
         sh += dy;
         dy = 0;
     }
+    if (sw <= 0 || sh <= 0) return;
 
+    int fbs = fb.width(), fbh = fb.height();
     if (tiled)
     {
-        sw = std::min({ sw, S_WIDTH - dx });
-        sh = std::min({ sh, S_HEIGHT - dy });
+        sw = std::min({ sw, fbs - dx });
+        sh = std::min({ sh, fbh - dy });
     }
     else
     {
-        sw = std::min({ sw, mw - sx, S_WIDTH - dx });
-        sh = std::min({ sh, mh - sy, S_HEIGHT - dy });
+        sw = std::min({ sw, mw - sx, fbs - dx });
+        sh = std::min({ sh, mh - sy, fbh - dy });
     }
-
     if (sw <= 0 || sh <= 0) return;
 
-    int fbs = fb.width();
     int xo, yo, stripe_off = fbs - sw;
     auto dst = fb.buffer().begin() + (dy * fbs + dx);
-    auto src = _data.begin() + ((sy % mh) * mw + (sx % mw));
-    int gap = mw - sx;
-    auto row_end = src;
+    int srcx = remainder(sx, mw), srcy = remainder(sy, mh);
+    auto src = _data.begin() + (srcy * mw + srcx);
+    int gap = mw - (sx + sw);
+    auto row_end = src, til_nxt = src;
     auto img_end = _data.end();
     int mask;
     for (yo = 0; yo < sh; ++yo)
     {
-        row_end = src + sw;
+        row_end = src + sw, til_nxt = src + mw;
+        srcx = sx;
         if (fast)
         {
-            std::copy(src, row_end, dst);
+            if (additive)
+                std::transform(src, row_end, dst, dst,
+                    [](const Color &a, const Color &b) { return a + b; });
+            else
+                std::copy(src, row_end, dst);
             src += mw;
             dst += fbs;
         }
@@ -87,35 +98,48 @@ static inline REALLY_INLINE void doBlit(Image &fb,
                 *dst = ((*dst).v & ~mask) | ((*src).v & mask);
                 //if (!(*src).isTransparent())
                 //    *dst = *src;
-                if (tiled && src == row_end)
-                    src -= sw;
+                if (tiled && ++srcx == mw)
+                {
+                    src -= mw;
+                    srcx -= mw;
+                }
             }
-            src = row_end;
             dst += stripe_off;
+            src = til_nxt;
+            if (tiled && ++srcy == mh)
+            {
+                src -= _data.size();
+                srcy -= mh;
+            }
         }
-        if (tiled && dst >= img_end)
-            dst -= _data.size();
     }
 }
 
 void Image::blit(Image &fb, int dx, int dy,
                 int sx, int sy, int sw, int sh)
 {
-    doBlit<false, false>(fb, _width, _height, _data,
+    doBlit<false, false, false>(fb, _width, _height, _data,
             dx, dy, sx, sy, sw, sh);   
 }
 
 void Image::blitTiled(Image &fb, int dx, int dy,
                 int sx, int sy, int sw, int sh)
 {
-    doBlit<true, false>(fb, _width, _height, _data,
+    doBlit<true, false, false>(fb, _width, _height, _data,
             dx, dy, sx, sy, sw, sh);
 }
 
 void Image::blitFast(Image &fb, int dx, int dy,
                 int sx, int sy, int sw, int sh)
 {
-    doBlit<false, true>(fb, _width, _height, _data,
+    doBlit<false, true, false>(fb, _width, _height, _data,
+            dx, dy, sx, sy, sw, sh);
+}
+
+void Image::blitAdditive(Image &fb, int dx, int dy,
+                int sx, int sy, int sw, int sh)
+{
+    doBlit<false, true, true>(fb, _width, _height, _data,
             dx, dy, sx, sy, sw, sh);
 }
 

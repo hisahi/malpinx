@@ -6,14 +6,21 @@
 /****************************************************************************/
 // object.cc: base object implementation, including spawning
 
+#include <memory>
 #include "object.hh"
 
 Sprite spawnObject(Shooter &stg, ObjectSpawn spawn, LayerScroll scroll)
 {
     int id = stg.nextSpriteID();
-    switch (spawn.type)
+    Sprite result = BlankSprite(id);
+    int sx = spawn.xrel + S_WIDTH;
+    int sy = spawn.y - stg.scroll.y;
+    switch (static_cast<ObjectType>(spawn.type))
     {
-    default:
-        return BlankSprite(id);
+    
     }
+    if (spawn.spawnDelay)
+        return DelaySpawnSprite(id, result, spawn.spawnDelay);
+    else
+        return result;
 }

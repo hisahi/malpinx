@@ -12,9 +12,15 @@
 #include <algorithm>
 
 template <class T>
-const T& clamp(const T& value, const T& minimum, const T& maximum)
+inline const T& clamp(const T& value, const T& minimum, const T& maximum)
 {
     return std::min(std::max(value, minimum), maximum);
+}
+
+template <class T>
+inline T remainder(const T& dividend, const T& divisor)
+{
+    return ((dividend % divisor) + divisor) % divisor;
 }
 
 #endif // M_MATHS_HH

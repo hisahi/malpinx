@@ -30,11 +30,16 @@ Stage LoadStage(const std::string &path, Shooter &stg)
         throw std::runtime_error(SLP_build_message(
                         "Cannot open stage file", path));
     stream.exceptions(std::ios::eofbit | std::ios::failbit | std::ios::badbit);
-    if (ReadUInt16(stream) != 1)
+    if (ReadUInt16(stream) != 2)
         throw std::runtime_error(SLP_build_message(
                         "Cannot open stage file", path));
 
     Stage stage(stg);
+    int levelHeight = ReadUInt16(stream);
+    if (levelHeight < 208)
+        throw std::runtime_error(SLP_build_message(
+                        "Unexpected stage height", path));
+    int spawnLevelY = ReadUInt16(stream);
     int layers = ReadUInt16(stream);
     std::array<char, 14> filenameArr;
     std::string filename;
@@ -131,6 +136,9 @@ Stage LoadStage(const std::string &path, Shooter &stg)
             continue;
         }
     }
+
+    stage.levelHeight = levelHeight;
+    stage.spawnLevelY = spawnLevelY;
 
     std::int32_t spriteScrollX = 0, deltaX;
     char spriteType;

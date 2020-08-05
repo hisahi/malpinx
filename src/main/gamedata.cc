@@ -49,6 +49,7 @@ void PageInBaseData()
     LoadSongList();
     menuFont = LoadSpritesheet("menufont");
     hudFont = LoadSpritesheet("hudfont");
+    bigFont = LoadSpritesheet("bigfont");
     LoadSounds("malpinx");
     explosionSprites = LoadSpritesheet("explanim");
 }

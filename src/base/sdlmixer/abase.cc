@@ -65,8 +65,9 @@ void abase_init(int sampleRate)
         return;
     }
     Mix_AllocateChannels(10);
-    Mix_ReserveChannels(2);
+    Mix_ReserveChannels(3);
     audio_init = true;
+    DEBUG_LOG(audio_init);
 }
 
 void abase_quit()
@@ -211,6 +212,11 @@ int abase_sound_play(int soundNum, float volume, float pan, int playCount,
     Uint8 right = static_cast<Uint8>(255 * volume * std::min(1.f, 1.f + pan));
     Mix_SetPanning(ch, left, right);
     return ch;
+}
+
+bool abase_song_playing()
+{
+    return static_cast<bool>(Mix_PlayingMusic());
 }
 
 void abase_sound_fadeout(int channel, int fadeMs /*= S_FADEOUT_MS */)

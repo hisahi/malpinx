@@ -19,18 +19,26 @@ public:
     PlayerSprite(int id, std::shared_ptr<Image> img, int x, int y, int flags,
                 std::shared_ptr<Spritesheet> playerSprites,
                 std::shared_ptr<Shooter> stg);
+    void moveTick();
+    void fireTick();
+    void collisionTick();
     void tick();
+    void respawned();
     void damage(int dmg);
     void setActiveSprite(int index);
+    void onWeaponChange();
+    void updateY(int y, int bottom);
 private:
     std::shared_ptr<Spritesheet> sheet;
-    std::weak_ptr<Shooter> game;
+    std::shared_ptr<Shooter> game;
+    int fireDelay;
     int activeSprite;
     int rightEdge;
     int bottomEdge;
     int deltaX;
     int deltaY;
     int resetTicks;
+    int invulTicks;
 };
 
 #endif // M_PLAYER_HH

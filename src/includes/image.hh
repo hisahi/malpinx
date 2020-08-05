@@ -27,6 +27,8 @@ public:
     void blitTiled(Image &dst, int dx, int dy, int sx, int sy, int sw, int sh);
     // ignores transparency on this (source) image
     void blitFast(Image &dst, int dx, int dy, int sx, int sy, int sw, int sh);
+    void blitAdditive(Image &dst, int dx, int dy,
+                        int sx, int sy, int sw, int sh);
     void clear();
     bool overlaps(Image &other, int x, int y, int ox, int oy, int w, int h);
     bool overlapsTiled(Image &other, int x, int y, int ox, int oy,

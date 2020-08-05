@@ -40,7 +40,7 @@ TitleScreen::TitleScreen()
       flash(0, 0, S_WIDTH, S_HEIGHT),
       logoStretchFrames(128),
       ticks(0), drawCursor(false),
-      testMusic(0), testSound(0)
+      testMusic(0), testSound(0), confirmReset(false)
 {
     menuSprites = LoadSpritesheet("menuspr");
     titleBackground = std::make_unique<Image>(LoadPIC("titlebg"));

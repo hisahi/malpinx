@@ -29,6 +29,7 @@ void abase_resume();
 
 // data = 8-bit signed mono at given samplerate
 int abase_sound_load(const std::vector<char> &data, int sampleRate);
+bool abase_song_playing();
 // channel = -1 for "first free"
 // playCount = 0 for infinite, 1 for 1 play, etc.
 int abase_sound_play(int soundNum, float volume, float pan,

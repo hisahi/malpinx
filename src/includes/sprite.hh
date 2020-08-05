@@ -29,13 +29,31 @@ constexpr int SPRITE_TRACKABLE = 32;
 class ForegroundLayer;
 struct LayerScroll;
 
+enum class SpriteType
+{
+    Other,
+    Player,
+    Drone,
+    Enemy,
+    Pickup,
+    Boss,
+    Explosion,
+    Bullet,
+    Script
+};
+
 // unpacked 16-bit sprite
 class Sprite
 {
 public:
-    Sprite(int id, std::shared_ptr<Image> img, int x, int y, int flags);
+    Sprite(int id, std::shared_ptr<Image> img, int x, int y, int flags,
+            SpriteType type);
     void blit(Image &fb) const;
+    void blit(Image &fb, int xoff, int yoff) const;
+    int x() const { return _x; }
+    int y() const { return _y; }
     int flags() const { return _flags; }
+    SpriteType type() const { return _type; }
     inline bool hasFlag(int flag) const
     {
         return static_cast<bool>(_flags & flag);
@@ -72,6 +90,7 @@ protected:
     int _flags;
     int _colgrid;
     int _ticks;
+    SpriteType _type;
     bool _dead;
 };
 
