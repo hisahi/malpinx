@@ -18,9 +18,10 @@ enum class BulletType
     Pulse12, Pulse3,
     Spray12, Spray3,
     Beam1, Beam2, Beam3,
-    Curve1, Curve2, Curve3,
+    CrossNE12, CrossNE3, CrossNW12, CrossNW3,
+    CrossSW12, CrossSW3, CrossSE12, CrossSE3,
     FlakUp, FlakDown, FlakForward, FlakUp3, FlakDown3, FlakForward3,
-    Track12, Track3
+    Track1, Track2, Track3
 };
 
 enum class BulletSource
@@ -34,6 +35,7 @@ public:
     BulletSprite(Shooter &stg, int id, int x, int y, Fix dx, Fix dy,
                     BulletType type, BulletSource source);
     void tick();
+    void explode();
 private:
     BulletType _type;
     BulletSource _src;
@@ -45,6 +47,7 @@ private:
     ExplosionSize _expl;
     Shooter &_stg;
     int _damage;
+    std::vector<Sprite> hitTargets;
 };
 
 int FireWeapon(Shooter &stg, int weapon, int level, int x, int y);

@@ -22,7 +22,10 @@ enum class ObjectType
     Powerup
 };
 
-Sprite spawnObject(Shooter &stg, ObjectSpawn spawn, LayerScroll scroll);
+std::unique_ptr<Sprite> spawnObject(Shooter &stg, ObjectSpawn spawn,
+                    LayerScroll scroll, int &layer);
+void addObject(Shooter &stg, int layer, std::unique_ptr<Sprite> holder);
+void spawnAndAddObject(Shooter &stg, ObjectSpawn spawn, LayerScroll scroll);
 
 struct BlankSprite : public Sprite
 {
@@ -34,35 +37,28 @@ struct BlankSprite : public Sprite
 class DelaySpawnSprite : public Sprite
 {
 public:
-    DelaySpawnSprite(int id, Sprite sprite, int delay)
-        : Sprite(id, nullptr, S_WIDTH, S_HEIGHT,
-            SPRITE_NODRAW | SPRITE_NOSCROLL | SPRITE_SURVIVE_OFF_SCREEN,
-                SpriteType::Other),
-            _sprite(std::make_unique<Sprite>(sprite)), _delay(delay)
-    {
-    }
-
-    std::unique_ptr<Sprite> unique()
-    {
-        std::unique_ptr<Sprite> uptr(this);
-        _me = &uptr;
-        return uptr;
-    }
-
-    void tick()
-    {
-        if (_delay == 0)
-        {
-            *_me = std::move(_sprite);
-            kill();
-            return;
-        }
-        --_delay;
-    }
+    DelaySpawnSprite(Shooter &stg, int id, std::unique_ptr<Sprite> &&sprite,
+                    int delay, int layer);
+    std::unique_ptr<Sprite> &&replace();
+    void tick();
 private:
-    std::unique_ptr<Sprite> *_me;
+    Shooter &_stg;
     std::unique_ptr<Sprite> _sprite;
     int _delay;
+    int _layer;
+};
+
+class ScoreSprite : public Sprite
+{
+public:
+    ScoreSprite(int id, int x, int y, int score);
+    void tick()
+    {
+        if (!--_ticks)
+            kill();
+    }
+private:
+    int _ticks;
 };
 
 #endif // M_OBJECT_HH

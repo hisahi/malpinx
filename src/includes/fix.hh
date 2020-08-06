@@ -35,6 +35,8 @@ public:
 
     Fix& operator+=(const Fix &rhs);
     Fix& operator-=(const Fix &rhs);
+    Fix operator-() const { return Fix(-_v); }
+    bool operator!() const { return !_v; }
 private:
     std::int32_t _v;
 };

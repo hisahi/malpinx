@@ -10,7 +10,7 @@ expmed2.wav
 explarg1.wav
 pulse.wav
 spray.wav
-curve.wav
+cross.wav
 beam.wav
 flak.wav
 track.wav

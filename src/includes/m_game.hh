@@ -64,6 +64,7 @@ struct Shooter
     std::vector<std::unique_ptr<Sprite>> spriteLayer2;
     std::vector<std::unique_ptr<Sprite>> spriteLayer3;
     std::vector<std::unique_ptr<Sprite>> spriteLayer4;
+    std::unique_ptr<PlayerSprite> player;
 
     std::unique_ptr<Stage> stage;
     TextLayer<8,8> hud;
@@ -92,7 +93,6 @@ struct Shooter
     // returns whether sprite is now dead
     void updateSprites(const int layer,
                         std::vector<std::unique_ptr<Sprite>> &sprites);
-    PlayerSprite *getPlayer();
     void killPlayer();
     void controlTick();
     bool pauseTick();
@@ -107,8 +107,9 @@ struct Shooter
     void unloadStage();
     int nextSpriteID() { return _nextSpriteID++; }
     void explode(int centerX, int centerY, ExplosionSize size, bool quiet);
-    void collectOneUp();
-    void collectWeapon(int index);
+    void spawnScore(int x, int y, int score);
+    bool collectOneUp();
+    bool collectWeapon(int index);
     void tryContinue();
     void useContinue();
     void gameOver();
@@ -123,7 +124,6 @@ private:
     unsigned long highScore;
     int pauseCursor;
     int _nextSpriteID{0};
-    PlayerSprite *_player;
     int _respawnTicks;
     bool _isGameOver{false};
 };

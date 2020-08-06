@@ -21,7 +21,7 @@ void Stage::spawnSprites(LayerScroll scroll)
         ObjectSpawn &os = *nextSpawn;
         if (os.scrollX < scroll.x)
             break;
-        spawnObject(stg, os, scroll);
+        spawnAndAddObject(stg, os, scroll);
         objectSpawns.pop_front();
         nextSpawn = objectSpawns.begin();
     }

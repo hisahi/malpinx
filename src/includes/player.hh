@@ -24,7 +24,7 @@ public:
     void collisionTick();
     void tick();
     void respawned();
-    void damage(int dmg);
+    bool damage(int dmg);
     void setActiveSprite(int index);
     void onWeaponChange();
     void updateY(int y, int bottom);

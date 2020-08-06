@@ -10,7 +10,7 @@
 #define M_STAGE_HH
 
 #include <cstdint>
-#include <forward_list>
+#include <deque>
 #include "stage.hh"
 #include "layer.hh"
 #include "m_game.hh"
@@ -33,8 +33,8 @@ struct Stage
     std::vector<std::unique_ptr<BackgroundLayer>> backgroundLayers;
     std::vector<std::unique_ptr<ForegroundLayer>> terrainLayers;
     std::vector<std::unique_ptr<BackgroundLayer>> foregroundLayers;
-    std::forward_list<ObjectSpawn> objectSpawns;
-    std::forward_list<ObjectSpawn>::iterator nextSpawn;
+    std::deque<ObjectSpawn> objectSpawns;
+    std::deque<ObjectSpawn>::iterator nextSpawn;
     int levelHeight{S_GHEIGHT};
     int spawnLevelY{100};
 

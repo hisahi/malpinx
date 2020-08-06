@@ -42,13 +42,21 @@ PowerupSprite::PowerupSprite(Shooter &stg,
     case PowerupType::Track:
         updateImage(stg.assets.powerupSprites->getImage(7));
         break;
+    default:
+        kill();
     }
 }
 
 void PowerupSprite::tick()
 {
-    if (hits(*_stg.getPlayer()))
+    if (hits(_stg.player))
         collect();
+}
+
+void PowerupSprite::turnToScore(int score)
+{
+    PlaySound(SoundEffect::ScorePowerup);
+    _stg.spawnScore(_x + 8, _y, 2000);
 }
 
 void PowerupSprite::collect()
@@ -58,25 +66,32 @@ void PowerupSprite::collect()
     case PowerupType::Score:
         break;
     case PowerupType::OneUp:
-        _stg.collectOneUp();
+        if (!_stg.collectOneUp())
+            turnToScore(2000);
         break;
     case PowerupType::Pulse:
-        _stg.collectWeapon(0);
+        if (!_stg.collectWeapon(0))
+            turnToScore(2000);
         break;
     case PowerupType::Spray:
-        _stg.collectWeapon(1);
+        if (!_stg.collectWeapon(1))
+            turnToScore(2000);
         break;
     case PowerupType::Curve:
-        _stg.collectWeapon(2);
+        if (!_stg.collectWeapon(2))
+            turnToScore(2000);
         break;
     case PowerupType::Beam:
-        _stg.collectWeapon(3);
+        if (!_stg.collectWeapon(3))
+            turnToScore(2000);
         break;
     case PowerupType::Flak:
-        _stg.collectWeapon(4);
+        if (!_stg.collectWeapon(4))
+            turnToScore(2000);
         break;
     case PowerupType::Track:
-        _stg.collectWeapon(5);
+        if (!_stg.collectWeapon(5))
+            turnToScore(2000);
         break;
     }
     kill();

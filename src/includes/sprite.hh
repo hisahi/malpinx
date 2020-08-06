@@ -25,6 +25,8 @@ constexpr int SPRITE_SURVIVE_OFF_SCREEN = 8;
 constexpr int SPRITE_NOSCROLL = 16;
 constexpr int SPRITE_TRACKABLE = 32;
 
+extern int colGridHeight;
+
 // from layer.hh
 class ForegroundLayer;
 struct LayerScroll;
@@ -39,7 +41,9 @@ enum class SpriteType
     Boss,
     Explosion,
     Bullet,
-    Script
+    Script,
+    Delay,
+    Temporary
 };
 
 // unpacked 16-bit sprite
@@ -52,6 +56,8 @@ public:
     void blit(Image &fb, int xoff, int yoff) const;
     int x() const { return _x; }
     int y() const { return _y; }
+    int width() const { return _width; }
+    int height() const { return _height; }
     int flags() const { return _flags; }
     SpriteType type() const { return _type; }
     inline bool hasFlag(int flag) const
@@ -69,7 +75,8 @@ public:
     void addFlags(int flag) { _flags |= flag; }
     void removeFlags(int flag) { _flags &= ~flag; }
     virtual void tick() { }
-    virtual void damage(int dmg) { }
+    // returns whether dead
+    virtual bool damage(int dmg) { return false; }
     void move(int x, int y) { _x += x; _y += y; }
     
     inline bool fastHitCheck(Sprite &other)
@@ -79,6 +86,16 @@ public:
     inline bool hits(Sprite &other)
     {
         return fastHitCheck(other) && boxCheck(other) && pixelCheck(other);
+    }
+    inline bool hits(Sprite *other)
+    {
+        return other && hits(*other);
+    }
+    template <class T>
+    inline bool hits(const std::unique_ptr<T> &other)
+    {
+        static_assert(std::is_base_of<Sprite, T>::value, "must be a sprite");
+        return other && hits(*other);
     }
 protected:
     std::shared_ptr<Image> _img;
@@ -91,6 +108,7 @@ protected:
     int _colgrid;
     int _ticks;
     SpriteType _type;
+    Color _flash;
     bool _dead;
 };
 

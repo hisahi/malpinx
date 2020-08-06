@@ -22,6 +22,7 @@
 #include "config.hh"
 #include "explode.hh"
 #include "maths.hh"
+#include "object.hh"
 
 std::shared_ptr<Shooter> stg;
 static constexpr int STAGE_COUNT = 6;
@@ -131,6 +132,8 @@ void Shooter::blit(Image &fb)
         for (auto &sprite : spriteLayer2)
             if (!sprite->hasFlag(SPRITE_NODRAW))
                 sprite->blit(gameArea, 0, -stg->scroll.y);
+        if (player)
+            player->blit(gameArea, 0, -stg->scroll.y);
         for (auto &sprite : spriteLayer3)
             if (!sprite->hasFlag(SPRITE_NODRAW))
                 sprite->blit(gameArea, 0, -stg->scroll.y);
@@ -147,9 +150,8 @@ void Shooter::blit(Image &fb)
     popup->blit(fb);
 }
 
-static inline bool tickSprite(std::unique_ptr<Sprite> &psprite)
+static inline bool tickSprite(Sprite &sprite)
 {
-    Sprite &sprite = *psprite;
     sprite.tick();
     if (sprite.hasFlag(SPRITE_COLLIDE_SPRITES))
         sprite.computeCollisionGrid();
@@ -161,23 +163,33 @@ static inline bool tickSprite(std::unique_ptr<Sprite> &psprite)
     return sprite.isDead();
 }
 
+static inline bool tickSpritePtr(std::unique_ptr<Sprite> &sprite)
+{
+    bool dead = tickSprite(*sprite);
+    if (dead && sprite->type() == SpriteType::Delay)
+    {
+        sprite = std::move(dynamic_cast<DelaySpawnSprite*>
+                            (sprite.get())->replace());
+        return false;
+    }
+    return dead;
+}
+
 void Shooter::spawnPlayer(bool respawn)
 {
-    spriteLayer2.push_back(
-        assets.playerShip->makeUniqueSprite<PlayerSprite>(
+    player = assets.playerShip->makeUniqueSprite<PlayerSprite>(
             nextSpriteID(), 0, 48, 96,
             SPRITE_COLLIDE_SPRITES | SPRITE_COLLIDE_FG | SPRITE_NOSCROLL,
-            assets.playerShip, stg));
-    _player = static_cast<PlayerSprite *>(spriteLayer2.back().get());
+            assets.playerShip, stg);
     if (respawn)
-        _player->respawned();
+        player->respawned();
 }
 
 inline void Shooter::updateSprites(const int layer,
         std::vector<std::unique_ptr<Sprite>> &sprites)
 {
     sprites.erase(
-            std::remove_if(sprites.begin(), sprites.end(), tickSprite),
+            std::remove_if(sprites.begin(), sprites.end(), tickSpritePtr),
             sprites.end());
 }
 
@@ -215,7 +227,7 @@ static const std::array<std::string, 6> weaponNames = {
     "  PULSE   ",
     "  SPRAY   ",
     "  BEAM    ",
-    "  CURVE   ",
+    "  CROSS   ",
     "  FLAK    ",
     "  TRACK   "
 };
@@ -251,8 +263,8 @@ void Shooter::updateHUD(HUDElement element)
         }
         hud.writeString(hudFont, 14, 0, upper);
         hud.writeString(hudFont, 14, 1, lower);
-        hud.writeString(hudFont, 14 + activeWeapon * 2, 0, "\x06\x07");
-        hud.writeString(hudFont, 14 + activeWeapon * 2, 1, "\x16\x17");
+        hud.writeStringTransp(hudFont, 14 + activeWeapon * 2, 0, "\x06\x07");
+        hud.writeStringTransp(hudFont, 14 + activeWeapon * 2, 1, "\x16\x17");
         break;
     }
     case HUDElement::WeaponLevels:
@@ -286,10 +298,11 @@ void Shooter::loadStage(int stageNum)
     stage = std::make_unique<Stage>(
                 LoadStage("stage" + std::to_string(stageNum), *this));
     int py = stage->spawnLevelY;
-    _player->updateY(py, stage->levelHeight);
+    player->updateY(py, stage->levelHeight);
     scroll.y = clamp(py - (S_GHEIGHT - 16) / 2, 0, maximumScrollY);
     popup->showStage(stageNum);
     stageFade = 1;
+    colGridHeight = stage->levelHeight;
     maximumScrollY = stage->levelHeight - S_GHEIGHT;
     switch (stageNum)
     {
@@ -320,9 +333,20 @@ void Shooter::endStage()
 
 void Shooter::unloadStage()
 {
-    ++stageNum;
     stage = nullptr;
     gameArea.clear();
+    spriteLayer0.clear();
+    spriteLayer1.clear();
+    spriteLayer2.erase(
+            std::remove_if(spriteLayer2.begin(), spriteLayer2.end(),
+                [](const std::unique_ptr<Sprite> &s) { 
+                    return s->type() != SpriteType::Player
+                        && s->type() != SpriteType::Drone;
+                }),
+            spriteLayer2.end());
+    spriteLayer3.clear();
+    spriteLayer4.clear();
+    ++stageNum;
     updateHUD(HUDElement::Stage);
 }
 
@@ -476,7 +500,7 @@ inline void Shooter::controlTick()
             updateHUD(HUDElement::WeaponIcons);
             updateHUD(HUDElement::WeaponName);
             PlaySound(SoundEffect::WeaponChange);
-            if (_player) _player->onWeaponChange();
+            if (player) player->onWeaponChange();
         }
     }
     if (gameInputEdge.weaponDown)
@@ -493,14 +517,14 @@ inline void Shooter::controlTick()
             updateHUD(HUDElement::WeaponIcons);
             updateHUD(HUDElement::WeaponName);
             PlaySound(SoundEffect::WeaponChange);
-            if (_player) _player->onWeaponChange();
+            if (player) player->onWeaponChange();
         }
     }
 }
 
 inline void Shooter::updateYScroll()
 {
-    int py = _player->y() - scroll.y;
+    int py = player->y() - scroll.y;
     int oldScrollY = scroll.y;
     if (py < 96 && scroll.y > 0)
     {
@@ -532,7 +556,7 @@ void Shooter::tick()
         --lives;
         updateHUD(HUDElement::Lives);
         stg->spawnPlayer(true);
-        _player->respawned();
+        player->respawned();
     }
     stage->spawnSprites(scroll);
     scroll.x += xspeed;
@@ -543,6 +567,8 @@ void Shooter::tick()
     updateSprites(2, spriteLayer2);
     updateSprites(3, spriteLayer3);
     updateSprites(4, spriteLayer4);
+    if (player)
+        tickSprite(*player);
     if (stageFade < 0)
         if (fade.fadeOut(1))
             unloadStage();
@@ -562,27 +588,30 @@ void Shooter::gameOver()
     PlaySong(MusicTrack::GameOver);
 }
 
-PlayerSprite *Shooter::getPlayer()
+void Shooter::spawnScore(int x, int y, int score)
 {
-    return _player;
+    addScore(score);
+    spriteLayer3.push_back(std::make_unique<ScoreSprite>(
+        nextSpriteID(), x, y, score));
 }
 
-void Shooter::collectOneUp()
+bool Shooter::collectOneUp()
 {
-    PlaySound(SoundEffect::OneUp);
+    if (lives < 50) return false;
+    PlayVoiceSound(SoundEffect::OneUp);
     ++lives;
     updateHUD(HUDElement::Lives);
+    return true;
 }
 
-void Shooter::collectWeapon(int index)
+bool Shooter::collectWeapon(int index)
 {
-    if (weaponLevels[index] < 3)
-    {
-        ++weaponLevels[index];
-        PlaySound(weaponGetSounds[index]);
-        updateHUD(HUDElement::WeaponIcons);
-        updateHUD(HUDElement::WeaponLevels);
-    }
+    if (weaponLevels[index] >= 2) return false;
+    ++weaponLevels[index];
+    PlayVoiceSound(weaponGetSounds[index]);
+    updateHUD(HUDElement::WeaponIcons);
+    updateHUD(HUDElement::WeaponLevels);
+    return true;
 }
 
 void Shooter::explode(int centerX, int centerY, ExplosionSize size, bool quiet)
@@ -609,7 +638,7 @@ void Shooter::explode(int centerX, int centerY, ExplosionSize size, bool quiet)
 
 void Shooter::killPlayer()
 {
-    explode(_player->x() + 16, _player->y() + 8,
+    explode(player->x() + 16, player->y() + 8,
             ExplosionSize::Large, false);
     _respawnTicks = 50;
     if (activeWeapon > 0)
@@ -618,8 +647,8 @@ void Shooter::killPlayer()
         weaponLevels[activeWeapon] = -1;
     } else
         weaponLevels[activeWeapon] = 0;
-    _player->kill();
-    _player = nullptr;
+    player->kill();
+    player = nullptr;
 }
 
 void RenderGame(Image &fb)

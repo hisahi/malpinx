@@ -51,31 +51,34 @@ def main(*argv):
                 data.append((layer_format << 4) | layer_type)
                 data += struct.pack('B', 0)
                 data += fn[:13].ljust(14, '\0').encode('ascii')
-                data += struct.pack('<IIIIII', xsm, ysm, ox, oy, 0, 0)
+                data += struct.pack('<IIiiii', xsm, ysm, ox, oy, 0, -1)
                 layers.append(data)
             elif line.startswith('sprite'):
-                tok = [x.strip() for x in line.split(maxsplit = 1).split(',')]
+                tok = [x.strip() for x in line.split(maxsplit = 1)[1]
+                                            .split(',')]
                 dx, t, delay, subtype, ox, y = [int(t) for t in tok]
                 x += dx
-                sprites.append((x, t, delay, subtype, ox, oy))
+                sprites.append((x, t, delay, subtype, ox, y))
             elif line.startswith('wave'):
                 assert not in_wave
                 in_wave = True
-                tok = [x.strip() for x in line.split(maxsplit = 1).split(',')]
+                tok = [x.strip() for x in line.split(maxsplit = 1)[1]
+                                            .split(',')]
                 dx, t, delay, subtype, ox, y = [int(t) for t in tok]
                 x += dx
-                sprites.append((x, t, delay, subtype, ox, oy))
+                sprites.append((x, t, delay, subtype, ox, y))
                 wave = []
             elif line.startswith('end') and in_wave:
                 in_wave = False
                 sprites += wave
             elif wave:
-                tok = [x.strip() for x in line.split(maxsplit = 1).split(',')]
+                tok = [x.strip() for x in line.split(maxsplit = 1)[1]
+                                            .split(',')]
                 delay, subtype, ox, y = [int(t) for t in tok]
                 last = wave[-1]
                 wave.append((last[0], last[1], last[2] + delay,
-                            subtype, ox, oy))
-            else:
+                            subtype, ox, y))
+            elif line:
                 raise ValueError('unrecognized command')
 
     sprites.sort(key = lambda spr: spr[0])

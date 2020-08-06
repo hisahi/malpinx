@@ -25,7 +25,7 @@ enum class SoundEffect
     ExplosionLarge,
     FirePulse,
     FireSpray,
-    FireCurve,
+    FireCross,
     FireBeam,
     FireFlak,
     FireTrack,
@@ -36,7 +36,7 @@ enum class SoundEffect
     OneUp,
     GotPulse,
     GotSpray,
-    GotCurve,
+    GotCross,
     GotBeam,
     GotFlak,
     GotTrack
@@ -44,7 +44,7 @@ enum class SoundEffect
 
 const SoundEffect weaponGetSounds[6] = { 
     SoundEffect::GotPulse, SoundEffect::GotSpray,
-    SoundEffect::GotCurve, SoundEffect::GotBeam,
+    SoundEffect::GotCross, SoundEffect::GotBeam,
     SoundEffect::GotFlak, SoundEffect::GotTrack
 };
 

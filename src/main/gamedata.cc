@@ -50,6 +50,7 @@ void PageInBaseData()
     menuFont = LoadSpritesheet("menufont");
     hudFont = LoadSpritesheet("hudfont");
     bigFont = LoadSpritesheet("bigfont");
+    thinFont = LoadSpritesheet("thinfont");
     LoadSounds("malpinx");
     explosionSprites = LoadSpritesheet("explanim");
 }

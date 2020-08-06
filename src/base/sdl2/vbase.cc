@@ -119,7 +119,7 @@ void vbase_sync()
         new_ticks = SDL_GetTicks();
         frac += 1000ULL * (new_ticks - ticks);
         ticks = new_ticks;
-        SDL_Delay(1);
+        SDL_Delay(2);
     }
 
     frac %= S_TICK_US;

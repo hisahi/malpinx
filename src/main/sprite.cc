@@ -11,6 +11,7 @@
 #include "layer.hh"
 
 extern const int gridPoints[256];
+int colGridHeight = S_HEIGHT;
 
 Sprite::Sprite(int id, std::shared_ptr<Image> img, int x, int y, int flags,
                 SpriteType type)
@@ -51,11 +52,12 @@ void Sprite::computeCollisionGrid()
         _colgrid = 0;
         return;
     }
-    constexpr int xDiv = (S_WIDTH / 4), yDiv = (S_HEIGHT / 4);
+    constexpr int xDiv = (S_WIDTH / 4);
+    const int yDiv = (colGridHeight / 4);
     int xBase = std::max(_x, 0) / xDiv,
         yBase = std::min(_y, 0) / yDiv;
     int xEnd = std::min(_x + _width, S_WIDTH - 1) / xDiv,
-        yEnd = std::min(_y + _height, S_HEIGHT - 1) / yDiv;
+        yEnd = std::min(_y + _height, colGridHeight - 1) / yDiv;
     // 0 <= xBase, yBase, xEnd, yEnd <= 3
     // xBase <= xEnd
     // yBase <= yEnd

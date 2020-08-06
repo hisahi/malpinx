@@ -289,7 +289,6 @@ void TitleScreen::selectMenu()
     switch (mode)
     {
     case TitleMode::MainMenu:
-        PlayMenuSound(SoundEffect::MenuSelectOption);
         switch (cursorOption)
         {
         case 0:
@@ -298,19 +297,20 @@ void TitleScreen::selectMenu()
                 title = nullptr;
                 StartNewGame();
             });
-            return;
+            break;
         case 1:
             highScores();
-            return;
+            break;
         case 2:
             FadeOutSong();
             options();
-            return;
+            break;
         case 3:
             StopSong();
             QuitGame();
             return;
         }
+        PlayMenuSound(SoundEffect::MenuSelectOption);
         return;
     case TitleMode::HighScore:
         PlayMenuSound(SoundEffect::MenuSelectOption);

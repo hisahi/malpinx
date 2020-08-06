@@ -4,30 +4,30 @@
 /*   SEE THE LICENSE FILE IN THE SOURCE ROOT DIRECTORY FOR LICENSE INFO.    */
 /*                                                                          */
 /****************************************************************************/
-// powerup.hh: include for powerup objects
+// enemy.hh: include for enemy objects
 
-#ifndef M_POWERUP_HH
-#define M_POWERUP_HH
+#ifndef M_ENEMY_HH
+#define M_ENEMY_HH
 
 #include "object.hh"
 #include "sprite.hh"
+#include "sfx.hh"
 
-enum class PowerupType
-{
-    Score, OneUp, Pulse, Spray, Curve, Beam, Flak, Track
-};
-
-class PowerupSprite : public Sprite
+class EnemySprite : public Sprite
 {
 public:
-    PowerupSprite(Shooter &stg, int id, int x, int y, PowerupType type);
-    void tick();
-    bool damage(int dmg) { return false; }
-    void collect();
-    void turnToScore(int score);
-private:
+    EnemySprite(Shooter &stg, int id, int x, int y, int subtype);
+    virtual void tick();
+    // returns whether dead
+    virtual bool damage(int dmg);
+    virtual void explode();
+    inline bool noDamage()
+    {
+        PlaySound(SoundEffect::EnemyNoDamage);
+        return false;
+    };
+protected:
     Shooter &_stg;
-    PowerupType _type;
 };
 
-#endif // M_POWERUP_HH
+#endif // M_ENEMY_HH

@@ -14,5 +14,6 @@
 extern Spritesheet menuFont;
 extern Spritesheet hudFont;
 extern Spritesheet bigFont;
+extern Spritesheet thinFont;
 
 #endif // M_FONTS_HH

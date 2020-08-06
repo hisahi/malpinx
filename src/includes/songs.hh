@@ -23,8 +23,6 @@ enum class MusicTrack
     Stage5,
     FinalStage,
     Boss,
-    FinalBoss,
-    StageClear,
     GameOver
 };
 

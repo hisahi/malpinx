@@ -130,11 +130,15 @@ void PlayerSprite::respawned()
     invulTicks = S_TICKS * 3;
 }
 
-void PlayerSprite::damage(int dmg)
+bool PlayerSprite::damage(int dmg)
 {
     PlaySound(SoundEffect::PlayerHit);
     if (dmg > 0)
+    {
         game->killPlayer();
+        return true;
+    }
+    return false;
 }
 
 inline void PlayerSprite::setActiveSprite(int index)

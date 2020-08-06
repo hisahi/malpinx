@@ -152,6 +152,19 @@ public:
             tx += FontWidth;
         }
     }
+    void writeStringTransp
+        (const Spritesheet &font, int x, int y, const std::string &s)
+    {
+        Image &fb = *_img.get();
+        int tx = x * FontWidth;
+        for (const char &c : s)
+        {
+            font.blit(fb, c, tx, y * FontHeight);
+            if (tx > S_WIDTH)
+                break;
+            tx += FontWidth;
+        }
+    }
     void writeStringRightAlign
         (const Spritesheet &font, int x, int y, const std::string &s)
     {

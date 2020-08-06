@@ -143,7 +143,6 @@ Stage LoadStage(const std::string &path, Shooter &stg)
     std::int32_t spriteScrollX = 0, deltaX;
     char spriteType;
     int spriteDelay, spriteFlags, spriteSubtype, spriteY, spriteX;
-    auto back = stage.objectSpawns.end();
     for (;;)
     {
         ReadInt32(stream, deltaX);
@@ -154,6 +153,7 @@ Stage LoadStage(const std::string &path, Shooter &stg)
         for (;;)
         {
             spriteType = ReadUInt8(stream);
+            if (!spriteType) break;
             spriteDelay = ReadUInt8(stream);
             spriteDelay |= ReadUInt16(stream) << 8;
             spriteFlags = ReadUInt16(stream);
@@ -161,7 +161,7 @@ Stage LoadStage(const std::string &path, Shooter &stg)
             spriteY = ReadInt32(stream);
             spriteX = ReadInt32(stream);
 
-            back = stage.objectSpawns.insert_after(back, ObjectSpawn{
+            stage.objectSpawns.emplace_back(ObjectSpawn{
                 .scrollX = spriteScrollX,
                 .type = spriteType,
                 .spawnDelay = spriteDelay,
