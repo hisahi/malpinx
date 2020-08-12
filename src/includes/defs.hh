@@ -16,6 +16,9 @@
 extern const std::string VERSION;
 constexpr bool M_DEBUG = true;
 
+// is double faster than float on this system?
+constexpr bool USE_DOUBLE_MATH = true;
+
 // native screen resolution
 constexpr int S_WIDTH = 320;
 constexpr int S_HEIGHT = 240;

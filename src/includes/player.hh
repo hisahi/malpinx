@@ -16,7 +16,7 @@
 class PlayerSprite : public Sprite
 {
 public:
-    PlayerSprite(int id, std::shared_ptr<Image> img, int x, int y, int flags,
+    PlayerSprite(int id, std::shared_ptr<Image> img, Fix x, Fix y, int flags,
                 std::shared_ptr<Spritesheet> playerSprites,
                 std::shared_ptr<Shooter> stg);
     void moveTick();
@@ -27,16 +27,16 @@ public:
     bool damage(int dmg);
     void setActiveSprite(int index);
     void onWeaponChange();
-    void updateY(int y, int bottom);
+    void updateY(Fix y, Fix bottom);
 private:
     std::shared_ptr<Spritesheet> sheet;
     std::shared_ptr<Shooter> game;
     int fireDelay;
     int activeSprite;
-    int rightEdge;
-    int bottomEdge;
-    int deltaX;
-    int deltaY;
+    Fix rightEdge;
+    Fix bottomEdge;
+    Fix deltaX;
+    Fix deltaY;
     int resetTicks;
     int invulTicks;
 };

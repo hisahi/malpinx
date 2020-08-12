@@ -25,27 +25,17 @@ enum class SoundEffect
     ExplosionLarge,
     FirePulse,
     FireSpray,
-    FireCross,
     FireBeam,
-    FireFlak,
     FireTrack,
     EnemyDamage,
     EnemyNoDamage,
     ScorePowerup,
     PlayerHit,
     OneUp,
-    GotPulse,
-    GotSpray,
-    GotCross,
-    GotBeam,
-    GotFlak,
-    GotTrack
-};
-
-const SoundEffect weaponGetSounds[6] = { 
-    SoundEffect::GotPulse, SoundEffect::GotSpray,
-    SoundEffect::GotCross, SoundEffect::GotBeam,
-    SoundEffect::GotFlak, SoundEffect::GotTrack
+    WeaponUpLevel,
+    BossAlarm,
+    LostShield,
+    GotShield
 };
 
 int PlaySound(int soundNum, float volume = 1.0f, float pan = 0.0f,
@@ -54,8 +44,6 @@ int PlaySound(SoundEffect effect, float volume = 1.0f, float pan = 0.0f,
             int playCount = 1);
 void PlayMenuSound(int soundNum, float volume = 1.0f, float pan = 0.0f);
 void PlayMenuSound(SoundEffect effect, float volume = 1.0f, float pan = 0.0f);
-void PlayVoiceSound(int soundNum, float volume = 1.0f, float pan = 0.0f);
-void PlayVoiceSound(SoundEffect effect, float volume = 1.0f, float pan = 0.0f);
 void PlayGunSound(int soundNum, float volume = 1.0f, float pan = 0.0f);
 void PlayGunSound(SoundEffect effect, float volume = 1.0f, float pan = 0.0f);
 void StopSounds();

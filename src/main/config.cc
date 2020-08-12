@@ -30,7 +30,7 @@ static void LoadConfigInternal()
     if (static_cast<int>(pmode) > maxPlaybackMode)
         pmode = PlaybackMode::NORMAL;
     startContinues = cfg.get("Continues", 3);
-    ReadInputControls(cfg);   
+    ReadInputControls(cfg);
 }
 
 void LoadConfig()

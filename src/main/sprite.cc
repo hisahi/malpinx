@@ -13,36 +13,35 @@
 extern const int gridPoints[256];
 int colGridHeight = S_HEIGHT;
 
-Sprite::Sprite(int id, std::shared_ptr<Image> img, int x, int y, int flags,
+Sprite::Sprite(int id, std::shared_ptr<Image> img, Fix x, Fix y, int flags,
                 SpriteType type)
-    : _id(id), _x(x), _y(y), _flags(flags), _type(type),
-      _ticks(0), _dead(false)
+    : _id(id), _x(x), _y(y), _flags(flags), _ticks(0), _type(type),
+      _dead(false)
 {
     updateImage(img);
 }
 
-void Sprite::blit(Image &fb) const
-{
-    _img->blit(fb, _x, _y, 0, 0, _img->width(), _img->height());
-}
-
 void Sprite::blit(Image &fb, int xoff, int yoff) const
 {
-    _img->blit(fb, _x + xoff, _y + yoff, 0, 0, _img->width(), _img->height());
+    _img->blit(fb, _x.round() + xoff, _y.round() + yoff,
+        0, 0, _img->width(), _img->height());
 }
 
-void Sprite::updateImage(const std::shared_ptr<Image>& img)
+void Sprite::updateHitbox(int x, int y, int w, int h)
+{
+    _hitbox = Hitbox(x, y, w, h);
+}
+
+void Sprite::updateImage(const std::shared_ptr<Image>& img,
+                        bool hitbox /*= true */)
 {
     _img = img;
     if (!_img)
-    {
         _width = _height = 0;
-    }
     else
-    {
-        _width = img->width();
-        _height = img->height();
-    }
+        _width = img->width(), _height = img->height();
+    if (hitbox)
+        updateHitbox(0, 0, _width, _height);
 }
 
 void Sprite::computeCollisionGrid()
@@ -52,12 +51,13 @@ void Sprite::computeCollisionGrid()
         _colgrid = 0;
         return;
     }
+    int _ix = _x.round() + _hitbox.x, _iy = _y.round() + _hitbox.y;
     constexpr int xDiv = (S_WIDTH / 4);
     const int yDiv = (colGridHeight / 4);
-    int xBase = std::max(_x, 0) / xDiv,
-        yBase = std::min(_y, 0) / yDiv;
-    int xEnd = std::min(_x + _width, S_WIDTH - 1) / xDiv,
-        yEnd = std::min(_y + _height, colGridHeight - 1) / yDiv;
+    int xBase = std::max(_ix, 0) / xDiv,
+        yBase = std::min(_iy, 0) / yDiv;
+    int xEnd = std::min(_ix + _hitbox.w, S_WIDTH - 1) / xDiv,
+        yEnd = std::min(_iy + _hitbox.h, colGridHeight - 1) / yDiv;
     // 0 <= xBase, yBase, xEnd, yEnd <= 3
     // xBase <= xEnd
     // yBase <= yEnd
@@ -69,27 +69,30 @@ bool Sprite::hitsForeground(ForegroundLayer &layer, LayerScroll scroll)
     return layer.hitsSprite(*_img, scroll, _x, _y);
 }
 
-bool Sprite::boxCheck(Sprite &other)
+bool Sprite::boxCheck(const Sprite &other) const
 {
-    int myLeft = _x, myTop = _y;
-    int myRight = _x + _width, myBottom = _y + _height;
-    int otherLeft = other._x, otherTop = other._y;
-    int otherRight = other._x + other._width;
-    int otherBottom = other._y + other._height;
+    int _ax = _x.round() + _hitbox.x, _ay = _y.round() + _hitbox.y;
+    int _bx = other._x.round() + other._hitbox.x,
+        _by = other._y.round() + other._hitbox.y;
+    int myLeft = _ax, myTop = _ay;
+    int myRight = _ax + _hitbox.w, myBottom = _ay + _hitbox.h;
+    int otherLeft = _bx, otherTop = _by;
+    int otherRight = _bx + other._hitbox.w;
+    int otherBottom = _by + other._hitbox.h;
     return myLeft < otherRight  && otherLeft < myRight
         && myTop  < otherBottom && otherTop  < myBottom;
 }
 
-bool Sprite::pixelCheck(Sprite &other)
+bool Sprite::pixelCheck(const Sprite &other) const
 {
-    int minX = std::max(_x, other._x);
-    int maxX = std::min(_x + _width, other._x + other._width);
-    int minY = std::max(_y, other._y);
-    int maxY = std::min(_y + _height, other._y + other._height);
-    return _img->overlaps(*other._img,
-                            minX - _x, minY - _y,
-                            minX - other._x, minY - other._y,
-                            maxX - minX, maxY - minY);
+    int _ax = _x.round(), _ay = _y.round();
+    int _bx = other._x.round(), _by = other._y.round();
+    int minX = std::max(_ax, _bx);
+    int maxX = std::min(_ax + _width, _bx + other._width);
+    int minY = std::max(_ay, _by);
+    int maxY = std::min(_ay + _height, _by + other._height);
+    return _img->overlaps(*other._img, minX - _ax, minY - _ay,
+                    minX - _bx, minY - _by, maxX - minX, maxY - minY);
 }
 
 Spritesheet::Spritesheet() : sprites()

@@ -65,7 +65,7 @@ void abase_init(int sampleRate)
         return;
     }
     Mix_AllocateChannels(10);
-    Mix_ReserveChannels(3);
+    Mix_ReserveChannels(2);
     audio_init = true;
     DEBUG_LOG(audio_init);
 }

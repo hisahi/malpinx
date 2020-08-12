@@ -70,7 +70,7 @@ static inline REALLY_INLINE void doBlit(Image &fb,
 
     int xo, yo, stripe_off = fbs - sw;
     auto dst = fb.buffer().begin() + (dy * fbs + dx);
-    int srcx = remainder(sx, mw), srcy = remainder(sy, mh);
+    int osrcx = remainder(sx, mw), srcx = osrcx, srcy = remainder(sy, mh);
     auto src = _data.begin() + (srcy * mw + srcx);
     int gap = mw - (sx + sw);
     auto row_end = src, til_nxt = src;
@@ -79,7 +79,7 @@ static inline REALLY_INLINE void doBlit(Image &fb,
     for (yo = 0; yo < sh; ++yo)
     {
         row_end = src + sw, til_nxt = src + mw;
-        srcx = sx;
+        srcx = osrcx;
         if (fast)
         {
             if (additive)
@@ -167,6 +167,56 @@ void Image::subtractSolid(Color color)
             [color](const Color &c) { return c ? c - color : c; });
 }
 
+void Image::addSolid(Color color, int x, int y, int w, int h)
+{
+    if (x < 0)
+    {
+        w += x; 
+        x = 0;
+    }
+    if (y < 0)
+    {
+        h += y;
+        y = 0;
+    }
+    w = std::min(w, _width - x), h = std::min(h, _height - y);
+    if (w > 0 && h > 0)
+    {
+        auto it = _data.begin() + y * _width + x;
+        for (int oy = 0; oy < h; ++oy)
+        {
+            std::transform(it, it + w, it,
+                    [color](const Color &c) { return c ? c + color : c; });
+            it += _width;
+        }
+    }
+}
+
+void Image::subtractSolid(Color color, int x, int y, int w, int h)
+{
+    if (x < 0)
+    {
+        w += x; 
+        x = 0;
+    }
+    if (y < 0)
+    {
+        h += y;
+        y = 0;
+    }
+    w = std::min(w, _width - x), h = std::min(h, _height - y);
+    if (w > 0 && h > 0)
+    {
+        auto it = _data.begin() + y * _width + x;
+        for (int oy = 0; oy < h; ++oy)
+        {
+            std::transform(it, it + w, it,
+                    [color](const Color &c) { return c ? c - color : c; });
+            it += w;
+        }
+    }
+}
+
 // only *this* image will be tiled
 template <bool tiled>
 static inline REALLY_INLINE bool overlapsImage(Image &other,
@@ -174,29 +224,31 @@ static inline REALLY_INLINE bool overlapsImage(Image &other,
                     int x, int y, int ox, int oy, int w, int h)
 {
     int fbs = other.width();
-    auto self = _data.begin() + ((y % mh) * mw + (x % mw));
-    auto row_end = self + (mw - (x % mw));
-    auto othr = other.buffer().begin() + (y * fbs + x);
-    auto img_end = _data.end();
+    int osrcx = remainder(x, mw), srcx = osrcx, srcy = remainder(y, mh);
+    auto self = _data.begin() + (srcy * mw + srcx);
+    auto othr = other.buffer().begin() + (oy * fbs + ox);
     int self_off = mw - w, othr_off = fbs - w;
     int xo, yo;
     for (yo = 0; yo < h; ++yo)
     {
+        srcx = osrcx;
         for (xo = 0; xo < w; ++xo, ++self, ++othr)
         {
             if (*self && *othr)
                 return true;
-            if (tiled && self == row_end)
+            if (tiled && ++srcx == mw)
+            {
                 self -= mw;
+                srcx -= mw;
+            }
         }
 
         self += self_off;
         othr += othr_off;
-        row_end += mw;
-        if (tiled && self >= img_end)
+        if (tiled && ++srcy == mh)
         {
             self -= _data.size();
-            row_end -= _data.size();
+            srcy -= mh;
         }
     }
 

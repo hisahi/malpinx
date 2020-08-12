@@ -18,8 +18,8 @@ std::unique_ptr<Sprite> spawnObject(Shooter &stg, ObjectSpawn spawn,
 {
     int id = stg.nextSpriteID();
     std::unique_ptr<Sprite> result;
-    int sx = spawn.xrel + S_WIDTH;
-    int sy = spawn.y - stg.scroll.y;
+    Fix sx = Fix(spawn.xrel + S_WIDTH);
+    Fix sy = Fix(spawn.y);
     layer = 2;
     switch (static_cast<ObjectType>(spawn.type))
     {
@@ -27,14 +27,22 @@ std::unique_ptr<Sprite> spawnObject(Shooter &stg, ObjectSpawn spawn,
         result = std::make_unique<PowerupSprite>(stg, id, sx, sy,
                             static_cast<PowerupType>(spawn.subtype));
         break;
+    case ObjectType::Enemy01:
+        result = std::make_unique<Enemy01>(stg, id, sx, sy, spawn.subtype);
+        break;
+    case ObjectType::Enemy02:
+        result = std::make_unique<Enemy02>(stg, id, sx, sy, spawn.subtype);
+        break;
+    case ObjectType::Enemy03:
+        result = std::make_unique<Enemy03>(stg, id, sx, sy, spawn.subtype);
+        break;
+    case ObjectType::Enemy04:
+        result = std::make_unique<Enemy04>(stg, id, sx, sy, spawn.subtype);
+        break;
     default:
         result = std::make_unique<BlankSprite>(id);
     }
-    if (spawn.spawnDelay)
-        return std::make_unique<DelaySpawnSprite>(stg, id, std::move(result),
-                                        spawn.spawnDelay, layer);
-    else
-        return result;
+    return result;
 }
 
 std::vector<std::unique_ptr<Sprite>> &getLayer(Shooter &stg, int layer)
@@ -67,9 +75,8 @@ void spawnAndAddObject(Shooter &stg, ObjectSpawn spawn, LayerScroll scroll)
     addObject(stg, layer, spawnObject(stg, spawn, scroll, layer));
 }
 
-ScoreSprite::ScoreSprite(int id, int x, int y, int score)
-    : Sprite(id, nullptr, x, y,
-        SPRITE_NOSCROLL, SpriteType::Temporary),
+ScoreSprite::ScoreSprite(int id, Fix x, Fix y, int score)
+    : Sprite(id, nullptr, x, y, SPRITE_DEFAULT, SpriteType::Temporary),
         _ticks(S_TICKS * 3 / 2)
 {
     std::string scoreStr = std::to_string(score);
@@ -83,28 +90,4 @@ ScoreSprite::ScoreSprite(int id, int x, int y, int score)
     }
     updateImage(tmp);
     _x -= _width / 2;
-}
-
-DelaySpawnSprite::DelaySpawnSprite(Shooter &stg, int id,
-    std::unique_ptr<Sprite> &&sprite, int delay, int layer)
-        : Sprite(id, nullptr, S_WIDTH, S_HEIGHT,
-            SPRITE_NODRAW | SPRITE_NOSCROLL | SPRITE_SURVIVE_OFF_SCREEN,
-                SpriteType::Delay), _stg(stg),
-            _sprite(std::move(sprite)), _delay(delay), _layer(layer)
-{
-}
-
-std::unique_ptr<Sprite> &&DelaySpawnSprite::replace()
-{
-    return std::move(_sprite);
-}
-
-void DelaySpawnSprite::tick()
-{
-    if (!_delay)
-    {
-        kill();
-        return;
-    }
-    --_delay;
 }

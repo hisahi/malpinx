@@ -64,7 +64,11 @@ def write_resample(ofn, target_samplerate, sound_files, sound_folder):
         f.write(struct.pack('<HH', len(sound_files), target_samplerate))
         os.chdir(sound_folder)
         for sound_file in sound_files:
-            sound = wave.open(sound_file, 'rb')
+            try:
+                sound = wave.open(sound_file, 'rb')
+            except:
+                print("While opening", sound_file)
+                raise
             assert sound.getcomptype() == 'NONE'
             rsamples = array.array('B')
             while True:

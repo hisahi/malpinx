@@ -32,7 +32,7 @@ public:
     BackgroundTileLayer(std::shared_ptr<Spritesheet> tiles,
                         std::shared_ptr<Tilemap> map,
                         int ox, int oy, Fix sxm, Fix sym);
-    void blit(Image &fb, LayerScroll scroll);
+    void blit(Image &fb, LayerScroll scroll) override;
 private:
     std::shared_ptr<Spritesheet> _tiles;
     std::shared_ptr<Tilemap> _map;
@@ -48,15 +48,7 @@ public:
     ForegroundTileLayer(std::shared_ptr<Spritesheet> tiles,
                         std::shared_ptr<Tilemap> map,
                         int ox, int oy, Fix sxm, Fix sym);
-    void blit(Image &fb, LayerScroll scroll);
-    inline bool hitsSprite(Image &spriteImage, LayerScroll scroll,
-                int spriteX, int spriteY) const
-    {
-        return _img->overlapsTiled(spriteImage,
-                            scroll.x + spriteX, scroll.y + spriteY,
-                            0, 0,
-                            spriteImage.width(), spriteImage.height());
-    }
+    void blit(Image &fb, LayerScroll scroll) override;
 private:
     std::shared_ptr<Spritesheet> _tiles;
     std::shared_ptr<Tilemap> _map;

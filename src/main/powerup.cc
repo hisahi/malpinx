@@ -12,9 +12,9 @@
 #include "player.hh"
 
 PowerupSprite::PowerupSprite(Shooter &stg,
-                    int id, int x, int y, PowerupType type)
+                    int id, Fix x, Fix y, PowerupType type)
     : Sprite(id, nullptr, x, y, SPRITE_COLLIDE_SPRITES,
-        SpriteType::Pickup), _type(type), _stg(stg)
+        SpriteType::Pickup), _stg(stg), _type(type)
 {
     switch (type)
     {
@@ -30,16 +30,16 @@ PowerupSprite::PowerupSprite(Shooter &stg,
     case PowerupType::Spray:
         updateImage(stg.assets.powerupSprites->getImage(3));
         break;
-    case PowerupType::Curve:
+    case PowerupType::Beam:
         updateImage(stg.assets.powerupSprites->getImage(4));
         break;
-    case PowerupType::Beam:
+    case PowerupType::Track:
         updateImage(stg.assets.powerupSprites->getImage(5));
         break;
-    case PowerupType::Flak:
+    case PowerupType::Drone:
         updateImage(stg.assets.powerupSprites->getImage(6));
         break;
-    case PowerupType::Track:
+    case PowerupType::Special:
         updateImage(stg.assets.powerupSprites->getImage(7));
         break;
     default:
@@ -49,7 +49,7 @@ PowerupSprite::PowerupSprite(Shooter &stg,
 
 void PowerupSprite::tick()
 {
-    if (hits(_stg.player))
+    if (hits(_stg.player.get()))
         collect();
 }
 
@@ -67,31 +67,27 @@ void PowerupSprite::collect()
         break;
     case PowerupType::OneUp:
         if (!_stg.collectOneUp())
-            turnToScore(2000);
+            turnToScore(5000);
         break;
     case PowerupType::Pulse:
         if (!_stg.collectWeapon(0))
-            turnToScore(2000);
+            turnToScore(5000);
         break;
     case PowerupType::Spray:
         if (!_stg.collectWeapon(1))
-            turnToScore(2000);
-        break;
-    case PowerupType::Curve:
-        if (!_stg.collectWeapon(2))
-            turnToScore(2000);
+            turnToScore(5000);
         break;
     case PowerupType::Beam:
-        if (!_stg.collectWeapon(3))
-            turnToScore(2000);
-        break;
-    case PowerupType::Flak:
-        if (!_stg.collectWeapon(4))
-            turnToScore(2000);
+        if (!_stg.collectWeapon(2))
+            turnToScore(5000);
         break;
     case PowerupType::Track:
-        if (!_stg.collectWeapon(5))
-            turnToScore(2000);
+        if (!_stg.collectWeapon(3))
+            turnToScore(5000);
+        break;
+    case PowerupType::Drone:
+        break;
+    case PowerupType::Special:
         break;
     }
     kill();

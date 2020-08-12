@@ -34,6 +34,7 @@ struct Stage
     std::vector<std::unique_ptr<ForegroundLayer>> terrainLayers;
     std::vector<std::unique_ptr<BackgroundLayer>> foregroundLayers;
     std::deque<ObjectSpawn> objectSpawns;
+    std::deque<ObjectSpawn> delayedObjectSpawns;
     std::deque<ObjectSpawn>::iterator nextSpawn;
     int levelHeight{S_GHEIGHT};
     int spawnLevelY{100};

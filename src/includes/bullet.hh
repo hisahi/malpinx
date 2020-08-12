@@ -15,13 +15,11 @@
 
 enum class BulletType
 {
-    Pulse12, Pulse3,
-    Spray12, Spray3,
+    Pulse1, Pulse2, Pulse3,
+    Spray1, Spray2, Spray3,
     Beam1, Beam2, Beam3,
-    CrossNE12, CrossNE3, CrossNW12, CrossNW3,
-    CrossSW12, CrossSW3, CrossSE12, CrossSE3,
-    FlakUp, FlakDown, FlakForward, FlakUp3, FlakDown3, FlakForward3,
-    Track1, Track2, Track3
+    Track1, Track2, Track3,
+    Enemy3, Enemy4
 };
 
 enum class BulletSource
@@ -32,24 +30,33 @@ enum class BulletSource
 class BulletSprite : public Sprite
 {
 public:
-    BulletSprite(Shooter &stg, int id, int x, int y, Fix dx, Fix dy,
+    BulletSprite(Shooter &stg, int id, Fix x, Fix y, Fix dx, Fix dy,
                     BulletType type, BulletSource source);
-    void tick();
+    void tick() override;
     void explode();
 private:
     BulletType _type;
     BulletSource _src;
-    int _height;
-    Fix _fx;
-    Fix _fy;
-    Fix _dx;
-    Fix _dy;
+    Fix2D _pos;
+    Fix2D _vel;
     ExplosionSize _expl;
     Shooter &_stg;
     int _damage;
-    std::vector<Sprite> hitTargets;
+    short _frame{1};
+    short _minFrame{1};
+    short _maxFrame{1};
+    short _animSpeed{1};
+    bool _pierce;
+    std::vector<std::reference_wrapper<Sprite>> hitTargets;
 };
 
-int FireWeapon(Shooter &stg, int weapon, int level, int x, int y);
+int FireWeapon(Shooter &stg, int weapon, int level, Fix x, Fix y);
+void FireEnemyBullet(Shooter &stg, BulletType type, Fix x, Fix y,
+            Fix dx, Fix dy, bool scale = true);
+inline void FireEnemyBullet(Shooter &stg, BulletType type, Fix x, Fix y,
+            Fix2D d, bool scale = true)
+{
+    FireEnemyBullet(stg, type, x, y, d.x, d.y, scale);
+}
 
 #endif // M_BULLET_HH

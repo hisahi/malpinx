@@ -26,3 +26,13 @@ large1.png:240,0,40,40
 large1.png:280,0,40,40
 tinyw.png:0,0,5,5
 tinyw.png:5,0,5,5
+tinyr.png:0,0,5,5
+tinyr.png:5,0,5,5
+tinyg.png:0,0,5,5
+tinyg.png:5,0,5,5
+tinyb.png:0,0,5,5
+tinyb.png:5,0,5,5
+tinyp.png:0,0,5,5
+tinyp.png:5,0,5,5
+tinyy.png:0,0,5,5
+tinyy.png:5,0,5,5

@@ -19,7 +19,7 @@ std::unique_ptr<GameBackend> backend;
 static bool running;
 
 // always 10 chars           ----------
-const std::string VERSION = "PREALPHA 2";
+const std::string VERSION = "PREALPHA 4";
 
 void DoGame()
 {

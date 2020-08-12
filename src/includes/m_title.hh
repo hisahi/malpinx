@@ -25,6 +25,9 @@ enum class TitleMode
 struct TitleScreen
 {
     TitleScreen();
+    TitleScreen(const TitleScreen&) = delete;
+    TitleScreen& operator=(TitleScreen) = delete;
+
     void draw(Image &fb);
     void tick();
     void mainMenu(int cursorAt = 0);

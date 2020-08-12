@@ -50,8 +50,8 @@ Stage LoadStage(const std::string &path, Shooter &stg)
         stream.read(&filenameArr[0], 14);
         filename = std::string(filenameArr.data());
 
-        Fix layerXMult = Fix(ReadInt32(stream));
-        Fix layerYMult = Fix(ReadInt32(stream));
+        Fix layerXMult = ReadFix(stream);
+        Fix layerYMult = ReadFix(stream);
         int offsetX = ReadInt32(stream);
         int offsetY = ReadInt32(stream);
         std::shared_ptr<Tilemap> tilemap;

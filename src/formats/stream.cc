@@ -37,6 +37,11 @@ void ReadInt32(std::istream &stream, std::int32_t &value)
     value |= static_cast<std::int32_t>(stream.get()) << 24;
 }
 
+void ReadFix(std::istream &stream, Fix &value)
+{
+    value = Fix::raw(ReadInt32(stream));
+}
+
 std::uint8_t ReadUInt8(std::istream &stream)
 { 
     std::uint8_t v; 
@@ -62,5 +67,12 @@ std::int32_t ReadInt32(std::istream &stream)
 { 
     std::int32_t v;
     ReadInt32(stream, v);
+    return v; 
+}
+
+Fix ReadFix(std::istream &stream)
+{ 
+    Fix v;
+    ReadFix(stream, v);
     return v; 
 }

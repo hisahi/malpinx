@@ -33,8 +33,7 @@ BackgroundTileLayer::BackgroundTileLayer(std::shared_ptr<Spritesheet> tiles,
 {
 }
 
-void BackgroundTileLayer::blit(Image &fb, LayerScroll scroll)
-{
+void BackgroundTileLayer::blit(Image &fb, LayerScroll scroll) {
     int sx = static_cast<int>(scroll.x * _scrollXMul);
     int sy = static_cast<int>(scroll.y * _scrollYMul);
     int newLeftMost = sx / TILE_WIDTH;

@@ -1,7 +1,7 @@
 CXX=g++
 LD=g++
 RM=rm -f
-CXXFLAGS=-std=c++14 -I../includes -g
+CXXFLAGS=-std=c++14 -I../includes -g3 -O0
 LDFLAGS=
 CXXFLAGS := $(CXXFLAGS) `sdl2-config --cflags`
 LDLIBS=`sdl2-config --libs` -lSDL2_mixer
@@ -19,8 +19,10 @@ OBJS = base/vbase.o base/ibase.o base/abase.o formats/cfg.o \
 		formats/tlp.o formats/slp.o formats/sxp.o main/fix.o main/strutil.o \
 		main/logic.o main/color.o main/config.o main/gamedata.o main/layer.o \
 		main/sprite.o main/render.o main/m_logo.o main/songs.o main/image.o \
-		main/fonts.o main/sfx.o main/powerup.o main/input.o \
+		main/fonts.o main/sfx.o main/powerup.o main/input.o main/enemy.o \
 		main/tiled.o main/stage.o main/object.o main/explode.o main/bullet.o \
+		main/enemy/enemy01.o main/enemy/enemy02.o main/enemy/enemy03.o \
+		main/enemy/enemy04.o \
 		main/m_title.o main/m_game.o main/player.o main/malpinx.o
 
 default: all

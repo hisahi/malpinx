@@ -206,8 +206,8 @@ void TitleScreen::drawOption(int option)
 }
 
 const std::string controlNames[] = { 
-    "UP", "DOWN", "LEFT", "RIGHT", "FIRE", "DRONE", "NEXT WPN",
-    "PREV WPN", "FASTER", "SLOWER", "PAUSE"
+    "UP", "DOWN", "LEFT", "RIGHT", "FIRE", "SPECIAL",
+    "FASTER", "SLOWER", "PAUSE"
 };
 
 void TitleScreen::drawControlOption(int option)
@@ -412,9 +412,11 @@ void TitleScreen::decreaseSelectedOption()
             break;
         case 8:
             testMusic = (testMusic - 1) & 31;
+            StopSong();
             break;
         case 9:
             testSound = (testSound - 1) & 255;
+            StopSounds();
             break;
         case 6:
         case 7:

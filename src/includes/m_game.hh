@@ -17,16 +17,23 @@
 #include "image.hh"
 #include "sprite.hh"
 #include "layer.hh"
+#include "modes.hh"
 
 enum class ExplosionSize;
 struct Stage;
 class PlayerSprite;
+
+constexpr int DEFAULT_LIVES = 3;
 
 struct ShooterAssets
 {
     std::shared_ptr<Spritesheet> playerShip;
     std::shared_ptr<Spritesheet> powerupSprites;
     std::shared_ptr<Spritesheet> bulletSprites;
+    std::shared_ptr<Spritesheet> enemy01;
+    std::shared_ptr<Spritesheet> enemy02;
+    std::shared_ptr<Spritesheet> enemy03;
+    std::shared_ptr<Spritesheet> enemy04;
 };
 
 enum class HUDElement
@@ -34,9 +41,8 @@ enum class HUDElement
     Stage,
     Score,
     HighScore,
-    WeaponIcons,
-    WeaponLevels,
     WeaponName,
+    SpecialCount,
     Speed,
     Lives
 };
@@ -59,6 +65,11 @@ struct ScreenPopup
 
 struct Shooter
 {
+    Shooter() = default;
+    Shooter(const Shooter&) = delete;
+    Shooter(Shooter&&) = default;
+    Shooter& operator=(Shooter) = delete;
+
     std::vector<std::unique_ptr<Sprite>> spriteLayer0;
     std::vector<std::unique_ptr<Sprite>> spriteLayer1;
     std::vector<std::unique_ptr<Sprite>> spriteLayer2;
@@ -73,21 +84,23 @@ struct Shooter
     int stageNum{1};
     ShooterAssets assets;
     LayerScroll scroll;
+    Fix xSpeed;
     std::unique_ptr<ScreenPopup> popup;
     Image gameArea{S_WIDTH, S_GHEIGHT};
     Image pauseBuffer{S_WIDTH, S_HEIGHT};
     bool paused{false};
     bool continueScreen{false};
-    char lives{3};
-    //std::array<signed char, 6> weaponLevels{{0,-1,-1,-1,-1,-1}};
-    std::array<signed char, 6> weaponLevels{{0,0,0,0,0,0}};
-    char speed{2};
+    char lives{DEFAULT_LIVES};
+    std::array<signed char, 4> weaponLevels{{0,-1,-1,-1}};
+    char playerSpeed{2};
     Spritesheet menuSprites;
     char continues;
-    int xspeed{1};
-    int yspeed{0};
-    int maximumScrollY{0};
+    Fix maximumScrollY{0};
+    int lastPlayerY;
+    int specials{1};
     FadeWindow fade{0, 0, S_WIDTH, S_GHEIGHT};
+    DifficultyLevel difficulty;
+    PlaybackMode pmode;
 
     void blit(Image &fb);
     // returns whether sprite is now dead
@@ -98,6 +111,7 @@ struct Shooter
     bool pauseTick();
     void tick();
     void spawnPlayer(bool respawn);
+    void respawnPlayer();
     void drawHUD();
     void updateHUD(HUDElement element);
     void updateYScroll();
@@ -106,8 +120,10 @@ struct Shooter
     void endStage();
     void unloadStage();
     int nextSpriteID() { return _nextSpriteID++; }
-    void explode(int centerX, int centerY, ExplosionSize size, bool quiet);
-    void spawnScore(int x, int y, int score);
+    void explode(Fix centerX, Fix centerY, ExplosionSize size, bool quiet);
+    void spawnScore(Fix x, Fix y, int score);
+    inline bool isPlayerAlive() { return static_cast<bool>(player); }
+    Fix2D vecToPlayer(Fix x, Fix y);
     bool collectOneUp();
     bool collectWeapon(int index);
     void tryContinue();

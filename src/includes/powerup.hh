@@ -14,15 +14,15 @@
 
 enum class PowerupType
 {
-    Score, OneUp, Pulse, Spray, Curve, Beam, Flak, Track
+    Score, OneUp, Pulse, Spray, Beam, Track, Drone, Special
 };
 
 class PowerupSprite : public Sprite
 {
 public:
-    PowerupSprite(Shooter &stg, int id, int x, int y, PowerupType type);
-    void tick();
-    bool damage(int dmg) { return false; }
+    PowerupSprite(Shooter &stg, int id, Fix x, Fix y, PowerupType type);
+    void tick() override;
+    bool damage(int dmg) override { return false; }
     void collect();
     void turnToScore(int score);
 private:

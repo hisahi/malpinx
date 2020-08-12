@@ -31,9 +31,7 @@ enum class GameInput
     MoveLeft,
     MoveRight,
     Fire,
-    Drone,
-    WeaponUp,
-    WeaponDown,
+    Special,
     SpeedUp,
     SpeedDown,
     Pause,
@@ -70,9 +68,7 @@ struct GameInputState
     bool left;
     bool right;
     bool fire;
-    bool drone;
-    bool weaponUp;
-    bool weaponDown;
+    bool special;
     bool speedUp;
     bool speedDown;
     bool pause;
@@ -86,9 +82,7 @@ struct GameInputState
         case GameInput::MoveLeft:   return left;
         case GameInput::MoveRight:  return right;
         case GameInput::Fire:       return fire;
-        case GameInput::Drone:      return drone;
-        case GameInput::WeaponUp:   return weaponUp;
-        case GameInput::WeaponDown: return weaponDown;
+        case GameInput::Special:    return special;
         case GameInput::SpeedUp:    return speedUp;
         case GameInput::SpeedDown:  return speedDown;
         case GameInput::Pause:      return pause;
@@ -104,9 +98,7 @@ struct GameInputControls
     int left;
     int right;
     int fire;
-    int drone;
-    int weaponUp;
-    int weaponDown;
+    int special;
     int speedUp;
     int speedDown;
     int pause;
@@ -120,9 +112,7 @@ struct GameInputControls
         case GameInput::MoveLeft:   return left;
         case GameInput::MoveRight:  return right;
         case GameInput::Fire:       return fire;
-        case GameInput::Drone:      return drone;
-        case GameInput::WeaponUp:   return weaponUp;
-        case GameInput::WeaponDown: return weaponDown;
+        case GameInput::Special:    return special;
         case GameInput::SpeedUp:    return speedUp;
         case GameInput::SpeedDown:  return speedDown;
         case GameInput::Pause:      return pause;

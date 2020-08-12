@@ -27,26 +27,46 @@
 std::shared_ptr<Shooter> stg;
 static constexpr int STAGE_COUNT = 6;
 
+static inline std::shared_ptr<Spritesheet> loadSprites(const std::string &s)
+{
+    return std::make_shared<Spritesheet>(LoadSpritesheet(s));
+}
+
 static void LoadAssets()
 {
-    stg->assets.playerShip = std::make_shared<Spritesheet>(
-                                    LoadSpritesheet("ship"));
-    stg->assets.powerupSprites = std::make_shared<Spritesheet>(
-                                    LoadSpritesheet("powerups"));
-    stg->assets.bulletSprites = std::make_shared<Spritesheet>(
-                                    LoadSpritesheet("bullets"));
     stg->menuSprites = LoadSpritesheet("menuspr");
+    stg->assets.playerShip = loadSprites("ship");
+    stg->assets.powerupSprites = loadSprites("powerups");
+    stg->assets.bulletSprites = loadSprites("bullets");
+    stg->assets.enemy01 = loadSprites("enemy01");
+    stg->assets.enemy02 = loadSprites("enemy02");
+    stg->assets.enemy03 = loadSprites("enemy03");
+    stg->assets.enemy04 = loadSprites("enemy04");
 }
 
 void StartNewGame()
 {
     stg = std::make_shared<Shooter>();
     LoadAssets();
+    stg->fade.fadeOut(S_MAXCLR);
     stg->spawnPlayer(false);
     stg->continues = startContinues;
-    stg->drawHUD();
+    stg->difficulty = difficulty;
+    stg->pmode = pmode;
     stg->popup = std::make_unique<ScreenPopup>();
-    stg->fade.fadeOut(S_MAXCLR);
+    stg->spriteLayer0.reserve(256);
+    stg->spriteLayer1.reserve(256);
+    stg->spriteLayer2.reserve(256);
+    stg->spriteLayer3.reserve(256);
+    stg->spriteLayer4.reserve(256);
+    switch (difficulty)
+    {
+    case DifficultyLevel::EASY:
+        ++stg->specials;
+    case DifficultyLevel::NORMAL:
+        ++stg->specials;
+    }
+    stg->drawHUD();
 }
 
 void UnloadGame()
@@ -121,25 +141,26 @@ void Shooter::blit(Image &fb)
         for (auto &bl : stage->backgroundLayers)
             bl->blit(gameArea, stg->scroll);
         hud.blit(fb);
+        int oy = static_cast<int>(-stg->scroll.y);
         for (auto &sprite : spriteLayer0)
             if (!sprite->hasFlag(SPRITE_NODRAW))
-                sprite->blit(gameArea, 0, -stg->scroll.y);
+                sprite->blit(gameArea, 0, oy);
         for (auto &fl : stage->terrainLayers)
             fl->blit(gameArea, stg->scroll);
         for (auto &sprite : spriteLayer1)
             if (!sprite->hasFlag(SPRITE_NODRAW))
-                sprite->blit(gameArea, 0, -stg->scroll.y);
+                sprite->blit(gameArea, 0, oy);
         for (auto &sprite : spriteLayer2)
             if (!sprite->hasFlag(SPRITE_NODRAW))
-                sprite->blit(gameArea, 0, -stg->scroll.y);
-        if (player)
-            player->blit(gameArea, 0, -stg->scroll.y);
+                sprite->blit(gameArea, 0, oy);
+        if (player && !player->hasFlag(SPRITE_NODRAW))
+            player->blit(gameArea, 0, oy);
         for (auto &sprite : spriteLayer3)
             if (!sprite->hasFlag(SPRITE_NODRAW))
-                sprite->blit(gameArea, 0, -stg->scroll.y);
+                sprite->blit(gameArea, 0, oy);
         for (auto &sprite : spriteLayer4)
             if (!sprite->hasFlag(SPRITE_NODRAW))
-                sprite->blit(gameArea, 0, -stg->scroll.y);
+                sprite->blit(gameArea, 0, oy);
         for (auto &bl : stage->foregroundLayers)
             bl->blit(gameArea, stg->scroll);
         fade.blit(gameArea);
@@ -156,7 +177,7 @@ static inline bool tickSprite(Sprite &sprite)
     if (sprite.hasFlag(SPRITE_COLLIDE_SPRITES))
         sprite.computeCollisionGrid();
     if (!sprite.hasFlag(SPRITE_NOSCROLL))
-        sprite.move(-stg->xspeed, 0);
+        sprite.move(-stg->xSpeed, 0_x);
     if (!sprite.hasFlag(SPRITE_SURVIVE_OFF_SCREEN)
             && sprite.offScreenDistance() > 16)
         sprite.kill();
@@ -165,20 +186,15 @@ static inline bool tickSprite(Sprite &sprite)
 
 static inline bool tickSpritePtr(std::unique_ptr<Sprite> &sprite)
 {
-    bool dead = tickSprite(*sprite);
-    if (dead && sprite->type() == SpriteType::Delay)
-    {
-        sprite = std::move(dynamic_cast<DelaySpawnSprite*>
-                            (sprite.get())->replace());
-        return false;
-    }
-    return dead;
+    return tickSprite(*sprite);
 }
 
 void Shooter::spawnPlayer(bool respawn)
 {
+    int sly = stage ? stage->spawnLevelY : 100;
+    lastPlayerY = sly;
     player = assets.playerShip->makeUniqueSprite<PlayerSprite>(
-            nextSpriteID(), 0, 48, 96,
+            nextSpriteID(), 0, 48_x, Fix(sly),
             SPRITE_COLLIDE_SPRITES | SPRITE_COLLIDE_FG | SPRITE_NOSCROLL,
             assets.playerShip, stg);
     if (respawn)
@@ -195,6 +211,9 @@ inline void Shooter::updateSprites(const int layer,
 
 void Shooter::addScore(int points)
 {
+    if (difficulty == DifficultyLevel::EASY && highScore > 0 &&
+            score < highScore && score + points >= highScore)
+        collectOneUp();
     if ((score += points) > highScore)
     {
         highScore = score;
@@ -202,6 +221,13 @@ void Shooter::addScore(int points)
     }
     updateHUD(HUDElement::Score);
 }
+
+static const std::array<std::string, 4> difficultyLevels = {
+    "EASY",
+    "NORMAL",
+    "HARD",
+    "BIZARRE"
+};
 
 void Shooter::drawHUD()
 {
@@ -211,25 +237,26 @@ void Shooter::drawHUD()
     hud.writeString(menuFont, 1, 0, "STAGE");
     hud.writeString(menuFont, 1, 2, "HI");
     hud.writeString(menuFont, 1, 3, "SC");
-    hud.writeString(menuFont, 28, 1, "SPEED");
-    hud.writeString(hudFont, 34, 2, "\x42");
+    hud.writeStringRightAlign(menuFont, 38, 0,
+                    difficultyLevels[static_cast<int>(difficulty)]);
+    hud.writeString(menuFont, 28, 2, "SPEED");
+    hud.writeString(hudFont, 18, 2, "\x44");
+    hud.writeString(hudFont, 19, 2, "\x42");
+    hud.writeString(hudFont, 32, 3, "\x08\x09\x42");
     updateHUD(HUDElement::Stage);
     updateHUD(HUDElement::Score);
     updateHUD(HUDElement::HighScore);
-    updateHUD(HUDElement::WeaponIcons);
-    updateHUD(HUDElement::WeaponLevels);
     updateHUD(HUDElement::WeaponName);
+    updateHUD(HUDElement::SpecialCount);
     updateHUD(HUDElement::Speed);
     updateHUD(HUDElement::Lives);
 }
 
-static const std::array<std::string, 6> weaponNames = {
-    "  PULSE   ",
-    "  SPRAY   ",
-    "  BEAM    ",
-    "  CROSS   ",
-    "  FLAK    ",
-    "  TRACK   "
+static const std::array<std::string, 4> weaponNames = {
+    "\x48\x49\x4a\x4b\x4c\x4d",
+    "\x58\x59\x5a\x5b\x5c\x5d",
+    "\x68\x69\x6a\x6b\x6c\x6d",
+    "\x78\x79\x7a\x7b\x7c\x7d"
 };
 
 void Shooter::updateHUD(HUDElement element)
@@ -247,45 +274,19 @@ void Shooter::updateHUD(HUDElement element)
         hud.writeString(menuFont, 5, 2,
                         rightAlignPad(std::to_string(highScore), 8));
         break;
-    case HUDElement::WeaponIcons:
-    {
-        std::string upper = "            ";
-        std::string lower = "            ";
-        for (int i = 0; i < weaponLevels.size(); ++i)
-        {
-            if (weaponLevels[i] >= 0)
-            {
-                upper[i*2] = 0x24 + i*2;
-                upper[i*2+1] = 0x25 + i*2;
-                lower[i*2] = 0x34 + i*2;
-                lower[i*2+1] = 0x35 + i*2;
-            }
-        }
-        hud.writeString(hudFont, 14, 0, upper);
-        hud.writeString(hudFont, 14, 1, lower);
-        hud.writeStringTransp(hudFont, 14 + activeWeapon * 2, 0, "\x06\x07");
-        hud.writeStringTransp(hudFont, 14 + activeWeapon * 2, 1, "\x16\x17");
-        break;
-    }
-    case HUDElement::WeaponLevels:
-        for (int i = 0; i < weaponLevels.size(); ++i)
-        {
-            if (weaponLevels[i] >= 0)
-            {
-                hud.writeChar(hudFont, 14 + i * 2, 2, '\x43');
-                hud.writeChar(menuFont, 15 + i * 2, 2, '1' + weaponLevels[i]);
-            }
-        }
-        break;
     case HUDElement::WeaponName:
-        hud.writeString(menuFont, 15, 3, weaponNames[activeWeapon]);
+        hud.writeString(hudFont, 17, 1, weaponNames[activeWeapon]);
+        break;
+    case HUDElement::SpecialCount:
+        hud.writeString(menuFont, 21, 2,
+                        rightAlignPad(std::to_string(specials), 2));
         break;
     case HUDElement::Speed:
         for (int i = 1; i <= 4; ++i)
-            hud.writeChar(hudFont, 33 + i, 1, speed >= i ? '\x41' : ' ');
+            hud.writeChar(hudFont, 33 + i, 2, playerSpeed >= i ? '\x41' : ' ');
         break;
     case HUDElement::Lives:
-        hud.writeString(menuFont, 36, 2,
+        hud.writeString(menuFont, 36, 3,
                         rightAlignPad(std::to_string(lives), 2));
         break;
     }
@@ -298,12 +299,13 @@ void Shooter::loadStage(int stageNum)
     stage = std::make_unique<Stage>(
                 LoadStage("stage" + std::to_string(stageNum), *this));
     int py = stage->spawnLevelY;
-    player->updateY(py, stage->levelHeight);
-    scroll.y = clamp(py - (S_GHEIGHT - 16) / 2, 0, maximumScrollY);
+    player->updateY(Fix(py), Fix(stage->levelHeight));
+    scroll.y = clamp(Fix(py - (S_GHEIGHT - 16) / 2), 0_x, maximumScrollY);
     popup->showStage(stageNum);
+    xSpeed = Fix(1);
     stageFade = 1;
     colGridHeight = stage->levelHeight;
-    maximumScrollY = stage->levelHeight - S_GHEIGHT;
+    maximumScrollY = Fix(stage->levelHeight - S_GHEIGHT);
     switch (stageNum)
     {
     case 1:
@@ -316,8 +318,6 @@ void Shooter::loadStage(int stageNum)
         PlaySong(MusicTrack::Stage4); break;
     case 5:
         PlaySong(MusicTrack::Stage5); break;
-    case 6:
-        PlaySong(MusicTrack::FinalStage); break;
     }
 }
 
@@ -392,12 +392,15 @@ void Shooter::unpauseGame()
 void Shooter::useContinue()
 {
     unpauseGame();
-    lives = 3;
+    lives = DEFAULT_LIVES + 1;
     updateHUD(HUDElement::Lives);
     continueScreen = false;
     --continues;
     _respawnTicks = 1;
     ResumeSound();
+    --stageNum;
+    xSpeed = Fix(0);
+    endStage();
 }
 
 void Shooter::endGame()
@@ -475,62 +478,31 @@ inline bool Shooter::pauseTick()
 
 inline void Shooter::controlTick()
 {
-    if (gameInputEdge.speedUp && speed < 4)
+    if (gameInputEdge.speedUp && playerSpeed < 4)
     {
-        ++speed;
+        ++playerSpeed;
         updateHUD(HUDElement::Speed);
         PlayMenuSound(SoundEffect::SpeedChange);
     }
-    if (gameInputEdge.speedDown && speed > 1)
+    if (gameInputEdge.speedDown && playerSpeed > 1)
     {
-        --speed;
+        --playerSpeed;
         updateHUD(HUDElement::Speed);
         PlayMenuSound(SoundEffect::SpeedChange);
-    }
-    if (gameInputEdge.weaponUp)
-    {
-        int oldWeapon = activeWeapon;
-        do
-        {
-            activeWeapon = (activeWeapon + 1) % weaponLevels.size();
-        }
-        while (weaponLevels[activeWeapon] < 0);
-        if (oldWeapon != activeWeapon)
-        {
-            updateHUD(HUDElement::WeaponIcons);
-            updateHUD(HUDElement::WeaponName);
-            PlaySound(SoundEffect::WeaponChange);
-            if (player) player->onWeaponChange();
-        }
-    }
-    if (gameInputEdge.weaponDown)
-    {
-        int oldWeapon = activeWeapon;
-        do
-        {
-            if (--activeWeapon < 0)
-                activeWeapon = weaponLevels.size() - 1;
-        }
-        while (weaponLevels[activeWeapon] < 0);
-        if (oldWeapon != activeWeapon)
-        {
-            updateHUD(HUDElement::WeaponIcons);
-            updateHUD(HUDElement::WeaponName);
-            PlaySound(SoundEffect::WeaponChange);
-            if (player) player->onWeaponChange();
-        }
     }
 }
 
 inline void Shooter::updateYScroll()
 {
-    int py = player->y() - scroll.y;
-    int oldScrollY = scroll.y;
+    if (player)
+        lastPlayerY = static_cast<int>(player->y());
+    int oldScrollY = static_cast<int>(scroll.y);
+    int py = lastPlayerY - oldScrollY;
     if (py < 96 && scroll.y > 0)
     {
         int dist = py;
         int speed = std::min((103 - dist) / 8, 6);
-        scroll.y = std::max(0, scroll.y - speed);
+        scroll.y = std::max(0_x, scroll.y - speed);
     }
     else if (py > S_GHEIGHT - 96 && scroll.y < maximumScrollY)
     {
@@ -538,7 +510,39 @@ inline void Shooter::updateYScroll()
         int speed = std::min((103 - dist) / 8, 6);
         scroll.y = std::min(maximumScrollY, scroll.y + speed);
     }
-    yspeed = scroll.y - oldScrollY;
+}
+
+void Shooter::respawnPlayer()
+{
+    switch (difficulty)
+    {
+    case DifficultyLevel::EASY:
+        if (--weaponLevels[activeWeapon] < 0)
+        {
+            if (activeWeapon == 0)
+                weaponLevels[activeWeapon] = 0;
+            else
+                activeWeapon = 0;
+        }
+        break;
+    case DifficultyLevel::NORMAL:
+        if (activeWeapon > 0)
+        {
+            activeWeapon = 0;
+            weaponLevels[activeWeapon] = -1;
+        } else
+            weaponLevels[activeWeapon] = 0;
+        break;
+    case DifficultyLevel::HARD:
+    case DifficultyLevel::BIZARRE:
+        weaponLevels.fill(-1);
+        weaponLevels[0] = 0;
+        activeWeapon = 0;
+        break;
+    }
+    updateHUD(HUDElement::WeaponName);
+    stg->spawnPlayer(true);
+    player->respawned();
 }
 
 void Shooter::tick()
@@ -555,11 +559,10 @@ void Shooter::tick()
         if (!lives) tryContinue();
         --lives;
         updateHUD(HUDElement::Lives);
-        stg->spawnPlayer(true);
-        player->respawned();
+        respawnPlayer();
     }
     stage->spawnSprites(scroll);
-    scroll.x += xspeed;
+    scroll.x += xSpeed;
     updateYScroll();
 
     updateSprites(0, spriteLayer0);
@@ -572,12 +575,6 @@ void Shooter::tick()
     if (stageFade < 0)
         if (fade.fadeOut(1))
             unloadStage();
-    
-    if (gameInputEdge.drone) // DEBUG
-    {
-        weaponLevels[activeWeapon] = (weaponLevels[activeWeapon] + 1) % 3;
-        updateHUD(HUDElement::WeaponLevels);
-    }
 }
 
 void Shooter::gameOver()
@@ -588,7 +585,7 @@ void Shooter::gameOver()
     PlaySong(MusicTrack::GameOver);
 }
 
-void Shooter::spawnScore(int x, int y, int score)
+void Shooter::spawnScore(Fix x, Fix y, int score)
 {
     addScore(score);
     spriteLayer3.push_back(std::make_unique<ScoreSprite>(
@@ -598,7 +595,7 @@ void Shooter::spawnScore(int x, int y, int score)
 bool Shooter::collectOneUp()
 {
     if (lives < 50) return false;
-    PlayVoiceSound(SoundEffect::OneUp);
+    PlaySound(SoundEffect::OneUp);
     ++lives;
     updateHUD(HUDElement::Lives);
     return true;
@@ -608,13 +605,24 @@ bool Shooter::collectWeapon(int index)
 {
     if (weaponLevels[index] >= 2) return false;
     ++weaponLevels[index];
-    PlayVoiceSound(weaponGetSounds[index]);
-    updateHUD(HUDElement::WeaponIcons);
-    updateHUD(HUDElement::WeaponLevels);
+    if (activeWeapon == index)
+        PlaySound(SoundEffect::WeaponUpLevel);
+    else
+    {
+        PlaySound(SoundEffect::WeaponChange);
+        activeWeapon = index;
+        updateHUD(HUDElement::WeaponName);
+    }
     return true;
 }
 
-void Shooter::explode(int centerX, int centerY, ExplosionSize size, bool quiet)
+Fix2D Shooter::vecToPlayer(Fix x, Fix y)
+{
+    if (!isPlayerAlive()) return Fix2D(0_x, 0_x);
+    return Fix2D(player->x() - x, player->y() - y);
+}
+
+void Shooter::explode(Fix centerX, Fix centerY, ExplosionSize size, bool quiet)
 {
     stg->spriteLayer4.push_back(std::make_unique<ExplosionSprite>(
         stg->nextSpriteID(), centerX, centerY, size, true));
@@ -638,15 +646,8 @@ void Shooter::explode(int centerX, int centerY, ExplosionSize size, bool quiet)
 
 void Shooter::killPlayer()
 {
-    explode(player->x() + 16, player->y() + 8,
-            ExplosionSize::Large, false);
+    explode(player->x() + 16, player->y() + 8, ExplosionSize::Large, false);
     _respawnTicks = 50;
-    if (activeWeapon > 0)
-    {
-        activeWeapon = 0;
-        weaponLevels[activeWeapon] = -1;
-    } else
-        weaponLevels[activeWeapon] = 0;
     player->kill();
     player = nullptr;
 }

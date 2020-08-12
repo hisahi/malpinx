@@ -40,7 +40,9 @@ bool ConfigFile::get(const std::string &key, bool fallback)
     auto it = keys.find(key);
     if (it == keys.end())
         set(key, fallback);
-    return keys[key] == "true";
+    bool b;
+    std::istringstream(keys[key]) >> std::boolalpha >> b;
+    return b;
 }
 
 int ConfigFile::get(const std::string &key, int fallback)

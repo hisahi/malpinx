@@ -55,9 +55,9 @@ private:
 struct LayerScroll
 {
     LayerScroll() : x(0), y(0) { }
-    LayerScroll(int _x, int _y) : x(_x), y(_y) { }
-    int x;
-    int y;
+    LayerScroll(Fix _x, Fix _y) : x(_x), y(_y) { }
+    Fix x;
+    Fix y;
 };
 
 // background layer
@@ -66,7 +66,7 @@ class BackgroundLayer
 public:
     BackgroundLayer(std::shared_ptr<Image> bg,
                     int ox, int oy, Fix sxm, Fix sym);
-    virtual void blit(Image &fb, LayerScroll scroll) const;
+    virtual void blit(Image &fb, LayerScroll scroll);
 protected:
     std::shared_ptr<Image> _img;
     int _offsetX;
@@ -81,14 +81,13 @@ class ForegroundLayer
 public:
     ForegroundLayer(std::shared_ptr<Image> bg,
                     int ox, int oy, Fix sxm, Fix sym);
-    virtual void blit(Image &fb, LayerScroll scroll) const;
+    virtual void blit(Image &fb, LayerScroll scroll);
     inline bool hitsSprite(Image &spriteImage, LayerScroll scroll,
-                int spriteX, int spriteY) const
+                Fix spriteX, Fix spriteY) const
     {
-        return _img->overlapsTiled(spriteImage,
-                            scroll.x + spriteX, scroll.y + spriteY,
-                            0, 0,
-                            spriteImage.width(), spriteImage.height());
+        return _img->overlapsTiled(spriteImage, 
+                (scroll.x + spriteX).round(), (scroll.y + spriteY).round(),
+                0, 0, spriteImage.width(), spriteImage.height());
     }
 protected:
     std::shared_ptr<Image> _img;
@@ -104,7 +103,7 @@ public:
     NonTiledBackgroundLayer(std::shared_ptr<Image> bg,
                     int ox, int oy, Fix sxm, Fix sym)
         : BackgroundLayer(bg, ox, oy, sxm, sym) {}
-    void blit(Image &fb, LayerScroll scroll) const;
+    void blit(Image &fb, LayerScroll scroll) override;
 };
 
 class NonTiledForegroundLayer : public ForegroundLayer
@@ -113,7 +112,7 @@ public:
     NonTiledForegroundLayer(std::shared_ptr<Image> bg,
                     int ox, int oy, Fix sxm, Fix sym)
         : ForegroundLayer(bg, ox, oy, sxm, sym) {}
-    void blit(Image &fb, LayerScroll scroll) const;
+    void blit(Image &fb, LayerScroll scroll) override;
 };
 
 // text layer; consists of non-overlapping sprites

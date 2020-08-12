@@ -17,20 +17,16 @@ BackgroundLayer::BackgroundLayer(std::shared_ptr<Image> bg,
 {
 }
 
-void BackgroundLayer::blit(Image &fb, LayerScroll scroll) const
+void BackgroundLayer::blit(Image &fb, LayerScroll scroll)
 {
-    _img->blitTiled(fb, 0, 0,
-        static_cast<int>(Fix(scroll.x * Fix::ONE) * _scrollXMul) - _offsetX,
-        static_cast<int>(Fix(scroll.y * Fix::ONE) * _scrollYMul) - _offsetY,
-        S_WIDTH, S_HEIGHT);
+    _img->blitTiled(fb, 0, 0, (scroll.x * _scrollXMul).round() - _offsetX,
+        (scroll.y * _scrollYMul).round() - _offsetY, S_WIDTH, S_HEIGHT);
 }
 
-void NonTiledBackgroundLayer::blit(Image &fb, LayerScroll scroll) const
+void NonTiledBackgroundLayer::blit(Image &fb, LayerScroll scroll)
 {
-    _img->blit(fb, 0, 0,
-        static_cast<int>(Fix(scroll.x * Fix::ONE) * _scrollXMul) - _offsetX,
-        static_cast<int>(Fix(scroll.y * Fix::ONE) * _scrollYMul) - _offsetY,
-        S_WIDTH, S_HEIGHT);
+    _img->blit(fb, 0, 0, (scroll.x * _scrollXMul).round() - _offsetX,
+        (scroll.y * _scrollYMul).round() - _offsetY, S_WIDTH, S_HEIGHT);
 }
 
 ForegroundLayer::ForegroundLayer(std::shared_ptr<Image> bg,
@@ -39,20 +35,16 @@ ForegroundLayer::ForegroundLayer(std::shared_ptr<Image> bg,
 {
 }
 
-void ForegroundLayer::blit(Image &fb, LayerScroll scroll) const
+void ForegroundLayer::blit(Image &fb, LayerScroll scroll)
 {
-    _img->blitTiled(fb, 0, 0,
-        static_cast<int>(Fix(scroll.x * Fix::ONE) * _scrollXMul) - _offsetX,
-        static_cast<int>(Fix(scroll.y * Fix::ONE) * _scrollYMul) - _offsetY,
-        S_WIDTH, S_HEIGHT);
+    _img->blitTiled(fb, 0, 0, (scroll.x * _scrollXMul).round() - _offsetX,
+        (scroll.y * _scrollYMul).round() - _offsetY, S_WIDTH, S_HEIGHT);
 }
 
-void NonTiledForegroundLayer::blit(Image &fb, LayerScroll scroll) const
+void NonTiledForegroundLayer::blit(Image &fb, LayerScroll scroll)
 {
-    _img->blit(fb, 0, 0,
-        static_cast<int>(Fix(scroll.x * Fix::ONE) * _scrollXMul) - _offsetX,
-        static_cast<int>(Fix(scroll.y * Fix::ONE) * _scrollYMul) - _offsetY,
-        S_WIDTH, S_HEIGHT);
+    _img->blit(fb, 0, 0, (scroll.x * _scrollXMul).round() - _offsetX,
+        (scroll.y * _scrollYMul).round() - _offsetY, S_WIDTH, S_HEIGHT);
 }
 
 ColorWindow::ColorWindow(int x, int y, int w, int h)

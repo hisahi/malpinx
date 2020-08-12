@@ -16,14 +16,14 @@ enum class MusicTrack
     Title,
     Ending,
     NameEntry,
+    GameOver,
+    Boss,
+    Boss2,
     Stage1,
     Stage2,
     Stage3,
     Stage4,
     Stage5,
-    FinalStage,
-    Boss,
-    GameOver
 };
 
 void LoadSongList();

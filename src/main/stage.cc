@@ -11,17 +11,30 @@
 
 Stage::Stage(Shooter &g) : stg(g)
 {
-
 }
 
 void Stage::spawnSprites(LayerScroll scroll)
 {
+    for (auto it = delayedObjectSpawns.begin();
+            it != delayedObjectSpawns.end();)
+    {
+        if (--it->spawnDelay <= 0)
+        {
+            spawnAndAddObject(stg, *it, scroll);
+            it = delayedObjectSpawns.erase(it);
+        } else
+            ++it;
+    }
+    Fix fsx = scroll.x + S_WIDTH;
     while (nextSpawn != objectSpawns.end())
     {
         ObjectSpawn &os = *nextSpawn;
-        if (os.scrollX < scroll.x)
+        if (os.scrollX > fsx)
             break;
-        spawnAndAddObject(stg, os, scroll);
+        if (os.spawnDelay)
+            delayedObjectSpawns.push_back(os);
+        else
+            spawnAndAddObject(stg, os, scroll);
         objectSpawns.pop_front();
         nextSpawn = objectSpawns.begin();
     }

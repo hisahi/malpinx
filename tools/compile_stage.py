@@ -34,12 +34,14 @@ def main(*argv):
 
     stageheight, stagey = 208, (208 - 16) // 2
     layers, sprites = [], []
-    in_wave, wave = False, []
+    in_wave, wave, wave_y = False, [], 0
     with open(argv[1], 'r') as f:
         x = 0
         for line in f:
             line = line.strip()
-            if line.startswith('layer'):
+            if line.startswith('#'):
+                continue
+            elif line.startswith('layer'):
                 data = bytearray()
                 tok = [x.strip() for x in line.split(maxsplit = 1)[1]
                                             .split(',')]
@@ -59,25 +61,24 @@ def main(*argv):
                 dx, t, delay, subtype, ox, y = [int(t) for t in tok]
                 x += dx
                 sprites.append((x, t, delay, subtype, ox, y))
-            elif line.startswith('wave'):
+            elif line.startswith('wave') or line.startswith('rwave'):
                 assert not in_wave
                 in_wave = True
                 tok = [x.strip() for x in line.split(maxsplit = 1)[1]
                                             .split(',')]
                 dx, t, delay, subtype, ox, y = [int(t) for t in tok]
+                wave_y = y if line.startswith('rwave') else 0
                 x += dx
-                sprites.append((x, t, delay, subtype, ox, y))
-                wave = []
+                wave = [(x, t, delay, subtype, ox, y)]
             elif line.startswith('end') and in_wave:
                 in_wave = False
                 sprites += wave
-            elif wave:
-                tok = [x.strip() for x in line.split(maxsplit = 1)[1]
-                                            .split(',')]
+            elif in_wave:
+                tok = [x.strip() for x in line.split(',')]
                 delay, subtype, ox, y = [int(t) for t in tok]
                 last = wave[-1]
                 wave.append((last[0], last[1], last[2] + delay,
-                            subtype, ox, y))
+                            subtype, ox, y + wave_y))
             elif line:
                 raise ValueError('unrecognized command')
 
@@ -90,6 +91,9 @@ def main(*argv):
             groups.append((x, []))
         groups[-1][1].append(sprite[1:])
     groups.append((-1, []))
+
+    #print(sprites)
+    #print(groups)
 
     with open(argv[2], 'wb') as out:
         out.write(struct.pack('<HHHH', 2, stageheight, stagey, len(layers)))
@@ -107,6 +111,7 @@ def main(*argv):
                 out.write(struct.pack('<BHBHHii', t, delay & 0xFFFF,
                         delay >> 16, 0, subtype, oy, ox))
             out.write(b'\0')
+        print(x)
 
     return 0
 

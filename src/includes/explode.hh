@@ -17,12 +17,14 @@ extern Spritesheet explosionSprites;
 enum class ExplosionSize
 {
     Small1, Small2, Medium1, Medium2, Large,
-    TinyWhite
+    TinyWhite, TinyRed, TinyGreen, TinyBlue, TinyPurple, TinyYellow
 };
 
-constexpr int EXPLOSION_FRAMES[6] = { 3, 3, 6, 6, 8, 2 };
-constexpr int EXPLOSION_ANIMS = sizeof(EXPLOSION_FRAMES) / sizeof(int);
-constexpr int EXPLOSION_SPEED[EXPLOSION_ANIMS] = { 2, 2, 3, 3, 3, 4 };
+constexpr int EXPLOSION_ANIMS = 11;
+constexpr std::array<int, EXPLOSION_ANIMS> EXPLOSION_FRAMES
+    { 3, 3, 6, 6, 8, 2, 2, 2, 2, 2, 2 };
+constexpr std::array<int, EXPLOSION_ANIMS> EXPLOSION_SPEED
+    { 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3 };
 
 constexpr int generateExplosionFramePartialSum(const std::size_t N)
 {
@@ -50,7 +52,7 @@ constexpr std::array<int, EXPLOSION_ANIMS> EXPLOSION_FRAMES_START =
 class ExplosionSprite : public Sprite
 {
 public:
-    ExplosionSprite(int id, int x, int y, ExplosionSize size, bool center);
+    ExplosionSprite(int id, Fix x, Fix y, ExplosionSize size, bool center);
     ExplosionSprite &center();
     void tick();
 private:

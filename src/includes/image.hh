@@ -40,6 +40,8 @@ public:
     void subtract(Color color);
     void addSolid(Color color);
     void subtractSolid(Color color);
+    void addSolid(Color color, int x, int y, int w, int h);
+    void subtractSolid(Color color, int x, int y, int w, int h);
     
     inline void blit(Image &fb)
     {

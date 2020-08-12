@@ -14,12 +14,16 @@
 #include "stage.hh"
 #include "layer.hh"
 #include "m_game.hh"
+#include "fix.hh"
 
 enum class ObjectType
 {
     Blank,
     Script,
-    Powerup
+    Powerup,
+
+    Enemy01 = 101,
+    Enemy02, Enemy03, Enemy04,
 };
 
 std::unique_ptr<Sprite> spawnObject(Shooter &stg, ObjectSpawn spawn,
@@ -29,29 +33,15 @@ void spawnAndAddObject(Shooter &stg, ObjectSpawn spawn, LayerScroll scroll);
 
 struct BlankSprite : public Sprite
 {
-    BlankSprite(int id) : Sprite(id, nullptr, 0, 0, SPRITE_NODRAW,
+    BlankSprite(int id) : Sprite(id, nullptr, 0_x, 0_x, SPRITE_NODRAW,
             SpriteType::Other) { }
     void tick() { kill(); }
-};
-
-class DelaySpawnSprite : public Sprite
-{
-public:
-    DelaySpawnSprite(Shooter &stg, int id, std::unique_ptr<Sprite> &&sprite,
-                    int delay, int layer);
-    std::unique_ptr<Sprite> &&replace();
-    void tick();
-private:
-    Shooter &_stg;
-    std::unique_ptr<Sprite> _sprite;
-    int _delay;
-    int _layer;
 };
 
 class ScoreSprite : public Sprite
 {
 public:
-    ScoreSprite(int id, int x, int y, int score);
+    ScoreSprite(int id, Fix x, Fix y, int score);
     void tick()
     {
         if (!--_ticks)

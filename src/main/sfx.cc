@@ -38,24 +38,11 @@ void PlayMenuSound(SoundEffect effect,
     PlayMenuSound(static_cast<int>(effect), volume, pan);
 }
 
-void PlayVoiceSound(int soundNum,
-            float volume /*= 1.0f*/, float pan /*= 0.0f*/)
-{
-    if (!sfxEnabled) return;
-    abase_sound_play(soundNum, volume, pan, 1, 1);
-}
-
-void PlayVoiceSound(SoundEffect effect,
-            float volume /*= 1.0f*/, float pan /*= 0.0f*/)
-{
-    PlayVoiceSound(static_cast<int>(effect), volume, pan);
-}
-
 void PlayGunSound(int soundNum,
             float volume /*= 1.0f*/, float pan /*= 0.0f*/)
 {
     if (!sfxEnabled) return;
-    abase_sound_play(soundNum, volume, pan, 1, 2);
+    abase_sound_play(soundNum, volume, pan, 1, 1);
 }
 
 void PlayGunSound(SoundEffect effect,

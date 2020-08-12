@@ -16,6 +16,7 @@
 #include "maths.hh"
 #include "render.hh"
 #include "image.hh"
+#include "fix.hh"
 
 constexpr int SPRITE_DEFAULT = 0;
 constexpr int SPRITE_NODRAW = 1;
@@ -24,6 +25,7 @@ constexpr int SPRITE_COLLIDE_FG = 4;
 constexpr int SPRITE_SURVIVE_OFF_SCREEN = 8;
 constexpr int SPRITE_NOSCROLL = 16;
 constexpr int SPRITE_TRACKABLE = 32;
+constexpr int SPRITE_ONLYBOXCHECK = 64;
 
 extern int colGridHeight;
 
@@ -42,20 +44,29 @@ enum class SpriteType
     Explosion,
     Bullet,
     Script,
-    Delay,
     Temporary
+};
+
+struct Hitbox
+{
+    Hitbox() : Hitbox(0, 0, 0, 0) { }
+    Hitbox(int x, int y, int w, int h) : x(x), y(y), w(w), h(h) { }
+    int x;
+    int y;
+    int w;
+    int h;
 };
 
 // unpacked 16-bit sprite
 class Sprite
 {
 public:
-    Sprite(int id, std::shared_ptr<Image> img, int x, int y, int flags,
+    Sprite(int id, std::shared_ptr<Image> img, Fix x, Fix y, int flags,
             SpriteType type);
-    void blit(Image &fb) const;
-    void blit(Image &fb, int xoff, int yoff) const;
-    int x() const { return _x; }
-    int y() const { return _y; }
+    void blit(Image &fb) const { blit(fb, 0, 0); }
+    virtual void blit(Image &fb, int xoff, int yoff) const;
+    Fix x() const { return _x; }
+    Fix y() const { return _y; }
     int width() const { return _width; }
     int height() const { return _height; }
     int flags() const { return _flags; }
@@ -65,34 +76,36 @@ public:
         return static_cast<bool>(_flags & flag);
     }
     void computeCollisionGrid();
-    void updateImage(const std::shared_ptr<Image>& img);
+    void updateHitbox(int x, int y, int w, int h);
+    void updateImage(const std::shared_ptr<Image>& img, bool hitbox = true);
     bool hitsForeground(ForegroundLayer &layer, LayerScroll scroll);
-    bool boxCheck(Sprite &other);
-    bool pixelCheck(Sprite &other);
-    bool isDead() { return _dead; }
+    bool boxCheck(const Sprite &other) const;
+    bool pixelCheck(const Sprite &other) const;
+    bool isDead() const { return _dead; }
     void kill() { _dead = true; }
-    int offScreenDistance() { return -(_x + _width); }
+    int offScreenDistance() const { return -(static_cast<int>(_x) + _width); }
     void addFlags(int flag) { _flags |= flag; }
     void removeFlags(int flag) { _flags &= ~flag; }
     virtual void tick() { }
     // returns whether dead
     virtual bool damage(int dmg) { return false; }
-    void move(int x, int y) { _x += x; _y += y; }
+    void move(Fix x, Fix y) { _x += x; _y += y; }
     
-    inline bool fastHitCheck(Sprite &other)
+    inline bool fastHitCheck(const Sprite &other) const
     { 
         return static_cast<bool>(_colgrid & other._colgrid);
     }
-    inline bool hits(Sprite &other)
+    inline bool hits(const Sprite &other) const
     {
-        return fastHitCheck(other) && boxCheck(other) && pixelCheck(other);
+        return fastHitCheck(other) && boxCheck(other) &&
+            (hasFlag(SPRITE_ONLYBOXCHECK) | pixelCheck(other));
     }
-    inline bool hits(Sprite *other)
+    inline bool hits(Sprite *other) const
     {
         return other && hits(*other);
     }
     template <class T>
-    inline bool hits(const std::unique_ptr<T> &other)
+    inline bool hits(const T *other)
     {
         static_assert(std::is_base_of<Sprite, T>::value, "must be a sprite");
         return other && hits(*other);
@@ -100,8 +113,9 @@ public:
 protected:
     std::shared_ptr<Image> _img;
     int _id;
-    int _x;
-    int _y;
+    Fix _x;
+    Fix _y;
+    Hitbox _hitbox;
     int _width;
     int _height;
     int _flags;
@@ -123,7 +137,7 @@ public:
     void blitFast(Image &fb, int index, int x, int y) const;
 
     template <class T, class... Args>
-    T makeSprite(int id, int spriteIndex, int x, int y,
+    T makeSprite(int id, int spriteIndex, Fix x, Fix y,
             int flags, Args... args) const
     {
         static_assert(std::is_base_of<Sprite, T>::value,
@@ -132,8 +146,8 @@ public:
                                     flags, std::forward<Args>(args)...);
     }
     template <class T, class... Args>
-    std::unique_ptr<T> makeUniqueSprite(int id, int spriteIndex, int x, int y,
-            int flags, Args... args) const
+    std::unique_ptr<T> makeUniqueSprite(int id, int spriteIndex, Fix x, Fix y,
+            int flags, Args &&... args) const
     {
         static_assert(std::is_base_of<Sprite, T>::value,
                                     "must be sprite type");
