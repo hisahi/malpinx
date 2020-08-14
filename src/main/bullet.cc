@@ -8,6 +8,7 @@
 
 #include <cmath>
 #include "fix.hh"
+#include "fixrng.hh"
 #include "stage.hh"
 #include "bullet.hh"
 #include "explode.hh"
@@ -16,15 +17,29 @@
 
 // bullet subframe simulation count
 constexpr int BULLET_DIV = 2;
+constexpr int BULLET_SEED = 883276465;
 
 static int beamOffset = -1;
 static bool crossDir = false;
+static FixRandom suicideAngleRng(BULLET_SEED);
+
+static inline SpriteType GetBulletSpriteType(BulletSource source)
+{
+    switch (source)
+    {
+    case BulletSource::Player:
+        return SpriteType::BulletPlayer;
+    case BulletSource::Enemy:
+        return SpriteType::BulletEnemy;
+    }
+    return SpriteType::BulletEnemy;
+}
 
 BulletSprite::BulletSprite(Shooter &stg, int id, Fix x, Fix y, Fix dx, Fix dy,
                             BulletType type, BulletSource source)
     : Sprite(id, nullptr, x, y, SPRITE_NOSCROLL
         | SPRITE_COLLIDE_SPRITES | SPRITE_COLLIDE_FG,
-        SpriteType::Bullet), _type(type), _src(source), _vel(dx, dy),
+        GetBulletSpriteType(source)), _type(type), _src(source), _vel(dx, dy),
         _expl(ExplosionSize::TinyWhite), _stg(stg), _damage(1), _pierce(false)
 {
     int frameCount = 1;
@@ -93,6 +108,29 @@ BulletSprite::BulletSprite(Shooter &stg, int id, Fix x, Fix y, Fix dx, Fix dy,
             _damage = 8;
             _expl = ExplosionSize::TinyYellow;
             break;
+        case BulletType::Enemy6:
+            _img = stg.assets.bulletSprites->getImage(_frame = 28);
+            frameCount = 4;
+            _animSpeed = 4;
+            _damage = 8;
+            _expl = ExplosionSize::TinyYellow;
+            break;
+        case BulletType::Sigma:
+            _img = stg.assets.sigma->getImage(_frame = 0);
+            frameCount = 16;
+            _animSpeed = 2;
+            _damage = 20;
+            _sigma = true;
+            _vel = Fix2D();
+            removeFlags(SPRITE_COLLIDE_FG);
+            break;
+        case BulletType::SuicideBullet:
+            _img = stg.assets.bulletSprites->getImage(_frame = 26);
+            frameCount = 2;
+            _animSpeed = 4;
+            _damage = 16;
+            _expl = ExplosionSize::TinyWhite;
+            break;
     }
     if (source == BulletSource::Player)
         hitTargets.reserve(16);
@@ -135,18 +173,23 @@ static inline float approxDistance(Fix x, Fix y, Fix dx, Fix dy,
 void BulletSprite::tick()
 {
     ++_ticks;
-    if (_x >= S_WIDTH || _y > _stg.stage->levelHeight || _y < -_height)
-    {
-        kill();
-        return;
-    }
-
     if (_minFrame != _maxFrame && !(_ticks % _animSpeed))
     {
         ++_frame;
         if (_frame > _maxFrame)
-            _frame = _minFrame;
-        updateImage(_stg.assets.bulletSprites->getImage(_frame));
+        {
+            if (_sigma)
+            {
+                kill();
+                return;
+            }
+            else
+                _frame = _minFrame;
+        }
+        if (_sigma)
+            updateImage(_stg.assets.sigma->getImage(_frame));
+        else
+            updateImage(_stg.assets.bulletSprites->getImage(_frame));
     }
 
     int ox = S_WIDTH, oy = S_HEIGHT, nx, ny;
@@ -181,7 +224,7 @@ void BulletSprite::tick()
                 if (s->type() == SpriteType::Enemy && hits(*s))
                     hitTargets.push_back(*s);
 
-            if (hitTargets.size() > 1)
+            if (hitTargets.size() > 1 && _vel)
             {
                 // sort targets by distance
                 Fix x = _x, y = _y, dx = _vel.x, dy = _vel.y;
@@ -195,12 +238,17 @@ void BulletSprite::tick()
 
             for (Sprite &s : hitTargets)
             {
-                if (!s.damage(_damage) || !_pierce)
+                if ((!s.damage(_damage) || !_pierce) && !_sigma)
                 {
                     explode();
                     break;
                 }
             }
+
+            if (_sigma)
+                for (auto &s : _stg.spriteLayer3)
+                    if (s && s->type() == SpriteType::BulletEnemy && hits(*s))
+                        s->kill();
         }
         else if (_src == BulletSource::Enemy)
         {
@@ -211,6 +259,17 @@ void BulletSprite::tick()
             }
         }
     }
+    
+    if (_x >= S_WIDTH || _y > _stg.stage->levelHeight || _y < -_height)
+    {
+        kill();
+        return;
+    }
+}
+
+void ResetBullets(int stageNum)
+{
+    suicideAngleRng.reset(BULLET_SEED + stageNum);
 }
 
 void SpawnPlayerBullet(Shooter &stg, Fix x, Fix y,
@@ -225,6 +284,12 @@ void SpawnEnemyBullet(Shooter &stg, Fix x, Fix y,
 {
     stg.spriteLayer3.push_back(std::make_unique<BulletSprite>(
         stg, stg.nextSpriteID(), x, y, dx, dy, type, BulletSource::Enemy));
+}
+
+void FireSuicideBullet(Shooter &stg, Fix x, Fix y)
+{
+    Fix2D d(FixPolar2D(5_x, suicideAngleRng.nextAngle()));
+    SpawnEnemyBullet(stg, x, y, d.x, d.y, BulletType::SuicideBullet);
 }
 
 int FireWeapon(Shooter &stg, int weapon, int level, Fix x, Fix y)
@@ -336,11 +401,19 @@ int FireWeapon(Shooter &stg, int weapon, int level, Fix x, Fix y)
     return 0;
 }
 
-void FireEnemyBullet(Shooter &stg, BulletType type, Fix x, Fix y,
-            Fix dx, Fix dy, bool scale /*= true*/)
+int FireSigma(Shooter &stg, Fix x, Fix y)
 {
-    if (scale)
+    PlayGunSound(SoundEffect::FireSigma);
+    SpawnPlayerBullet(stg, x - 2, y - 64, 0_x, 0_x, BulletType::Sigma);
+    return 30;
+}
+
+void FireEnemyBullet(Shooter &stg, BulletType type, Fix x, Fix y,
+            Fix dx, Fix dy, int scaleMode /*= 1*/)
+{
+    switch (scaleMode)
     {
+    case 1:
         switch (stg.difficulty)
         {
         case DifficultyLevel::EASY:

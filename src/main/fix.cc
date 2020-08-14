@@ -8,10 +8,12 @@
 
 #include <cstdint>
 #include "fix.hh"
+#include "fixrng.hh"
 #include "defs.hh"
 #include <cmath>
 
 const Fix Fix::PI = 3.141592653589793_x;
+const std::uint32_t FixRandom::ANGLE_MUL = (2 * Fix::PI).raw();
 
 Fix operator+(const Fix &lhs, const Fix &rhs)
 {
@@ -306,7 +308,9 @@ FixPolar2D::FixPolar2D(Fix2D rect) : length(rect.len()),
 
 Fix2D FixNorm(Fix2D xy, Fix length)
 {
-    return xy * (length / xy.len());
+    Fix adj = (length / xy.len());
+    if (adj == 0) return Fix2D();
+    return xy * adj;
 };
 
 Fix2D FixRotate(Fix2D xy, Fix radians)

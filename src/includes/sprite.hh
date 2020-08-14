@@ -42,7 +42,8 @@ enum class SpriteType
     Pickup,
     Boss,
     Explosion,
-    Bullet,
+    BulletPlayer,
+    BulletEnemy,
     Script,
     Temporary
 };

@@ -90,7 +90,7 @@ int ibase_default_keyb(GameInput input)
     case GameInput::MoveLeft:   return SDL_SCANCODE_LEFT;
     case GameInput::MoveRight:  return SDL_SCANCODE_RIGHT;
     case GameInput::Fire:       return SDL_SCANCODE_Z;
-    case GameInput::Special:    return SDL_SCANCODE_X;
+    case GameInput::Sigma:      return SDL_SCANCODE_X;
     case GameInput::SpeedUp:    return SDL_SCANCODE_D;
     case GameInput::SpeedDown:  return SDL_SCANCODE_C;
     case GameInput::Pause:      return SDL_SCANCODE_P;
@@ -107,7 +107,7 @@ int ibase_default_pad(GameInput input)
     case GameInput::MoveLeft:   return SDL_CONTROLLER_BUTTON_DPAD_LEFT;
     case GameInput::MoveRight:  return SDL_CONTROLLER_BUTTON_DPAD_RIGHT;
     case GameInput::Fire:       return SDL_CONTROLLER_BUTTON_A;
-    case GameInput::Special:    return SDL_CONTROLLER_BUTTON_X;
+    case GameInput::Sigma:      return SDL_CONTROLLER_BUTTON_X;
     case GameInput::SpeedUp:    return SDL_CONTROLLER_BUTTON_RIGHTSHOULDER;
     case GameInput::SpeedDown:  return SDL_CONTROLLER_BUTTON_LEFTSHOULDER;
     case GameInput::Pause:      return SDL_CONTROLLER_BUTTON_START;

@@ -25,20 +25,24 @@ public:
     void tick();
     void respawned();
     bool damage(int dmg);
+    bool hasShield();
+    void giveShield();
     void setActiveSprite(int index);
     void onWeaponChange();
     void updateY(Fix y, Fix bottom);
 private:
     std::shared_ptr<Spritesheet> sheet;
     std::shared_ptr<Shooter> game;
-    int fireDelay;
+    int fireDelay{0};
+    int sigmaDelay{0};
     int activeSprite;
     Fix rightEdge;
     Fix bottomEdge;
     Fix deltaX;
     Fix deltaY;
-    int resetTicks;
-    int invulTicks;
+    int resetTicks{0};
+    int invulTicks{0};
+    bool shield{false};
 };
 
 #endif // M_PLAYER_HH

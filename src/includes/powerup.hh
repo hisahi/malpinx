@@ -9,12 +9,12 @@
 #ifndef M_POWERUP_HH
 #define M_POWERUP_HH
 
-#include "object.hh"
+#include "m_game.hh"
 #include "sprite.hh"
 
 enum class PowerupType
 {
-    Score, OneUp, Pulse, Spray, Beam, Track, Drone, Special
+    None, Score, OneUp, Pulse, Spray, Beam, Track, Drone, Sigma, Shield
 };
 
 class PowerupSprite : public Sprite

@@ -23,7 +23,9 @@ enum class ObjectType
     Powerup,
 
     Enemy01 = 101,
-    Enemy02, Enemy03, Enemy04,
+    Enemy02, Enemy03, Enemy04, Enemy05, Enemy06,
+
+    Boss1a = 201
 };
 
 std::unique_ptr<Sprite> spawnObject(Shooter &stg, ObjectSpawn spawn,
@@ -49,6 +51,16 @@ public:
     }
 private:
     int _ticks;
+};
+
+class ScriptSprite : public Sprite
+{
+public:
+    ScriptSprite(Shooter &stg, int id, int scriptNo);
+    void tick();
+private:
+    Shooter &_stg;
+    int _script;
 };
 
 #endif // M_OBJECT_HH

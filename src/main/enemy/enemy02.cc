@@ -9,8 +9,9 @@
 #include "enemy.hh"
 #include "fix.hh"
 
-Enemy02::Enemy02(Shooter &stg, int id, Fix x, Fix y, int subtype)
-    : EnemySprite(stg, id, x, y, 20)
+Enemy02::Enemy02(Shooter &stg, int id, Fix x, Fix y,
+        int subtype, PowerupType drop)
+    : EnemySprite(stg, id, x, y, 20, drop)
 {
     _score = 150;
     _dx = -1_x;

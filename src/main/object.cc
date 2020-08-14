@@ -13,6 +13,13 @@
 #include "enemy.hh"
 #include "sprite.hh"
 
+template <typename T>
+inline std::unique_ptr<Sprite> spawnEnemy(Shooter &stg, int id,
+                    Fix x, Fix y, ObjectSpawn os)
+{
+    return std::make_unique<T>(stg, id, x, y, os.subtype, os.drop);
+}
+
 std::unique_ptr<Sprite> spawnObject(Shooter &stg, ObjectSpawn spawn,
                     LayerScroll scroll, int &layer)
 {
@@ -28,16 +35,25 @@ std::unique_ptr<Sprite> spawnObject(Shooter &stg, ObjectSpawn spawn,
                             static_cast<PowerupType>(spawn.subtype));
         break;
     case ObjectType::Enemy01:
-        result = std::make_unique<Enemy01>(stg, id, sx, sy, spawn.subtype);
+        result = spawnEnemy<Enemy01>(stg, id, sx, sy, spawn);
         break;
     case ObjectType::Enemy02:
-        result = std::make_unique<Enemy02>(stg, id, sx, sy, spawn.subtype);
+        result = spawnEnemy<Enemy02>(stg, id, sx, sy, spawn);
         break;
     case ObjectType::Enemy03:
-        result = std::make_unique<Enemy03>(stg, id, sx, sy, spawn.subtype);
+        result = spawnEnemy<Enemy03>(stg, id, sx, sy, spawn);
         break;
     case ObjectType::Enemy04:
-        result = std::make_unique<Enemy04>(stg, id, sx, sy, spawn.subtype);
+        result = spawnEnemy<Enemy04>(stg, id, sx, sy, spawn);
+        break;
+    case ObjectType::Enemy05:
+        result = spawnEnemy<Enemy05>(stg, id, sx, sy, spawn);
+        break;
+    case ObjectType::Enemy06:
+        result = spawnEnemy<Enemy06>(stg, id, sx, sy, spawn);
+        break;
+    case ObjectType::Boss1a:
+        result = spawnEnemy<Boss1a>(stg, id, sx, sy, spawn);
         break;
     default:
         result = std::make_unique<BlankSprite>(id);

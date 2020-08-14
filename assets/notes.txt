@@ -41,7 +41,7 @@ malpinx formats, all numbers little-endian
 				width*height: 16-bit tile. top-bottom, left-right
 										(column-major order)
 	.slp	level format
-				16-bit level version (2)
+				16-bit level version (3)
 				16-bit height of level (at least 208)
 				16-bit spawn top Y coordinate
 				16-bit number of layers
@@ -76,4 +76,6 @@ malpinx formats, all numbers little-endian
 						32-bit top Y-coordinate of sprite
 						32-bit left X-coordinate of sprite (relative to
 									right edge of screen)
+						8-bit sprite powerup type (for enemy drops)
+						24-bit reserved
 

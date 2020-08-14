@@ -10,12 +10,13 @@
 #include "fix.hh"
 #include "bullet.hh"
 
-Enemy04::Enemy04(Shooter &stg, int id, Fix x, Fix y, int subtype)
-    : EnemySprite(stg, id, x, y, 32)
+Enemy04::Enemy04(Shooter &stg, int id, Fix x, Fix y,
+        int subtype, PowerupType drop)
+    : EnemySprite(stg, id, x, y, 32, drop)
 {
     _score = 300;
     fireTicks = ScaleFireTicks(stg,
-            ((x.round() ^ (x.round() >> 8) + 79) * 37) % 90);
+            (((x.round() ^ (x.round() >> 8) + 79) * 37) % 90) >> 1);
 }
 
 void Enemy04::doEnemyTick()
@@ -33,10 +34,10 @@ void Enemy04::doEnemyTick()
         if (_stg.isPlayerAlive())
         {
             Fix2D delta = FixNorm(_stg.vecToPlayer(_x, _y), 3_x);
-            FireEnemyBullet(_stg, BulletType::Enemy3, _x + 8, _y + 8, delta);
-            FireEnemyBullet(_stg, BulletType::Enemy3, _x + 8, _y + 8,
+            FireEnemyBullet(_stg, BulletType::Enemy4, _x + 5, _y + 5, delta);
+            FireEnemyBullet(_stg, BulletType::Enemy4, _x + 5, _y + 5,
                     FixRotate(delta, Fix::PI / 8));
-            FireEnemyBullet(_stg, BulletType::Enemy3, _x + 8, _y + 8,
+            FireEnemyBullet(_stg, BulletType::Enemy4, _x + 5, _y + 5,
                     FixRotate(delta, -Fix::PI / 8));
         }
         fireTicks += ScaleFireTicks(_stg, 90);

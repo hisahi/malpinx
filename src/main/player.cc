@@ -100,10 +100,14 @@ void PlayerSprite::onWeaponChange()
 inline void PlayerSprite::fireTick()
 {
     if (gameInput.fire && fireDelay == 0)
-        fireDelay = FireWeapon(*stg, stg->activeWeapon,
-                    stg->weaponLevels[stg->activeWeapon], _x + 31, _y + 10);
+        fireDelay = FireWeapon(*game, game->activeWeapon,
+                game->weaponLevels[game->activeWeapon], _x + 31, _y + 10);
     else if (fireDelay > 0)
         --fireDelay;
+    if (gameInputEdge.sigma && sigmaDelay == 0 && game->useSigma())
+        sigmaDelay = FireSigma(*game, _x + 31, _y + 10);
+    else if (sigmaDelay > 0)
+        --sigmaDelay;
 }
 
 inline void PlayerSprite::collisionTick()
@@ -126,6 +130,17 @@ inline void PlayerSprite::collisionTick()
     }
 }
 
+bool PlayerSprite::hasShield()
+{
+    return shield;
+}
+
+void PlayerSprite::giveShield()
+{
+    PlaySound(SoundEffect::GotShield);
+    shield = true;
+}
+
 void PlayerSprite::tick()
 {
     moveTick();
@@ -144,6 +159,13 @@ bool PlayerSprite::damage(int dmg)
     PlaySound(SoundEffect::PlayerHit);
     if (dmg > 0)
     {
+        if (shield)
+        {
+            PlaySound(SoundEffect::LostShield);
+            shield = false;
+            invulTicks = S_TICKS / 2;
+            return false;
+        }
         game->killPlayer();
         return true;
     }

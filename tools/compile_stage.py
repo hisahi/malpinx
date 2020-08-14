@@ -58,27 +58,42 @@ def main(*argv):
             elif line.startswith('sprite'):
                 tok = [x.strip() for x in line.split(maxsplit = 1)[1]
                                             .split(',')]
-                dx, t, delay, subtype, ox, y = [int(t) for t in tok]
+                dx, t, delay, subtype, ox, y, *extra = [t for t in tok]
+                dx, t, delay, subtype, ox, y = [int(t) for t in
+                    (dx, t, delay, subtype, ox, y)]
+                extra = [t.split("=") for t in extra]
+                assert(all(len(x) == 2 for x in extra))
+                extra = dict(extra)
                 x += dx
-                sprites.append((x, t, delay, subtype, ox, y))
+                sprites.append((x, t, delay, subtype, ox, y, extra))
             elif line.startswith('wave') or line.startswith('rwave'):
                 assert not in_wave
                 in_wave = True
                 tok = [x.strip() for x in line.split(maxsplit = 1)[1]
                                             .split(',')]
-                dx, t, delay, subtype, ox, y = [int(t) for t in tok]
+                dx, t, delay, subtype, ox, y, *extra = [t for t in tok]
+                dx, t, delay, subtype, ox, y = [int(t) for t in
+                    (dx, t, delay, subtype, ox, y)]
+                extra = [t.split("=") for t in extra]
+                assert(all(len(x) == 2 for x in extra))
+                extra = dict(extra)
                 wave_y = y if line.startswith('rwave') else 0
                 x += dx
-                wave = [(x, t, delay, subtype, ox, y)]
+                wave = [(x, t, delay, subtype, ox, y, extra)]
             elif line.startswith('end') and in_wave:
                 in_wave = False
                 sprites += wave
             elif in_wave:
                 tok = [x.strip() for x in line.split(',')]
-                delay, subtype, ox, y = [int(t) for t in tok]
+                delay, subtype, ox, y, *extra = [t for t in tok]
+                delay, subtype, ox, y = [int(t) for t in
+                    (delay, subtype, ox, y)]
+                extra = [t.split("=") for t in extra]
+                assert(all(len(x) == 2 for x in extra))
+                extra = dict(extra)
                 last = wave[-1]
                 wave.append((last[0], last[1], last[2] + delay,
-                            subtype, ox, y + wave_y))
+                            subtype, ox, y + wave_y, extra))
             elif line:
                 raise ValueError('unrecognized command')
 
@@ -96,7 +111,7 @@ def main(*argv):
     #print(groups)
 
     with open(argv[2], 'wb') as out:
-        out.write(struct.pack('<HHHH', 2, stageheight, stagey, len(layers)))
+        out.write(struct.pack('<HHHH', 3, stageheight, stagey, len(layers)))
         for layer in layers:
             out.write(layer)
         x = 0
@@ -107,9 +122,10 @@ def main(*argv):
             out.write(struct.pack('<I', group_x - x))
             x = group_x
             for sprite in sprites:
-                t, delay, subtype, ox, oy = sprite
-                out.write(struct.pack('<BHBHHii', t, delay & 0xFFFF,
-                        delay >> 16, 0, subtype, oy, ox))
+                t, delay, subtype, ox, oy, extra = sprite
+                drop = int(extra.get('drop', 0))
+                out.write(struct.pack('<BHBHHiiBBBB', t, delay & 0xFFFF,
+                        delay >> 16, 0, subtype, oy, ox, drop, 0, 0, 0))
             out.write(b'\0')
         print(x)
 

@@ -35,7 +35,9 @@ enum class SoundEffect
     WeaponUpLevel,
     BossAlarm,
     LostShield,
-    GotShield
+    GotShield,
+    ScoreNotMax,
+    FireSigma
 };
 
 int PlaySound(int soundNum, float volume = 1.0f, float pan = 0.0f,

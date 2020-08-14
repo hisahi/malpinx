@@ -206,7 +206,7 @@ void TitleScreen::drawOption(int option)
 }
 
 const std::string controlNames[] = { 
-    "UP", "DOWN", "LEFT", "RIGHT", "FIRE", "SPECIAL",
+    "UP", "DOWN", "LEFT", "RIGHT", "FIRE", "SIGMA",
     "FASTER", "SLOWER", "PAUSE"
 };
 

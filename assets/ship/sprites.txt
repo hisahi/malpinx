@@ -3,3 +3,4 @@ ascend.png
 ascend2.png
 descend.png
 descend2.png
+shield.png

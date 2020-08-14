@@ -10,8 +10,8 @@
 #define M_FIX_HH
 
 #include <cstdint>
-#include <memory>
-#include <iostream>
+#include <string>
+#include <ostream>
 
 class Fix
 {
@@ -36,6 +36,7 @@ public:
         return std::to_string(static_cast<float>(*this)); }
     explicit operator std::string() const { return str(); }
     Fix sqrt() const;
+    uint32_t raw() const { return _v; }
 
     friend std::ostream& operator<<(std::ostream &os, const Fix &f)
     {
@@ -87,6 +88,7 @@ public:
     Fix &operator*=(const int &rhs);
     Fix &operator/=(const int &rhs);
     Fix operator-() const { return Fix::raw(-_v); }
+    operator bool() const { return static_cast<bool>(_v); }
     bool operator!() const { return !_v; }
 private:
     std::int32_t _v;
@@ -118,6 +120,9 @@ struct Fix2D
 
     friend bool operator==(const Fix2D &lhs, const Fix2D &rhs);
     friend bool operator!=(const Fix2D &lhs, const Fix2D &rhs);
+    
+    operator bool() const { return x || y; }
+    bool operator!() const { return !(x || y); }
 };
 
 Fix2D FixNorm(Fix2D xy, Fix length);

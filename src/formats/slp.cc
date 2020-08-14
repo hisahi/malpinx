@@ -13,6 +13,7 @@
 #include "gamedata.hh"
 #include "stage.hh"
 #include "tiled.hh"
+#include "powerup.hh"
 
 inline std::string SLP_build_message(const std::string& message,
     const std::string& path)
@@ -30,7 +31,7 @@ Stage LoadStage(const std::string &path, Shooter &stg)
         throw std::runtime_error(SLP_build_message(
                         "Cannot open stage file", path));
     stream.exceptions(std::ios::eofbit | std::ios::failbit | std::ios::badbit);
-    if (ReadUInt16(stream) != 2)
+    if (ReadUInt16(stream) != 3)
         throw std::runtime_error(SLP_build_message(
                         "Cannot open stage file", path));
 
@@ -141,8 +142,8 @@ Stage LoadStage(const std::string &path, Shooter &stg)
     stage.spawnLevelY = spawnLevelY;
 
     std::int32_t spriteScrollX = 0, deltaX;
-    char spriteType;
-    int spriteDelay, spriteFlags, spriteSubtype, spriteY, spriteX;
+    int spriteType, spriteDelay, spriteFlags, spriteSubtype,
+        spriteY, spriteX, spriteDrop;
     for (;;)
     {
         ReadInt32(stream, deltaX);
@@ -160,6 +161,10 @@ Stage LoadStage(const std::string &path, Shooter &stg)
             spriteSubtype = ReadUInt16(stream);
             spriteY = ReadInt32(stream);
             spriteX = ReadInt32(stream);
+            spriteDrop = ReadUInt8(stream);
+            ReadUInt8(stream);
+            ReadUInt8(stream);
+            ReadUInt8(stream);
 
             stage.objectSpawns.emplace_back(ObjectSpawn{
                 .scrollX = spriteScrollX,
@@ -168,7 +173,8 @@ Stage LoadStage(const std::string &path, Shooter &stg)
                 .flags = spriteFlags,
                 .subtype = spriteSubtype,
                 .y = spriteY,
-                .xrel = spriteX
+                .xrel = spriteX,
+                .drop = static_cast<PowerupType>(spriteDrop)
             });
         }
     }

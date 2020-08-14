@@ -25,7 +25,7 @@ const std::vector<MenuInput> menuInputs = {
 const std::vector<GameInput> gameInputs = {
     GameInput::MoveUp, GameInput::MoveDown,
     GameInput::MoveLeft, GameInput::MoveRight,
-    GameInput::Fire, GameInput::Special,
+    GameInput::Fire, GameInput::Sigma,
     GameInput::SpeedUp, GameInput::SpeedDown, GameInput::Pause
 };
 
@@ -38,7 +38,7 @@ static std::string controlName(GameInput input)
     case GameInput::MoveLeft:   return "Left";
     case GameInput::MoveRight:  return "Right";
     case GameInput::Fire:       return "Fire";
-    case GameInput::Special:    return "Special";
+    case GameInput::Sigma:      return "Sigma";
     case GameInput::SpeedUp:    return "SpeedUp";
     case GameInput::SpeedDown:  return "SpeedDown";
     case GameInput::Pause:      return "Pause";

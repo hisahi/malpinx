@@ -39,8 +39,11 @@ PowerupSprite::PowerupSprite(Shooter &stg,
     case PowerupType::Drone:
         updateImage(stg.assets.powerupSprites->getImage(6));
         break;
-    case PowerupType::Special:
+    case PowerupType::Sigma:
         updateImage(stg.assets.powerupSprites->getImage(7));
+        break;
+    case PowerupType::Shield:
+        updateImage(stg.assets.powerupSprites->getImage(8));
         break;
     default:
         kill();
@@ -64,6 +67,7 @@ void PowerupSprite::collect()
     switch (_type)
     {
     case PowerupType::Score:
+        _stg.nextBonus(_x, _y);
         break;
     case PowerupType::OneUp:
         if (!_stg.collectOneUp())
@@ -86,8 +90,15 @@ void PowerupSprite::collect()
             turnToScore(5000);
         break;
     case PowerupType::Drone:
+        if (!_stg.collectDrone())
+            turnToScore(5000);
         break;
-    case PowerupType::Special:
+    case PowerupType::Sigma:
+        if (!_stg.collectSigma())
+            turnToScore(5000);
+        break;
+    case PowerupType::Shield:
+        _stg.player->giveShield();
         break;
     }
     kill();

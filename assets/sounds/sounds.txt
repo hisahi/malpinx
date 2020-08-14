@@ -21,3 +21,5 @@ wpnuplvl.wav
 alarm.wav
 shldhit.wav
 shield.wav
+bonus.wav
+sigma.wav

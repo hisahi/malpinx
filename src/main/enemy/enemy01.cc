@@ -9,12 +9,13 @@
 #include "enemy.hh"
 #include "fix.hh"
 
-Enemy01::Enemy01(Shooter &stg, int id, Fix x, Fix y, int subtype)
-    : EnemySprite(stg, id, x, y, 10)
+Enemy01::Enemy01(Shooter &stg, int id, Fix x, Fix y,
+        int subtype, PowerupType drop)
+    : EnemySprite(stg, id, x, y, 10, drop)
 {
     _score = 100;
     _dx = -1.5_x;
-    sineMul = (std::array<int, 3>{0, 1, -1})[subtype];
+    sineMul = ((subtype & 1) ? 1 : -1) * ((subtype + 1) / 2);
 }
 
 void Enemy01::doEnemyTick()

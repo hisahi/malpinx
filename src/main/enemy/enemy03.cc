@@ -10,15 +10,16 @@
 #include "fix.hh"
 #include "bullet.hh"
 
-Enemy03::Enemy03(Shooter &stg, int id, Fix x, Fix y, int subtype)
-    : EnemySprite(stg, id, x, y, 64)
+Enemy03::Enemy03(Shooter &stg, int id, Fix x, Fix y,
+        int subtype, PowerupType drop)
+    : EnemySprite(stg, id, x, y, 64, drop)
 {
     _score = 400;
     _dx = -1_x;
     switch (subtype)
     {
     case 0:
-        finalY = stg.player ? stg.player->y() - 8
+        finalY = stg.player ? stg.player->y() - 16
                     : stg.scroll.y + (S_HEIGHT) / 2 - 16;
         break;
     case 1:
@@ -41,7 +42,7 @@ Enemy03::Enemy03(Shooter &stg, int id, Fix x, Fix y, int subtype)
         _dy = 1_x;
     updateImage(_stg.assets.enemy03->getImage(0));
     fireTicks = ScaleFireTicks(stg,
-            ((x.round() ^ (x.round() >> 8) + 79) * 37) & 127);
+            (((x.round() ^ (x.round() >> 8) + 79) * 37) & 127) >> 1);
 }
 
 void Enemy03::doEnemyTick()

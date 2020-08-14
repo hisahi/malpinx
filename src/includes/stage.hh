@@ -14,16 +14,18 @@
 #include "stage.hh"
 #include "layer.hh"
 #include "m_game.hh"
+#include "powerup.hh"
 
 struct ObjectSpawn
 {
     int scrollX;
-    char type;
+    int type;
     int spawnDelay;
     int flags;
     int subtype;
     int y;
     int xrel;
+    PowerupType drop;
 };
 
 struct Stage
