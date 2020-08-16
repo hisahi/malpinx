@@ -1,6 +1,6 @@
 title.xm
-ending.xm
-gameover.xm
+!complete.xm
+!gameover.xm
 hiscore.xm
 boss.xm
 stage1.xm
