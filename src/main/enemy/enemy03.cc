@@ -42,7 +42,7 @@ Enemy03::Enemy03(Shooter &stg, int id, Fix x, Fix y,
         _dy = 1_x;
     updateImage(_stg.assets.enemy03->getImage(0));
     fireTicks = ScaleFireTicks(stg,
-            (((x.round() ^ (x.round() >> 8) + 79) * 37) & 127) >> 1);
+            (((x.round() ^ (x.round() >> 8) * 37) + 15) % 90) >> 1);
 }
 
 void Enemy03::doEnemyTick()

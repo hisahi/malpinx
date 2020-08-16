@@ -18,5 +18,11 @@ ScriptSprite::ScriptSprite(Shooter &stg, int id, int scriptNo)
 void ScriptSprite::tick()
 {
     ++_ticks;
-    kill();
+    switch (_script)
+    {
+    case 1:
+        _stg.endStage();
+    default:
+        kill();
+    }
 }

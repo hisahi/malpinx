@@ -29,6 +29,7 @@ public:
         return static_cast<double>(_v) / (1 << SHIFT); }
         
     const static Fix PI;
+    const static Fix TAU;
     
     int round() const { return static_cast<int>(*this); }
     Fix abs() const { return Fix::raw(_v < 0 ? -_v : _v); }
@@ -97,6 +98,9 @@ private:
 Fix operator "" _x(unsigned long long v);
 Fix operator "" _x(long double v);
 
+inline const Fix Fix::PI = 3.141592653589793_x;
+inline const Fix Fix::TAU = 2 * Fix::PI;
+
 struct FixPolar2D;
 struct Fix2D
 {
@@ -132,6 +136,8 @@ Fix FixSin(Fix radians);
 Fix FixCos(Fix radians);
 Fix FixAtan2(Fix y, Fix x);
 
+Fix SubtractAngles(Fix a, Fix b);
+
 struct FixPolar2D
 {
     FixPolar2D() : length(0_x), angle(0_x) { }
@@ -140,11 +146,13 @@ struct FixPolar2D
     Fix length, angle;
 };
 
-extern const Fix cosineTable[128];
+extern const Fix sineTable[128];
+extern const Fix deltaSineTable[128];
 
 // std::min, std::max specialization for Fix
 namespace std
 {    
+    Fix abs(const Fix &n);
     Fix min(const Fix &a, const Fix &b);
     Fix max(const Fix &a, const Fix &b);
 };

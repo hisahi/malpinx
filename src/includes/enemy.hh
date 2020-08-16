@@ -46,11 +46,11 @@ public:
         PlaySound(SoundEffect::EnemyNoDamage);
         return false;
     };
-    inline bool hitsPlayer()
+    inline bool hitsPlayer() const
     {
         return hits(_stg.player.get());
     };
-    inline void damagePlayerOnTouch()
+    inline void damagePlayerOnTouch() const
     {
         if (hitsPlayer())
             _stg.player->damage(10);
@@ -59,6 +59,10 @@ public:
     {
         _x += _dx;
         _y += _dy;
+    };
+    virtual Fix2D trackTarget() const override
+    {
+        return Fix2D(_width / 2_x, _height / 2_x);
     };
 protected:
     EnemySprite(Shooter &stg, int id, Fix x, Fix y, int hp, PowerupType drop);
@@ -148,6 +152,10 @@ public:
 
 class Boss1a : public BossSprite
 {
+    Fix minY{0_x}, maxY{Fix(S_HEIGHT - 64)};
+    Fix2D vecPl;
+    int mode{0};
+    int modeTicks{0};
 public:
     Boss1a(Shooter &stg, int id, Fix x, Fix y, int subtype, PowerupType drop);
     virtual void doBossTick() override;

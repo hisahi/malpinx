@@ -30,6 +30,11 @@ void Image::clear()
     std::fill(_data.begin(), _data.end(), Color::transparent);
 }
 
+void Image::fill(Color color)
+{
+    std::fill(_data.begin(), _data.end(), color);
+}
+
 constexpr static std::uint16_t maskTable[] = { 0xffff, 0x0000 };
 
 template <bool tiled, bool fast, bool additive>
@@ -220,7 +225,7 @@ void Image::subtractSolid(Color color, int x, int y, int w, int h)
 // only *this* image will be tiled
 template <bool tiled>
 static inline REALLY_INLINE bool overlapsImage(Image &other,
-                    int mw, int mh, std::vector<Color> &_data,
+                    int mw, int mh, const std::vector<Color> &_data,
                     int x, int y, int ox, int oy, int w, int h)
 {
     int fbs = other.width();
@@ -256,7 +261,7 @@ static inline REALLY_INLINE bool overlapsImage(Image &other,
 }
 
 bool Image::overlaps(Image &other, int x, int y,
-                        int ox, int oy, int w, int h)
+                        int ox, int oy, int w, int h) const
 {
     return overlapsImage<false>(other, _width, _height, _data,
                                 x, y, ox, oy, w, h);
@@ -264,7 +269,7 @@ bool Image::overlaps(Image &other, int x, int y,
 
 // only *this* image will be tiled
 bool Image::overlapsTiled(Image &other, int x, int y,
-                        int ox, int oy, int w, int h)
+                        int ox, int oy, int w, int h) const
 {
     return overlapsImage<true>(other, _width, _height, _data,
                                 x, y, ox, oy, w, h);

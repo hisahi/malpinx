@@ -16,6 +16,8 @@
 #include "bullet.hh"
 #include "fix.hh"
 
+static int droneNextTarget{0};
+
 PlayerSprite::PlayerSprite(int id, std::shared_ptr<Image> img, Fix x, Fix y,
     int flags, std::shared_ptr<Spritesheet> playerSprites,
     std::shared_ptr<Shooter> stg)
@@ -100,12 +102,19 @@ void PlayerSprite::onWeaponChange()
 inline void PlayerSprite::fireTick()
 {
     if (gameInput.fire && fireDelay == 0)
+    {
         fireDelay = FireWeapon(*game, game->activeWeapon,
                 game->weaponLevels[game->activeWeapon], _x + 31, _y + 10);
+        for (auto &drone : game->drones)
+            FireDroneWeapon(*game, game->activeWeapon,
+                        drone->x() + 16, drone->y() + 8);
+    }
     else if (fireDelay > 0)
         --fireDelay;
     if (gameInputEdge.sigma && sigmaDelay == 0 && game->useSigma())
+    {
         sigmaDelay = FireSigma(*game, _x + 31, _y + 10);
+    }
     else if (sigmaDelay > 0)
         --sigmaDelay;
 }
@@ -179,4 +188,71 @@ inline void PlayerSprite::setActiveSprite(int index)
         updateImage(sheet->getImage(index));
         activeSprite = index;
     }
+}
+
+DroneSprite::DroneSprite(Shooter &stg, int id,
+        PlayerSprite &player, int droneNum)
+    : Sprite(id, nullptr, Fix(S_WIDTH), Fix(S_HEIGHT), SPRITE_NOSCROLL
+            | SPRITE_COLLIDE_SPRITES | SPRITE_SURVIVE_OFF_SCREEN
+            | SPRITE_ONLYBOXCHECK,
+            SpriteType::Drone),
+        game(stg), player(player), droneNum(droneNum), spawnTicks(60),
+        centerX(player.x()), centerY(player.y())
+{
+    droneHitTargets.reserve(8);
+    _hitbox = Hitbox(1, 2, 13, 12);
+}
+
+void DroneSprite::blit(Image &fb, int xoff, int yoff) const
+{
+    int ox = (_x + xoff).round(), oy = (_y + yoff).round();
+    game.assets.drone0->blit(fb,
+        (6 * game.activeWeapon) + ((_ticks / 3) % 6), ox + 2, oy + 2);
+    game.assets.drone1->blit(fb, (_ticks / 6) % 8, ox, oy);
+}
+
+void DroneSprite::explode()
+{
+    game.explode(_x + 8, _y + 8, ExplosionSize::Medium2, true);
+    kill();
+}
+
+void DroneSprite::tick()
+{
+    Fix distance = 30_x - (spawnTicks / 2_x);
+    int sineIndex = ((game.totalTicks << 1) + droneNum * 64) % 128;
+    int cosineIndex = (sineIndex + 32) % 128;
+    _x = centerX - distance * sineTable[sineIndex] + 8;
+    _y = centerY + distance * sineTable[cosineIndex];
+    Fix2D discrepancy = Fix2D(player.x() - centerX, player.y() - centerY);
+    if (discrepancy)
+    {
+        FixPolar2D dPolar = FixPolar2D(discrepancy);
+        dPolar.length = std::min(2_x, dPolar.length);
+        discrepancy = Fix2D(dPolar);
+        centerX += discrepancy.x;
+        centerY += discrepancy.y;
+    }
+
+    if (!damageTicks)
+    {
+        int index = 0;
+        droneHitTargets.clear();
+        for (auto &s : game.spriteLayer2)
+            if (s && s->type() == SpriteType::Enemy && hits(*s))
+                droneHitTargets.push_back(s.get());
+        if (droneHitTargets.size() > 1)
+            index = droneNextTarget = (droneNextTarget + 1)
+                                        % droneHitTargets.size();
+        if (index < droneHitTargets.size())
+        {
+            droneHitTargets[index]->damage(5);
+            damageTicks = 10;
+        }
+    }
+    else
+        --damageTicks;
+    if (spawnTicks)
+        --spawnTicks;
+    ++_ticks;
 }

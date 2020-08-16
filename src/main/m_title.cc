@@ -22,8 +22,13 @@
 #include "m_game.hh"
 #include "logic.hh"
 #include "strutil.hh"
+#include "stage.hh"
+#include "modes.hh"
 
 std::unique_ptr<TitleScreen> title;
+
+static const std::string HIGHSCORE_NAME_CHARS =
+    " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_/+?*<>";
 
 void InitTitleScreen(bool instant)
 {
@@ -33,6 +38,14 @@ void InitTitleScreen(bool instant)
         title->mainMenu();
     else
         FadeReset();
+}
+
+void InitNameEntry(DifficultyLevel diff, PlaybackMode pmode, int rank,
+                    unsigned long score, int stageNum)
+{
+    PlaySong(MusicTrack::NameEntry);
+    title = std::make_unique<TitleScreen>();
+    title->nameEntry(diff, pmode, rank, stageNum, score);
 }
 
 TitleScreen::TitleScreen()
@@ -70,21 +83,120 @@ void TitleScreen::mainMenu(int cursorAt /*= 0*/)
     textLayer.writeString(menuFont, 28, 28, VERSION);
 }
 
+void TitleScreen::nameEntry(DifficultyLevel diff, PlaybackMode pmode, int rank,
+                    int stageNum, unsigned long score)
+{
+    mode = TitleMode::HighScore;
+    newScoreDifficulty = scoreDifficulty = diff;
+    newScorePmode = scorePmode = pmode;
+    highScoreIndex = rank - 1;
+    drawCursor = false;
+    nameEntryChars[0] = 1;
+    nameEntryChars[1] = nameEntryChars[2] = 0;
+    nameEntryCharIndex = 0;
+    highScoreEntry = {
+        .stage = static_cast<char>(stageNum),
+        .score = score
+    };
+    highScoreCharBlink = 0;
+    nameEntryCharIndexCopy = 1;
+    updateHighScores();
+}
+
 void TitleScreen::highScores()
 {
     mode = TitleMode::HighScore;
+    drawCursor = false;
+    scoreDifficulty = difficulty;
+    scorePmode = pmode;
+    highScoreIndex = -1;
+    updateHighScores();
+}
+
+const std::string rankNames[] = { " 1ST", " 2ND", " 3RD", " 4TH", " 5TH",
+                                  " 6TH", " 7TH", " 8TH", " 9TH", "10TH" };
+const std::string difficultyNames[] = { "EASY", "NORMAL", "HARD", "BIZARRE" };
+const std::string playbackModeNames[] = { "STANDARD", "INFINITE" };
+
+void TitleScreen::updateHighScores()
+{
     textLayer.clear();
     
     drawCursor = false;
 
-    textLayer.writeString(menuFont, 2, 2, "HIGH SCORES");
-    int y;
-    for (int i = 0; i < 10; ++i)
+    textLayer.writeString(menuFont, 2, 2, "MALPINX       HIGH SCORES");
+    textLayer.writeString(menuFont, 2, 4, "MODE:");
+    textLayer.writeString(menuFont, 14, 4, 
+        leftAlignPad(difficultyNames[static_cast<int>(scoreDifficulty)], 10));
+    textLayer.writeString(menuFont, 24, 4, 
+        leftAlignPad(playbackModeNames[static_cast<int>(scorePmode)], 10));
+    textLayer.writeString(menuFont, 4, 6, "RANK");
+    textLayer.writeString(menuFont, 14, 6, "SCORE");
+    textLayer.writeString(menuFont, 24, 6, "STAGE");
+    textLayer.writeString(menuFont, 32, 6, "NAME");
+    
+    int y, j = 0;
+    int cnt = GetHighScoreCount(scoreDifficulty, scorePmode);
+    for (int i = 0; i < HIGHSCORE_COUNTS; ++i)
     {
-        y = 4 + i * 2;
-        textLayer.writeString(menuFont, 4, y, "TODO");
-        textLayer.writeString(menuFont, 24, y, "000000000000");
+        y = 8 + i * 2;
+        if (j >= cnt && (nameEntryCharIndex < 0 || i != highScoreIndex))
+        {
+            textLayer.writeString(menuFont, 4, y, leftAlignPad("...", 32));
+            continue;
+        }
+
+        Spritesheet &font = (scoreDifficulty == newScoreDifficulty
+                    && scorePmode == newScorePmode
+                    && i == highScoreIndex) 
+                ? hiscFont 
+                : menuFont;
+        ScoreEntry entry = (i == highScoreIndex && nameEntryCharIndex >= 0)
+                ? highScoreEntry
+                : GetHighScore(scoreDifficulty, scorePmode, j++);
+
+        textLayer.writeString(font, 4, y, rankNames[i]);
+        textLayer.writeString(font, 12, y, rightAlignPad(
+            std::to_string(entry.score), 9));
+        if (entry.stage > STAGE_COUNT)
+            textLayer.writeString(font, 24, y, "CLEAR");
+        else
+            textLayer.writeString(font, 26, y,
+                                std::to_string(entry.stage));
+        textLayer.writeChar(font, 33, y, entry.name[0]);
+        textLayer.writeChar(font, 34, y, entry.name[1]);
+        textLayer.writeChar(font, 35, y, entry.name[2]);
     }
+}
+
+void TitleScreen::updateEntryHighscore()
+{
+    if (nameEntryCharIndex < 0) return;
+    int y = 8 + highScoreIndex * 2;
+    
+    textLayer.writeString(hiscFont, 4, y, rankNames[highScoreIndex]);
+    textLayer.writeString(hiscFont, 12, y, rightAlignPad(
+        std::to_string(highScoreEntry.score), 9));
+    if (highScoreEntry.stage > STAGE_COUNT)
+        textLayer.writeString(hiscFont, 24, y, "CLEAR");
+    else
+        textLayer.writeString(hiscFont, 26, y,
+                            std::to_string(highScoreEntry.stage));
+    for (int i = 0; i < 3; ++i)
+        textLayer.writeChar(hiscFont, 33 + i, y, 
+            nameEntryCharIndex == i && highScoreCharBlink >= 50
+                ? ' ' : HIGHSCORE_NAME_CHARS[nameEntryChars[i]]);
+    highScoreCharBlink = (highScoreCharBlink + 1) % 60;
+}
+
+void TitleScreen::finishNameEntry()
+{
+    for (int i = 0; i < 3; ++i)
+        highScoreEntry.name[i] = HIGHSCORE_NAME_CHARS[nameEntryChars[i]];
+    nameEntryCharIndex = -1;
+    SubmitHighScore(newScoreDifficulty, newScorePmode, highScoreEntry);
+    FadeOutSong();
+    updateHighScores();
 }
 
 void TitleScreen::options(int cursorAt /*= 0*/)
@@ -126,9 +238,6 @@ void TitleScreen::controlOptions(bool gamepad)
     for (int i = 0; i <= cursorMaxOptions; ++i)
         drawControlOption(i);
 }
-
-const std::string difficultyNames[] = { "EASY", "NORMAL", "HARD", "BIZARRE" };
-const std::string playbackModeNames[] = { "STANDARD", "INFINITE" };
 
 void TitleScreen::drawOption(int option)
 {
@@ -242,7 +351,18 @@ void TitleScreen::exitMenu()
     case TitleMode::MainMenu:
         return;
     case TitleMode::HighScore:
-        mainMenu(1);
+        if (nameEntryCharIndex >= 0)
+            finishNameEntry();
+        else
+        {
+            if (highScoreIndex >= 0)
+            {
+                highScoreIndex -= 1;
+                StopSong();
+                PlaySong(MusicTrack::Title);
+            }
+            mainMenu(1);
+        }
         return;
     case TitleMode::Options:
         if (cancelConfirm())
@@ -314,6 +434,18 @@ void TitleScreen::selectMenu()
         return;
     case TitleMode::HighScore:
         PlayMenuSound(SoundEffect::MenuSelectOption);
+        if (nameEntryCharIndex >= 0)
+        {
+            if (++nameEntryCharIndex >= 3)
+                finishNameEntry();
+            if (nameEntryCharIndex == nameEntryCharIndexCopy)
+            {
+                ++nameEntryCharIndexCopy;
+                nameEntryChars[nameEntryCharIndex]
+                    = nameEntryChars[nameEntryCharIndex - 1];
+            }
+            break;
+        }
         exitMenu();
         break;
     case TitleMode::Options:
@@ -510,6 +642,8 @@ void TitleScreen::draw(Image &fb)
         gameLogo->blit(fb, 32, 32);
         goto rest;
     case TitleMode::HighScore:
+        if (nameEntryCharIndex >= 0)
+            updateEntryHighscore();
     case TitleMode::Options:
     case TitleMode::OptionsControlKeyboard:
     case TitleMode::OptionsControlGamepad:
@@ -540,6 +674,80 @@ void TitleScreen::tick()
     case TitleMode::HighScore:
         if ((ticks % 4) == 0)
             flash.fade(1);
+        if (menuInput.left)
+        {
+            PlayMenuSound(SoundEffect::MenuChangeOption);
+            if (nameEntryCharIndex >= 0)
+            {
+                nameEntryCharIndex = std::max(nameEntryCharIndex - 1, 0);
+                highScoreCharBlink = 0;
+            }
+            else
+            {
+                int newDl = static_cast<int>(scoreDifficulty) - 1;
+                if (newDl < 0) newDl = maxDifficultyLevel;
+                scoreDifficulty = static_cast<DifficultyLevel>(newDl);
+                updateHighScores();
+            }
+        }
+        if (menuInput.right)
+        {
+            PlayMenuSound(SoundEffect::MenuChangeOption);
+            if (nameEntryCharIndex >= 0)
+            {
+                nameEntryCharIndex = std::min(nameEntryCharIndex + 1, 2);
+                if (nameEntryCharIndex == nameEntryCharIndexCopy)
+                {
+                    ++nameEntryCharIndexCopy;
+                    nameEntryChars[nameEntryCharIndex]
+                        = nameEntryChars[nameEntryCharIndex - 1];
+                }
+                highScoreCharBlink = 0;
+            }
+            else
+            {
+                int newDl = static_cast<int>(scoreDifficulty) + 1;
+                if (newDl > maxDifficultyLevel) newDl = 0;
+                scoreDifficulty = static_cast<DifficultyLevel>(newDl);
+                updateHighScores();
+            }
+        }
+        if (menuInput.up)
+        {
+            PlayMenuSound(SoundEffect::MenuChangeOption);
+            if (nameEntryCharIndex >= 0)
+            {
+                int i = nameEntryCharIndex;
+                if (--nameEntryChars[i] < 0)
+                    nameEntryChars[i] = HIGHSCORE_NAME_CHARS.length() - 1;
+                highScoreCharBlink = 0;
+            }
+            else
+            {
+                int newPm = static_cast<int>(scorePmode) - 1;
+                if (newPm < 0) newPm = maxPlaybackMode;
+                scorePmode = static_cast<PlaybackMode>(newPm);
+                updateHighScores();
+            }
+        }
+        if (menuInput.down)
+        {
+            PlayMenuSound(SoundEffect::MenuChangeOption);
+            if (nameEntryCharIndex >= 0)
+            {
+                int i = nameEntryCharIndex;
+                if (++nameEntryChars[i] >= HIGHSCORE_NAME_CHARS.length())
+                    nameEntryChars[i] = 0;
+                highScoreCharBlink = 0;
+            }
+            else
+            {
+                int newPm = static_cast<int>(scorePmode) + 1;
+                if (newPm > maxPlaybackMode) newPm = 0;
+                scorePmode = static_cast<PlaybackMode>(newPm);
+                updateHighScores();
+            }
+        }
         if (menuInput.select)
             selectMenu();
         break;

@@ -16,6 +16,8 @@
 #include "m_game.hh"
 #include "powerup.hh"
 
+constexpr int STAGE_COUNT = 6;
+
 struct ObjectSpawn
 {
     int scrollX;

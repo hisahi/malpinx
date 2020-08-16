@@ -37,7 +37,9 @@ enum class SoundEffect
     LostShield,
     GotShield,
     ScoreNotMax,
-    FireSigma
+    FireSigma,
+    BonusRackUp,
+    Boss1aBeam
 };
 
 int PlaySound(int soundNum, float volume = 1.0f, float pan = 0.0f,

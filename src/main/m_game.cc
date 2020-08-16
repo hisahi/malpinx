@@ -27,7 +27,6 @@
 #include "powerup.hh"
 
 std::shared_ptr<Shooter> stg;
-static constexpr int STAGE_COUNT = 6;
 
 static inline std::shared_ptr<Spritesheet> loadSprites(const std::string &s)
 {
@@ -40,6 +39,8 @@ static void LoadAssets()
     stg->assets.playerShip = loadSprites("ship");
     stg->assets.powerupSprites = loadSprites("powerups");
     stg->assets.bulletSprites = loadSprites("bullets");
+    stg->assets.drone0 = loadSprites("drone0");
+    stg->assets.drone1 = loadSprites("drone1");
     stg->assets.sigma = loadSprites("sigma");
     stg->assets.enemy01 = loadSprites("enemy01");
     stg->assets.enemy02 = loadSprites("enemy02");
@@ -134,6 +135,7 @@ void ScreenPopup::showComplete()
 {
     // COMPLETE
     showString(" \x07\x0f\x0d\x10\x0c\x08\x13\x08");
+    permanent = true;
 }
 
 void ScreenPopup::showGameOver()
@@ -154,13 +156,18 @@ inline void Shooter::blitPlayer(Image &fb, int oy)
 
 void Shooter::blit(Image &fb)
 {
+    fb.clear();
     ++totalFrames;
-    if (_isGameOver)
+    if (_isGameOver || _isComplete)
     {
-        pauseBuffer.blit(fb);
+        if (_isComplete)
+            hud.blit(fb);
+        else
+            pauseBuffer.blit(fb);
         popup->blit(fb);
+        menu.blit(fb);
         return;
-    } 
+    }
     else if (paused || continueScreen)
     {
         pauseBuffer.blit(fb);
@@ -168,7 +175,6 @@ void Shooter::blit(Image &fb)
         menuSprites.blit(fb, 0, 124, 124 + 16 * pauseCursor);
         return;
     }
-    fb.clear();
     if (stage)
     {
         int oy = static_cast<int>(-stg->scroll.y);
@@ -184,6 +190,9 @@ void Shooter::blit(Image &fb)
             if (!sprite->hasFlag(SPRITE_NODRAW))
                 sprite->blit(gameArea, 0, oy);
         for (auto &sprite : spriteLayer2)
+            if (!sprite->hasFlag(SPRITE_NODRAW))
+                sprite->blit(gameArea, 0, oy);
+        for (auto &sprite : drones)
             if (!sprite->hasFlag(SPRITE_NODRAW))
                 sprite->blit(gameArea, 0, oy);
         if (player)
@@ -217,7 +226,7 @@ static inline bool tickSprite(Sprite &sprite)
     return sprite.isDead();
 }
 
-static inline bool tickSpritePtr(std::unique_ptr<Sprite> &sprite)
+static inline bool tickSpritePtr(std::shared_ptr<Sprite> &sprite)
 {
     return tickSprite(*sprite);
 }
@@ -235,17 +244,34 @@ void Shooter::spawnPlayer(bool respawn)
 }
 
 inline void Shooter::updateSprites(const int layer,
-        std::vector<std::unique_ptr<Sprite>> &sprites)
+        std::vector<std::shared_ptr<Sprite>> &sprites)
 {
     sprites.erase(
             std::remove_if(sprites.begin(), sprites.end(), tickSpritePtr),
             sprites.end());
 }
 
+static inline bool tickDroneSpritePtr(std::shared_ptr<DroneSprite> &sprite)
+{
+    return tickSprite(*sprite);
+}
+
+inline void Shooter::updateDroneSprites(
+        std::vector<std::shared_ptr<DroneSprite>> &sprites)
+{
+    sprites.erase(
+            std::remove_if(sprites.begin(), sprites.end(), tickDroneSpritePtr),
+            sprites.end());
+}
+
 void Shooter::addScore(int points)
 {
-    if (difficulty == DifficultyLevel::EASY && highScore > 0 &&
+    if (_scoreOneUps &&
+        ((difficulty == DifficultyLevel::EASY && highScore > 0 &&
             score < highScore && score + points >= highScore)
+        || (ONEUP_EVERY_POINTS &&
+                (score + points) / ONEUP_EVERY_POINTS
+                         > score / ONEUP_EVERY_POINTS)))
         collectOneUp();
     if ((score += points) > highScore)
     {
@@ -342,8 +368,18 @@ void Shooter::updateHUD(HUDElement element)
 
 void Shooter::loadStage(int stageNum)
 {
-    if (stageNum == STAGE_COUNT)
-        return;
+    if (stageNum > STAGE_COUNT)
+    {
+        switch (pmode)
+        {
+        case PlaybackMode::NORMAL:
+            gameComplete();
+            return;
+        case PlaybackMode::INFINITE:
+            stageNum = 0;
+        }
+    }
+    updateHUD(HUDElement::Stage);
     stage = std::make_unique<Stage>(
                 LoadStage("stage" + std::to_string(stageNum), *this));
     int py = stage->spawnLevelY;
@@ -373,31 +409,42 @@ void Shooter::loadStage(int stageNum)
 
 void Shooter::endStage()
 {
-    if (stageNum == STAGE_COUNT)
-    {
-        // game complete
-        endGame();
-    }
     stageFade = -1;
 }
 
 void Shooter::unloadStage()
 {
-    stage = nullptr;
     gameArea.clear();
     spriteLayer0.clear();
     spriteLayer1.clear();
     spriteLayer2.erase(
             std::remove_if(spriteLayer2.begin(), spriteLayer2.end(),
-                [](const std::unique_ptr<Sprite> &s) { 
+                [](const std::shared_ptr<Sprite> &s) { 
                     return s->type() != SpriteType::Player
                         && s->type() != SpriteType::Drone;
                 }),
             spriteLayer2.end());
     spriteLayer3.clear();
     spriteLayer4.clear();
-    ++stageNum;
-    updateHUD(HUDElement::Stage);
+    stage = nullptr;
+}
+
+void Shooter::runScript(int delay, int scriptNum)
+{
+    if (delay)
+        stage->delayedObjectSpawns.push_back({
+            .scrollX = 0,
+            .type = static_cast<int>(ObjectType::Script),
+            .spawnDelay = delay,
+            .flags = 0,
+            .subtype = scriptNum,
+            .y = 0,
+            .xrel = 0,
+            .drop = PowerupType::None
+        });
+    else
+        spriteLayer4.push_back(std::make_unique<ScriptSprite>(
+            *this, nextSpriteID(), scriptNum));
 }
 
 void Shooter::pauseGame()
@@ -448,23 +495,147 @@ void Shooter::useContinue()
     ResumeSound();
     --stageNum;
     xSpeed = Fix(0);
+    _continuesUsed += 1;
     usedContinue = true;
     endStage();
 }
 
+void InitNameEntry(DifficultyLevel diff, PlaybackMode pmode, int rank,
+                    unsigned long score, int stageNum);
 void Shooter::endGame()
 {
     StopSong();
     StopSounds();
-    JumpMode(GameMode::TitleScreen, []() 
-    {   
-        InitTitleScreen(false);
+
+    DifficultyLevel diff = difficulty;
+    PlaybackMode pmode = this->pmode;
+    unsigned long score = this->score;
+    int stageNum = this->stageNum;
+
+    JumpMode(GameMode::TitleScreen, [=]() 
+    {
         UnloadGame();
+        int rank = IsNewHighScore(diff, pmode, score, stageNum);
+        if (rank)
+            InitNameEntry(diff, pmode, rank, score, stageNum);
+        else
+            InitTitleScreen(false);
     });
+}
+
+void Shooter::gameComplete()
+{
+    _isComplete = true;
+    usedContinue = false;
+    pauseBuffer.fill(Color(0, 0, 0));
+    popup->showComplete();
+}
+
+inline void Shooter::gameCompleteTick(int ticks)
+{
+    if (ticks < 500)
+    {
+        int bonus = 0, droneCount;
+        switch (ticks)
+        {
+        case 100:
+            bonus = lives * 5000;
+            menu.writeString(menuFont, 3, 20, "LEFT BONUS");
+            menu.writeStringRightAlign(menuFont, 19, 20,
+                                std::to_string(lives));
+            menu.writeString(menuFont, 20, 20, "`  5000 = ");
+            menu.writeStringRightAlign(menuFont, 36, 20, std::to_string(bonus));
+            break;
+        case 150:
+            bonus = sigmas * 2500;
+            menu.writeString(menuFont, 3, 21, "SIGMA BONUS");
+            menu.writeStringRightAlign(menuFont, 19, 21,
+                                std::to_string(sigmas));
+            menu.writeString(menuFont, 20, 21, "`  2500 = ");
+            menu.writeStringRightAlign(menuFont, 36, 21, std::to_string(bonus));
+            break;
+        case 200:
+            droneCount = drones.size();
+            bonus = droneCount * 2000;
+            menu.writeString(menuFont, 3, 22, "DRONE BONUS");
+            menu.writeStringRightAlign(menuFont, 19, 22,
+                                std::to_string(droneCount));
+            menu.writeString(menuFont, 20, 22, "`  2000 = ");
+            menu.writeStringRightAlign(menuFont, 36, 22, std::to_string(bonus));
+            break;
+        case 250:
+            if (_noMiss)
+            {
+                bonus = 1000000;
+                menu.writeString(menuFont, 3, 23, "NO MISS BONUS");
+                menu.writeStringRightAlign(menuFont, 36, 23,
+                                std::to_string(bonus));
+            } 
+            else if (!_continuesUsed)
+            {
+                bonus = 250000;
+                menu.writeString(menuFont, 3, 23, "NO CONTINUE BONUS");
+                menu.writeStringRightAlign(menuFont, 36, 23,
+                                std::to_string(bonus));
+            }
+            else
+            {
+                menu.writeString(menuFont, 3, 23, "CREDITS USED");
+                menu.writeString(menuFont, 19, 23,
+                                std::to_string(_continuesUsed));
+            }
+            break;
+        case 300:
+            menu.writeString(menuFont, 3, 25, "TOTAL BONUS");
+            menu.writeStringRightAlign(menuFont, 36, 25,
+                                std::to_string(gameEndBonus));
+            if (gameEndBonus > 1000000)
+                gameEndBonusSubtract = 5000;
+            else if (gameEndBonus > 100000)
+                gameEndBonusSubtract = 2000;
+            else
+                gameEndBonusSubtract = 500;
+            _scoreOneUps = false;
+        }
+        gameEndBonus += bonus;
+    }
+    else
+    {
+        if (_bonusCounted)
+        {
+            if (!IsSongPlaying())
+                StartFadeOut([this]() { endGame(); });
+        }
+        else if (gameEndBonus)
+        {
+            if (gameEndBonus > gameEndBonusSubtract)
+            {   
+                gameEndBonus -= gameEndBonusSubtract;
+                addScore(gameEndBonusSubtract);
+            }
+            else
+            {
+                gameEndBonus = 0;
+                PlaySong(MusicTrack::Complete);
+                _bonusCounted = true;
+                addScore(gameEndBonus);
+            }
+            if (!(ticks % 6))
+                PlayGunSound(SoundEffect::BonusRackUp);
+            menu.writeString(menuFont, 3, 25, "TOTAL BONUS");
+            menu.writeString(menuFont, 27, 25, 
+                rightAlignPad(std::to_string(gameEndBonus), 10));
+        }
+    }
 }
 
 inline bool Shooter::pauseTick()
 {
+    if (_isComplete)
+    {
+        gameCompleteTick(_gameCompleteTicks++);
+        return true;
+    }
     if (!continueScreen && !_isGameOver &&
             (gameInputEdge.pause || menuInput.exit))
     {
@@ -505,13 +676,13 @@ inline bool Shooter::pauseTick()
             }
             else if (continueScreen)
             {
+                menu.clear();
                 switch (pauseCursor)
                 {
                 case 0:
                     useContinue();
                     break;
                 case 1:
-                    menu.clear();
                     gameOver();
                     break;
                 }
@@ -598,12 +769,13 @@ void Shooter::respawnPlayer()
 
 void Shooter::tick()
 {
-    if (!stage)
-        loadStage(stageNum);
+    if (!_isComplete && !stage)
+        loadStage(++stageNum);
     if (!usedContinue)
     {
         if (pauseTick()) return;
         controlTick();
+        ++totalTicks;
         if (stageFade > 0)
             if (fade.fadeIn(1))
                 stageFade = 0;
@@ -623,6 +795,7 @@ void Shooter::tick()
         updateSprites(2, spriteLayer2);
         updateSprites(3, spriteLayer3);
         updateSprites(4, spriteLayer4);
+        updateDroneSprites(drones);
         if (player)
             tickSprite(*player);
     }
@@ -642,6 +815,7 @@ void Shooter::gameOver()
 {
     continueScreen = false;
     _isGameOver = true;
+    usedContinue = false;
     popup->showGameOver();
     PlaySong(MusicTrack::GameOver);
 }
@@ -649,13 +823,21 @@ void Shooter::gameOver()
 void Shooter::spawnScore(Fix x, Fix y, int score)
 {
     addScore(score);
-    spriteLayer3.push_back(std::make_unique<ScoreSprite>(
+    spriteLayer3.push_back(std::make_shared<ScoreSprite>(
         nextSpriteID(), x, y, score));
 }
 
 bool Shooter::collectOneUp()
 {
-    if (lives >= 10) return false;
+    switch (pmode)
+    {
+    case PlaybackMode::NORMAL:
+        if (lives >= MAXIMUM_LIVES_NORMAL) return false;
+        break;
+    case PlaybackMode::INFINITE:
+        if (lives >= MAXIMUM_LIVES_INFINITE) return false;
+        break;
+    }
     PlaySound(SoundEffect::OneUp);
     ++lives;
     updateHUD(HUDElement::Lives);
@@ -696,8 +878,10 @@ bool Shooter::useSigma()
 
 bool Shooter::collectDrone()
 {
-    if (true) return false;
+    if (drones.size() >= 2) return false;
     PlaySound(SoundEffect::WeaponUpLevel);
+    drones.push_back(std::make_shared<DroneSprite>(
+        *this, nextSpriteID(), *player, drones.size()));
     return true;
 }
 
@@ -709,13 +893,13 @@ Fix2D Shooter::vecToPlayer(Fix x, Fix y)
 
 void Shooter::spawnPowerup(Fix x, Fix y, PowerupType type)
 {
-    spriteLayer2.push_back(std::make_unique<PowerupSprite>(
+    spriteLayer2.push_back(std::make_shared<PowerupSprite>(
         *this, nextSpriteID(), x - 8, y - 8, type));
 }
 
 void Shooter::explode(Fix centerX, Fix centerY, ExplosionSize size, bool quiet)
 {
-    stg->spriteLayer4.push_back(std::make_unique<ExplosionSprite>(
+    stg->spriteLayer4.push_back(std::make_shared<ExplosionSprite>(
         stg->nextSpriteID(), centerX, centerY, size, true));
     if (!quiet)
     {
@@ -737,8 +921,12 @@ void Shooter::explode(Fix centerX, Fix centerY, ExplosionSize size, bool quiet)
 
 void Shooter::killPlayer()
 {
+    for (auto &drone: drones)
+        drone->explode();
+    drones.clear();
     explode(player->x() + 16, player->y() + 8, ExplosionSize::Large, false);
     _respawnTicks = 50;
+    _noMiss = false;
     player->kill();
     player = nullptr;
 }

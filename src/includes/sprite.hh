@@ -79,7 +79,9 @@ public:
     void computeCollisionGrid();
     void updateHitbox(int x, int y, int w, int h);
     void updateImage(const std::shared_ptr<Image>& img, bool hitbox = true);
-    bool hitsForeground(ForegroundLayer &layer, LayerScroll scroll);
+    void updateImageCentered(const std::shared_ptr<Image>& img,
+                            bool hitbox = true);
+    bool hitsForeground(ForegroundLayer &layer, LayerScroll scroll) const;
     bool boxCheck(const Sprite &other) const;
     bool pixelCheck(const Sprite &other) const;
     bool isDead() const { return _dead; }
@@ -90,6 +92,7 @@ public:
     virtual void tick() { }
     // returns whether dead
     virtual bool damage(int dmg) { return false; }
+    virtual Fix2D trackTarget() const { return Fix2D(0_x, 0_x); };
     void move(Fix x, Fix y) { _x += x; _y += y; }
     
     inline bool fastHitCheck(const Sprite &other) const
@@ -99,7 +102,7 @@ public:
     inline bool hits(const Sprite &other) const
     {
         return fastHitCheck(other) && boxCheck(other) &&
-            (hasFlag(SPRITE_ONLYBOXCHECK) | pixelCheck(other));
+            (hasFlag(SPRITE_ONLYBOXCHECK) || pixelCheck(other));
     }
     inline bool hits(Sprite *other) const
     {
@@ -153,6 +156,15 @@ public:
         static_assert(std::is_base_of<Sprite, T>::value,
                                     "must be sprite type");
         return std::make_unique<T>(id, sprites.at(spriteIndex), x, y,
+                                    flags, std::forward<Args>(args)...);
+    }
+    template <class T, class... Args>
+    std::shared_ptr<T> makeSharedSprite(int id, int spriteIndex, Fix x, Fix y,
+            int flags, Args &&... args) const
+    {
+        static_assert(std::is_base_of<Sprite, T>::value,
+                                    "must be sprite type");
+        return std::make_shared<T>(id, sprites.at(spriteIndex), x, y,
                                     flags, std::forward<Args>(args)...);
     }
 private:

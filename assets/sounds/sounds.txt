@@ -23,3 +23,5 @@ shldhit.wav
 shield.wav
 bonus.wav
 sigma.wav
+bonusctr.wav
+b1abeam.wav

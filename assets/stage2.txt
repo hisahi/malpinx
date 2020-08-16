@@ -1,0 +1,2 @@
+layerbi space, 1/2, 1/2, 0, 0
+sprite 600, 1, 0, 1, 0, 50

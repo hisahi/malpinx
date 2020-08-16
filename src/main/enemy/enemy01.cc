@@ -23,6 +23,6 @@ void Enemy01::doEnemyTick()
     if (!(_ticks & 7))
         updateImage(_stg.assets.enemy01->getImage((_ticks >> 3) & 7));
     damagePlayerOnTouch();
-    _dy = 2_x * sineMul * cosineTable[(_ticks << 2) & 127];
+    _dy = 2_x * sineMul * deltaSineTable[(_ticks << 2) & 127];
     move();
 }

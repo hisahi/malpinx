@@ -26,6 +26,9 @@ enum class MusicTrack
     FinalStage
 };
 
+// Complete and GameOver should NOT loop!
+// abase should be able to tell if it has stopped playing!
+
 void LoadSongList();
 void PlaySong(MusicTrack track);
 bool IsSongPlaying();

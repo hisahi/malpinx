@@ -16,7 +16,7 @@ Enemy04::Enemy04(Shooter &stg, int id, Fix x, Fix y,
 {
     _score = 300;
     fireTicks = ScaleFireTicks(stg,
-            (((x.round() ^ (x.round() >> 8) + 79) * 37) % 90) >> 1);
+            (((x.round() ^ (x.round() >> 8) * 37) + 15) % 90) >> 1);
 }
 
 void Enemy04::doEnemyTick()

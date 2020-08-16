@@ -44,6 +44,16 @@ void Sprite::updateImage(const std::shared_ptr<Image>& img,
         updateHitbox(0, 0, _width, _height);
 }
 
+void Sprite::updateImageCentered(const std::shared_ptr<Image>& img,
+                        bool hitbox /*= true */)
+{
+    _x += _width / 2_x;
+    _y += _height / 2_x;
+    updateImage(img, hitbox);
+    _x -= _width / 2_x;
+    _y -= _height / 2_x;
+}
+
 void Sprite::computeCollisionGrid()
 {
     if (_dead) 
@@ -64,7 +74,7 @@ void Sprite::computeCollisionGrid()
     _colgrid = gridPoints[(yBase << 6) | (yEnd << 4) | (xBase << 2) | xEnd];
 }
 
-bool Sprite::hitsForeground(ForegroundLayer &layer, LayerScroll scroll)
+bool Sprite::hitsForeground(ForegroundLayer &layer, LayerScroll scroll) const
 {
     return layer.hitsSprite(*_img, scroll, _x, _y);
 }

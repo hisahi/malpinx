@@ -24,6 +24,6 @@ void Enemy02::doEnemyTick()
         updateImage(_stg.assets.enemy02->getImage((_ticks >> 3) & 3));
     damagePlayerOnTouch();
     move();
-    _x -= 4_x * cosineTable[_ticks & 127];
-    _y -= (yflip ? -4_x : 4_x) * cosineTable[(_ticks + 16) & 127];
+    _x -= 4_x * deltaSineTable[_ticks & 127];
+    _y -= (yflip ? -4_x : 4_x) * deltaSineTable[(_ticks + 16) & 127];
 }

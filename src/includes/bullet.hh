@@ -15,11 +15,12 @@
 
 enum class BulletType
 {
-    Pulse1, Pulse2, Pulse3,
+    Pulse1, Pulse2, Pulse3, PulseDrone,
     Spray1, Spray2, Spray3,
-    Beam1, Beam2, Beam3,
-    Track1, Track2, Track3,
+    Beam1, Beam2, Beam3, BeamDrone,
+    Track1, Track2, Track3, TrackDrone,
     Enemy3, Enemy4, Enemy6,
+    Boss1aBeam,
     Sigma,
     SuicideBullet
 };
@@ -34,6 +35,7 @@ class BulletSprite : public Sprite
 public:
     BulletSprite(Shooter &stg, int id, Fix x, Fix y, Fix dx, Fix dy,
                     BulletType type, BulletSource source);
+    void tickTrack(int trackLevel);
     void tick() override;
     void explode();
 private:
@@ -50,11 +52,13 @@ private:
     short _animSpeed{1};
     bool _pierce{false};
     bool _sigma{false};
-    std::vector<std::reference_wrapper<Sprite>> hitTargets;
+    std::vector<Sprite *> hitTargets;
+    std::weak_ptr<Sprite> trackTarget;
 };
 
 void ResetBullets(int stageNum);
 int FireWeapon(Shooter &stg, int weapon, int level, Fix x, Fix y);
+int FireDroneWeapon(Shooter &stg, int weapon, Fix x, Fix y);
 int FireSigma(Shooter &stg, Fix x, Fix y);
 void FireEnemyBullet(Shooter &stg, BulletType type, Fix x, Fix y,
             Fix dx, Fix dy, int scaleMode = 1);

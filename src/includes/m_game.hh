@@ -23,8 +23,12 @@ enum class ExplosionSize;
 enum class PowerupType;
 struct Stage;
 class PlayerSprite;
+class DroneSprite;
 
 constexpr int DEFAULT_LIVES = 3;
+constexpr int MAXIMUM_LIVES_NORMAL = 99;
+constexpr int MAXIMUM_LIVES_INFINITE = 9;
+constexpr int ONEUP_EVERY_POINTS = 100000;
 
 struct ShooterAssets
 {
@@ -32,6 +36,8 @@ struct ShooterAssets
     std::shared_ptr<Spritesheet> powerupSprites;
     std::shared_ptr<Spritesheet> bulletSprites;
     std::shared_ptr<Spritesheet> sigma;
+    std::shared_ptr<Spritesheet> drone0;
+    std::shared_ptr<Spritesheet> drone1;
     std::shared_ptr<Spritesheet> enemy01;
     std::shared_ptr<Spritesheet> enemy02;
     std::shared_ptr<Spritesheet> enemy03;
@@ -76,19 +82,20 @@ struct Shooter
     Shooter(Shooter&&) = default;
     Shooter& operator=(Shooter) = delete;
 
-    std::vector<std::unique_ptr<Sprite>> spriteLayer0;
-    std::vector<std::unique_ptr<Sprite>> spriteLayer1;
-    std::vector<std::unique_ptr<Sprite>> spriteLayer2;
-    std::vector<std::unique_ptr<Sprite>> spriteLayer3;
-    std::vector<std::unique_ptr<Sprite>> spriteLayer4;
+    std::vector<std::shared_ptr<Sprite>> spriteLayer0;
+    std::vector<std::shared_ptr<Sprite>> spriteLayer1;
+    std::vector<std::shared_ptr<Sprite>> spriteLayer2;
+    std::vector<std::shared_ptr<Sprite>> spriteLayer3;
+    std::vector<std::shared_ptr<Sprite>> spriteLayer4;
     std::unique_ptr<PlayerSprite> player;
+    std::vector<std::shared_ptr<DroneSprite>> drones;
 
     std::unique_ptr<Stage> stage;
     TextLayer<8,8> hud;
     TextLayer<8,8> menu;
     TextLayer<16,16> text;
 
-    int stageNum{1};
+    int stageNum{0};
     ShooterAssets assets;
     LayerScroll scroll;
     Fix xSpeed;
@@ -113,8 +120,10 @@ struct Shooter
     void blit(Image &fb);
     void blitPlayer(Image &fb, int oy);
     void updateSprites(const int layer,
-                        std::vector<std::unique_ptr<Sprite>> &sprites);
+                        std::vector<std::shared_ptr<Sprite>> &sprites);
+    void updateDroneSprites(std::vector<std::shared_ptr<DroneSprite>> &sprites);
     void killPlayer();
+    void gameCompleteTick(int ticks);
     void controlTick();
     bool pauseTick();
     void tick();
@@ -127,6 +136,7 @@ struct Shooter
     void loadStage(int stageNum);
     void endStage();
     void unloadStage();
+    void runScript(int delay, int scriptNum);
     int nextSpriteID() { return _nextSpriteID++; }
     void nextBonus(Fix x, Fix y);
     void explode(Fix centerX, Fix centerY, ExplosionSize size, bool quiet);
@@ -145,18 +155,27 @@ struct Shooter
     void pauseGame();
     void unpauseGame();
     void endGame();
+    void gameComplete();
     int activeWeapon{0};
     int stageFade{0};
+    int totalFrames{0};
+    int totalTicks{0};
 private:
-    int nextStage{1};
     int _nextBonus{0};
     unsigned long score;
     unsigned long highScore;
+    unsigned long gameEndBonus;
     int pauseCursor;
-    int totalFrames{0};
     int _nextSpriteID{0};
     int _respawnTicks;
     bool _isGameOver{false};
+    bool _isComplete{false};
+    bool _noMiss{true};
+    bool _bonusCounted{false};
+    bool _scoreOneUps{true};
+    int _continuesUsed{0};
+    int _gameCompleteTicks{0};
+    int gameEndBonusSubtract{0};
 };
 
 extern std::shared_ptr<Shooter> stg;

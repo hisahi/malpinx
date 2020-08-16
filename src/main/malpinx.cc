@@ -13,13 +13,14 @@
 #include "render.hh"
 #include "config.hh"
 #include "gamedata.hh"
+#include "scores.hh"
 
 int sampleRate;
 std::unique_ptr<GameBackend> backend;
 static bool running;
 
 // always 10 chars           ----------
-const std::string VERSION = "PREALPHA 4";
+const std::string VERSION = "PREALPHA 5";
 
 void DoGame()
 {
@@ -29,6 +30,7 @@ void DoGame()
     OpenDataDir();
     PageInBaseData();
     FadeResetToBlack();
+    LoadHighScores();
     JumpMode(GameMode::Logo);
     InitLogo(1, "logo");
     running = true;
@@ -42,6 +44,7 @@ void DoGame()
     }
 
     SaveConfig();
+    SaveHighScores();
 }
 
 void QuitGame()

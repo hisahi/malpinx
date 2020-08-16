@@ -9,8 +9,11 @@
 #ifndef M_MTITLE_HH
 #define M_MTITLE_HH
 
+#include <array>
 #include "image.hh"
 #include "input.hh"
+#include "modes.hh"
+#include "scores.hh"
 
 enum class TitleMode
 {
@@ -22,8 +25,9 @@ enum class TitleMode
     OptionsControlGamepad
 };
 
-struct TitleScreen
+class TitleScreen
 {
+public:
     TitleScreen();
     TitleScreen(const TitleScreen&) = delete;
     TitleScreen& operator=(TitleScreen) = delete;
@@ -32,6 +36,11 @@ struct TitleScreen
     void tick();
     void mainMenu(int cursorAt = 0);
     void highScores();
+    void updateHighScores();
+    void updateEntryHighscore();
+    void finishNameEntry();
+    void nameEntry(DifficultyLevel diff, PlaybackMode pmode, int rank,
+                    int stageNum, unsigned long score);
     void options(int cursorAt = 0);
     void controlOptions(bool gamepad);
 
@@ -44,11 +53,14 @@ struct TitleScreen
     void selectMenu();
     void exitMenu();
 
+private:
     TitleMode mode;
     ColorWindow flash;
     std::unique_ptr<Image> titleBackground;
     std::unique_ptr<Image> gameLogo;
     TextLayer<8,8> textLayer;
+    DifficultyLevel scoreDifficulty;
+    PlaybackMode scorePmode;
     int logoHeight;
     int logoStretchFrames;
     int ticks;
@@ -61,6 +73,14 @@ struct TitleScreen
     bool confirmReset;
     bool waitingControl;
     GameInput waitingControlFor;
+    DifficultyLevel newScoreDifficulty;
+    PlaybackMode newScorePmode;
+    int highScoreIndex{-1};
+    std::array<int, 3> nameEntryChars{0, 0, 0};
+    int nameEntryCharIndex{-1};
+    int nameEntryCharIndexCopy{-1};
+    ScoreEntry highScoreEntry;
+    int highScoreCharBlink{0};
 };
 
 #endif // M_MTITLE_HH

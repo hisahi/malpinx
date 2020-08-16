@@ -51,6 +51,7 @@ void PageInBaseData()
     hudFont = LoadSpritesheet("hudfont");
     bigFont = LoadSpritesheet("bigfont");
     thinFont = LoadSpritesheet("thinfont");
+    hiscFont = LoadSpritesheet("hiscfont");
     LoadSounds("malpinx");
     explosionSprites = LoadSpritesheet("explanim");
 }

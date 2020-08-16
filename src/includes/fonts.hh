@@ -12,6 +12,7 @@
 #include "sprite.hh"
 
 extern Spritesheet menuFont;
+extern Spritesheet hiscFont;
 extern Spritesheet hudFont;
 extern Spritesheet bigFont;
 extern Spritesheet thinFont;

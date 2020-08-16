@@ -76,3 +76,16 @@ Fix ReadFix(std::istream &stream)
     ReadFix(stream, v);
     return v; 
 }
+
+void WriteUInt8(std::ostream &stream, std::uint8_t value)
+{
+    stream.put(static_cast<char>(value));
+}
+
+void WriteUInt32(std::ostream &stream, std::uint32_t value)
+{
+    stream.put(static_cast<char>(value & 0xFF));
+    stream.put(static_cast<char>((value >> 8) & 0xFF));
+    stream.put(static_cast<char>((value >> 16) & 0xFF));
+    stream.put(static_cast<char>((value >> 24) & 0xFF));
+}

@@ -14,25 +14,28 @@
 #include "sprite.hh"
 
 template <typename T>
-inline std::unique_ptr<Sprite> spawnEnemy(Shooter &stg, int id,
+inline std::shared_ptr<Sprite> spawnEnemy(Shooter &stg, int id,
                     Fix x, Fix y, ObjectSpawn os)
 {
-    return std::make_unique<T>(stg, id, x, y, os.subtype, os.drop);
+    return std::make_shared<T>(stg, id, x, y, os.subtype, os.drop);
 }
 
-std::unique_ptr<Sprite> spawnObject(Shooter &stg, ObjectSpawn spawn,
+std::shared_ptr<Sprite> spawnObject(Shooter &stg, ObjectSpawn spawn,
                     LayerScroll scroll, int &layer)
 {
     int id = stg.nextSpriteID();
-    std::unique_ptr<Sprite> result;
+    std::shared_ptr<Sprite> result;
     Fix sx = Fix(spawn.xrel + S_WIDTH);
     Fix sy = Fix(spawn.y);
     layer = 2;
     switch (static_cast<ObjectType>(spawn.type))
     {
     case ObjectType::Powerup:
-        result = std::make_unique<PowerupSprite>(stg, id, sx, sy,
+        result = std::make_shared<PowerupSprite>(stg, id, sx, sy,
                             static_cast<PowerupType>(spawn.subtype));
+        break;
+    case ObjectType::Script:
+        result = std::make_shared<ScriptSprite>(stg, id, spawn.subtype);
         break;
     case ObjectType::Enemy01:
         result = spawnEnemy<Enemy01>(stg, id, sx, sy, spawn);
@@ -56,12 +59,12 @@ std::unique_ptr<Sprite> spawnObject(Shooter &stg, ObjectSpawn spawn,
         result = spawnEnemy<Boss1a>(stg, id, sx, sy, spawn);
         break;
     default:
-        result = std::make_unique<BlankSprite>(id);
+        result = std::make_shared<BlankSprite>(id);
     }
     return result;
 }
 
-std::vector<std::unique_ptr<Sprite>> &getLayer(Shooter &stg, int layer)
+std::vector<std::shared_ptr<Sprite>> &getLayer(Shooter &stg, int layer)
 {
     switch (layer)
     {
@@ -80,7 +83,7 @@ std::vector<std::unique_ptr<Sprite>> &getLayer(Shooter &stg, int layer)
     }
 }
 
-void addObject(Shooter &stg, int layer, std::unique_ptr<Sprite> holder)
+void addObject(Shooter &stg, int layer, std::shared_ptr<Sprite> holder)
 {
     getLayer(stg, layer).push_back(std::move(holder));
 }

@@ -28,9 +28,9 @@ enum class ObjectType
     Boss1a = 201
 };
 
-std::unique_ptr<Sprite> spawnObject(Shooter &stg, ObjectSpawn spawn,
+std::shared_ptr<Sprite> spawnObject(Shooter &stg, ObjectSpawn spawn,
                     LayerScroll scroll, int &layer);
-void addObject(Shooter &stg, int layer, std::unique_ptr<Sprite> holder);
+void addObject(Shooter &stg, int layer, std::shared_ptr<Sprite> holder);
 void spawnAndAddObject(Shooter &stg, ObjectSpawn spawn, LayerScroll scroll);
 
 struct BlankSprite : public Sprite

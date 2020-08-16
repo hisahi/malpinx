@@ -23,6 +23,10 @@ static int beamOffset = -1;
 static bool crossDir = false;
 static FixRandom suicideAngleRng(BULLET_SEED);
 
+static constexpr int TRACK_FRAMES_COUNT = 16;
+static const Fix TRACK_VEL = 6_x;
+static const Fix TRACK_ANGLE_DIV = (0.5_x * TRACK_FRAMES_COUNT) / Fix::PI;
+
 static inline SpriteType GetBulletSpriteType(BulletSource source)
 {
     switch (source)
@@ -45,6 +49,9 @@ BulletSprite::BulletSprite(Shooter &stg, int id, Fix x, Fix y, Fix dx, Fix dy,
     int frameCount = 1;
     switch (type)
     {
+        case BulletType::PulseDrone:
+            _damage = 5;
+            goto pulse;
         case BulletType::Pulse1:
             _damage = 10;
             goto pulse;
@@ -64,11 +71,14 @@ BulletSprite::BulletSprite(Shooter &stg, int id, Fix x, Fix y, Fix dx, Fix dy,
             _damage = 9;
             goto spray;
         case BulletType::Spray3:
-            _damage = 10;
+            _damage = 9;
         spray:
             _img = stg.assets.bulletSprites->getImage(_frame = 1);
             _expl = ExplosionSize::TinyGreen;
             break;
+        case BulletType::BeamDrone:
+            _damage = 8;
+            goto beam;
         case BulletType::Beam1:
             _damage = 14;
             goto beam;
@@ -82,6 +92,9 @@ BulletSprite::BulletSprite(Shooter &stg, int id, Fix x, Fix y, Fix dx, Fix dy,
             _expl = ExplosionSize::TinyBlue;
             _pierce = true;
             break;
+        case BulletType::TrackDrone:
+            _damage = 5;
+            goto track;
         case BulletType::Track1:
             _damage = 6;
             goto track;
@@ -92,6 +105,8 @@ BulletSprite::BulletSprite(Shooter &stg, int id, Fix x, Fix y, Fix dx, Fix dy,
             _damage = 12;
         track:
             _img = stg.assets.bulletSprites->getImage(_frame = 3);
+            _animSpeed = 0;
+            frameCount = TRACK_FRAMES_COUNT;
             _expl = ExplosionSize::TinyPurple;
             break;
         case BulletType::Enemy3:
@@ -131,9 +146,14 @@ BulletSprite::BulletSprite(Shooter &stg, int id, Fix x, Fix y, Fix dx, Fix dy,
             _damage = 16;
             _expl = ExplosionSize::TinyWhite;
             break;
+        case BulletType::Boss1aBeam:
+            _img = stg.assets.bulletSprites->getImage(_frame = 32);
+            _expl = ExplosionSize::TinyRed;
+            _pierce = true;
+            break;
     }
     if (source == BulletSource::Player)
-        hitTargets.reserve(16);
+        hitTargets.reserve(4);
     _minFrame = _frame;
     _maxFrame = _minFrame + frameCount - 1;
     if (_img)
@@ -170,10 +190,74 @@ static inline float approxDistance(Fix x, Fix y, Fix dx, Fix dy,
                                    sy + s.height() / 2 - scale * dy);
 }
 
+static const Fix trackMaxTurnAngles[3] = {
+    Fix::PI / 80, Fix::PI / 40, Fix::PI / 20
+};
+
+void BulletSprite::tickTrack(int trackLevel)
+{
+    Fix angle = FixPolar2D(_vel).angle;
+    std::shared_ptr<Sprite> target = trackTarget.lock();
+    if (!target) // try to pick target
+    {
+        bool newTarget = false;
+        Fix minDistance{0};
+        for (auto &s : _stg.spriteLayer2)
+        {
+            if (s->type() == SpriteType::Enemy)
+            {
+                Fix2D goal = Fix2D(s->x(), s->y()) + s->trackTarget();
+                FixPolar2D dir = FixPolar2D(Fix2D(goal.x - _x, goal.y - _y));
+                if (!minDistance || dir.length < minDistance)
+                {
+                    bool valid = true;
+                    switch (trackLevel)
+                    {
+                    case 1:
+                        valid &= SubtractAngles(dir.angle, angle).abs()
+                                    < Fix::PI / 6;
+                        break;
+                    case 2:
+                        valid &= SubtractAngles(dir.angle, angle).abs()
+                                    < Fix::PI / 2;
+                        break;
+                    }
+                    if (valid)
+                    {
+                        minDistance = dir.length;
+                        target = s;
+                        newTarget = true;
+                    }
+                }
+            }
+        }
+        if (newTarget)
+            trackTarget = std::weak_ptr<Sprite>(target);
+    }
+    if (target) // home in to target
+    {
+        Fix targetAngle = FixPolar2D(Fix2D(target->x() - _x,
+                                           target->y() - _y)).angle;
+        Fix angleDiff = SubtractAngles(targetAngle, angle);
+        Fix maxAngle = trackMaxTurnAngles[trackLevel - 1];
+        if (angleDiff > maxAngle)
+            angleDiff = maxAngle;
+        else if (angleDiff < -maxAngle)
+            angleDiff = -maxAngle;
+        angle += angleDiff;
+        _vel = Fix2D(FixPolar2D(TRACK_VEL, angle));
+        int spriteIndex = (angle * TRACK_ANGLE_DIV + 0.5_x).round()
+                        % TRACK_FRAMES_COUNT;
+        spriteIndex = (spriteIndex + TRACK_FRAMES_COUNT) % TRACK_FRAMES_COUNT;
+        updateImageCentered(_stg.assets.bulletSprites->getImage(
+                    _minFrame + spriteIndex));
+    }
+}
+
 void BulletSprite::tick()
 {
     ++_ticks;
-    if (_minFrame != _maxFrame && !(_ticks % _animSpeed))
+    if (_animSpeed && _minFrame != _maxFrame && !(_ticks % _animSpeed))
     {
         ++_frame;
         if (_frame > _maxFrame)
@@ -194,6 +278,19 @@ void BulletSprite::tick()
 
     int ox = S_WIDTH, oy = S_HEIGHT, nx, ny;
     Fix2D _fvel = _vel / BULLET_DIV;
+
+    switch (_type)
+    {
+    case BulletType::Track1:
+        tickTrack(1);
+        break;
+    case BulletType::Track2:
+        tickTrack(2);
+        break;
+    case BulletType::Track3:
+        tickTrack(3);
+        break;
+    }
 
     for (int i = 0; i < BULLET_DIV; ++i)
     {
@@ -222,23 +319,23 @@ void BulletSprite::tick()
             // check for enemies
             for (auto &s : _stg.spriteLayer2)
                 if (s->type() == SpriteType::Enemy && hits(*s))
-                    hitTargets.push_back(*s);
+                    hitTargets.push_back(s.get());
 
             if (hitTargets.size() > 1 && _vel)
             {
                 // sort targets by distance
                 Fix x = _x, y = _y, dx = _vel.x, dy = _vel.y;
                 std::sort(hitTargets.begin(), hitTargets.end(),
-                    [=](const Sprite &a, const Sprite &b)
+                    [=](const Sprite *a, const Sprite *b)
                     {
-                        return approxDistance(x, y, dx, dy, a)
-                             - approxDistance(x, y, dx, dy, b);
+                        return approxDistance(x, y, dx, dy, *a)
+                             < approxDistance(x, y, dx, dy, *b);
                     });
             }
 
-            for (Sprite &s : hitTargets)
+            for (Sprite *s : hitTargets)
             {
-                if ((!s.damage(_damage) || !_pierce) && !_sigma)
+                if ((!s->damage(_damage) || !_pierce) && !_sigma)
                 {
                     explode();
                     break;
@@ -275,14 +372,14 @@ void ResetBullets(int stageNum)
 void SpawnPlayerBullet(Shooter &stg, Fix x, Fix y,
                         Fix dx, Fix dy, BulletType type)
 {
-    stg.spriteLayer3.push_back(std::make_unique<BulletSprite>(
+    stg.spriteLayer3.push_back(std::make_shared<BulletSprite>(
         stg, stg.nextSpriteID(), x, y, dx, dy, type, BulletSource::Player));
 }
 
 void SpawnEnemyBullet(Shooter &stg, Fix x, Fix y,
                         Fix dx, Fix dy, BulletType type)
 {
-    stg.spriteLayer3.push_back(std::make_unique<BulletSprite>(
+    stg.spriteLayer3.push_back(std::make_shared<BulletSprite>(
         stg, stg.nextSpriteID(), x, y, dx, dy, type, BulletSource::Enemy));
 }
 
@@ -337,12 +434,8 @@ int FireWeapon(Shooter &stg, int weapon, int level, Fix x, Fix y)
                 6_x * 13 / 15, 3_x, BulletType::Spray2);
             SpawnPlayerBullet(stg, x - 36, y - 3, 
                 -6_x, 0_x, BulletType::Spray2);
-            SpawnPlayerBullet(stg, x - 3, y - 4, 
-                6_x * 13 / 15, -3_x, BulletType::Spray2);
-            SpawnPlayerBullet(stg, x - 3, y - 2, 
-                6_x * 13 / 15, 3_x, BulletType::Spray2);
-            SpawnPlayerBullet(stg, x - 36, y - 3, 
-                -6_x, 0_x, BulletType::Spray2);
+            SpawnPlayerBullet(stg, x - 4, y - 3, 
+                6_x, 0_x, BulletType::Spray2);
             break;
         case 2:
             SpawnPlayerBullet(stg, x - 3, y - 4, 
@@ -385,15 +478,16 @@ int FireWeapon(Shooter &stg, int weapon, int level, Fix x, Fix y)
         switch (level)
         {
         case 0:
-            SpawnPlayerBullet(stg, x - 4, y - 2, 6_x, 0_x, BulletType::Track1);
+            SpawnPlayerBullet(stg, x - 4, y - 2, TRACK_VEL, 0_x,
+                                BulletType::Track1);
             break;
         case 1:
-            SpawnPlayerBullet(stg, x - 4, y - 10, 6_x, 0_x, BulletType::Track2);
-            SpawnPlayerBullet(stg, x - 4, y + 6, 6_x, 0_x, BulletType::Track2);
+            SpawnPlayerBullet(stg, x - 4, y + 6, TRACK_VEL, 0_x,
+                                BulletType::Track2);
             break;
         case 2:
-            SpawnPlayerBullet(stg, x - 4, y - 10, 6_x, 0_x, BulletType::Track3);
-            SpawnPlayerBullet(stg, x - 4, y + 6, 6_x, 0_x, BulletType::Track3);
+            SpawnPlayerBullet(stg, x - 4, y + 6, TRACK_VEL, 0_x,
+                                BulletType::Track3);
             break;
         }
         return 6;
@@ -401,9 +495,33 @@ int FireWeapon(Shooter &stg, int weapon, int level, Fix x, Fix y)
     return 0;
 }
 
+int FireDroneWeapon(Shooter &stg, int weapon, Fix x, Fix y)
+{
+    switch (weapon)
+    {
+    case 0: // pulse
+        SpawnPlayerBullet(stg, x - 4, y - 2,
+                    8_x, 0_x, BulletType::PulseDrone);
+        return 4;
+    case 1: // spray
+        SpawnPlayerBullet(stg, x - 4, y - 3, 
+                    6_x, 0_x, BulletType::Spray1);
+        return 5;
+    case 2: // beam
+        SpawnPlayerBullet(stg, x - 16, y - 3,
+                    16_x, 0_x, BulletType::BeamDrone);
+        return 6;
+    case 3: // track
+        SpawnPlayerBullet(stg, x - 4, y - 2,
+                    TRACK_VEL, 0_x, BulletType::TrackDrone);
+        return 6;
+    }
+    return 0;
+}
+
 int FireSigma(Shooter &stg, Fix x, Fix y)
 {
-    PlayGunSound(SoundEffect::FireSigma);
+    PlaySound(SoundEffect::FireSigma);
     SpawnPlayerBullet(stg, x - 2, y - 64, 0_x, 0_x, BulletType::Sigma);
     return 30;
 }
@@ -417,8 +535,8 @@ void FireEnemyBullet(Shooter &stg, BulletType type, Fix x, Fix y,
         switch (stg.difficulty)
         {
         case DifficultyLevel::EASY:
-            dx *= 0.75_x;
-            dy *= 0.75_x;
+            dx *= 0.625_x;
+            dy *= 0.625_x;
             break;
         case DifficultyLevel::NORMAL:
             break;
