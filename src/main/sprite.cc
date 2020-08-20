@@ -41,7 +41,10 @@ void Sprite::updateImage(const std::shared_ptr<Image>& img,
     else
         _width = img->width(), _height = img->height();
     if (hitbox)
+    {
         updateHitbox(0, 0, _width, _height);
+        _mask = _img;
+    }
 }
 
 void Sprite::updateImageCentered(const std::shared_ptr<Image>& img,
@@ -95,14 +98,17 @@ bool Sprite::boxCheck(const Sprite &other) const
 
 bool Sprite::pixelCheck(const Sprite &other) const
 {
-    int _ax = _x.round(), _ay = _y.round();
-    int _bx = other._x.round(), _by = other._y.round();
-    int minX = std::max(_ax, _bx);
-    int maxX = std::min(_ax + _width, _bx + other._width);
-    int minY = std::max(_ay, _by);
-    int maxY = std::min(_ay + _height, _by + other._height);
-    return _img->overlaps(*other._img, minX - _ax, minY - _ay,
-                    minX - _bx, minY - _by, maxX - minX, maxY - minY);
+    if (!_mask || !other._mask) return false;
+    int _ax = _x.round(), _ay = _y.round(),
+        _bx = other._x.round(), _by = other._y.round(),
+        x1 = std::max(_ax, _bx),
+        y1 = std::max(_ay, _by),
+        x2 = std::min(_ax + _width, _bx + other._width),
+        y2 = std::min(_ay + _height, _by + other._height);
+    return _mask->overlaps(*other._mask,
+                    x1 - _ax, y1 - _ay,
+                    x1 - _bx, y1 - _by,
+                    x2 - x1, y2 - y1);
 }
 
 Spritesheet::Spritesheet() : sprites()

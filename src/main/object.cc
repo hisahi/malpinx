@@ -24,6 +24,8 @@ std::shared_ptr<Sprite> spawnObject(Shooter &stg, ObjectSpawn spawn,
                     LayerScroll scroll, int &layer)
 {
     int id = stg.nextSpriteID();
+    if (spawn.minDifficulty > static_cast<int>(stg.difficulty))
+        return std::make_shared<BlankSprite>(id);
     std::shared_ptr<Sprite> result;
     Fix sx = Fix(spawn.xrel + S_WIDTH);
     Fix sy = Fix(spawn.y);
@@ -54,6 +56,12 @@ std::shared_ptr<Sprite> spawnObject(Shooter &stg, ObjectSpawn spawn,
         break;
     case ObjectType::Enemy06:
         result = spawnEnemy<Enemy06>(stg, id, sx, sy, spawn);
+        break;
+    case ObjectType::Enemy07:
+        result = spawnEnemy<Enemy07>(stg, id, sx, sy, spawn);
+        break;
+    case ObjectType::Enemy08:
+        result = spawnEnemy<Enemy08>(stg, id, sx, sy, spawn);
         break;
     case ObjectType::Boss1a:
         result = spawnEnemy<Boss1a>(stg, id, sx, sy, spawn);

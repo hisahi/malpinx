@@ -116,6 +116,7 @@ public:
     }
 protected:
     std::shared_ptr<Image> _img;
+    std::shared_ptr<Image> _mask;
     int _id;
     Fix _x;
     Fix _y;

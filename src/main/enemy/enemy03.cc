@@ -63,7 +63,8 @@ void Enemy03::doEnemyTick()
         if (_stg.isPlayerAlive())
         {
             Fix2D delta = FixNorm(_stg.vecToPlayer(_x, _y), 4_x);
-            FireEnemyBullet(_stg, BulletType::Enemy3, _x + 5, _y + 27, delta);
+            FireEnemyBullet(_stg, BulletType::Enemy3,
+                _x + 5, _y + 27, delta, false);
         }
         fireTicks += ScaleFireTicks(_stg, 128);
     }

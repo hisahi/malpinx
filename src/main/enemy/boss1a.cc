@@ -46,11 +46,11 @@ void Boss1a::killEnemy()
 void Boss1a::explode()
 {
     _stg.explode(_x + _width / 2, _y + _height / 2,
-                ExplosionSize::Large, false);
+                ExplosionSize::Large, false, false);
     _stg.explode(_x + _width / 2 - 40, _y + _height / 2,
-                ExplosionSize::Large, true);
+                ExplosionSize::Large, true, false);
     _stg.explode(_x + _width / 2 + 40, _y + _height / 2,
-                ExplosionSize::Large, true);
+                ExplosionSize::Large, true, false);
     killEnemy();
 }
 
@@ -125,9 +125,9 @@ void Boss1a::doBossTick()
         {
             PlaySound(SoundEffect::Boss1aBeam);
             FireEnemyBullet(_stg, BulletType::Boss1aBeam,
-                    _x + 1, _y + 19, -6_x, 0_x);
+                    _x + 1, _y + 19, -6_x, 0_x, false);
             FireEnemyBullet(_stg, BulletType::Boss1aBeam,
-                    _x - 15, _y + 27, -6_x, 0_x);
+                    _x - 15, _y + 27, -6_x, 0_x, false);
         }
         if (modeTicks >= mod)
         {

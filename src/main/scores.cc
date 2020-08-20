@@ -67,9 +67,8 @@ int IsNewHighScore(DifficultyLevel difficulty, PlaybackMode mode,
                                 && stageNum > table[i].stage))
             return i + 1;
     }
-    
-    // 0 if count == HIGHSCORE_COUNTS
-    return (i + 1) % HIGHSCORE_COUNTS;
+
+    return count < HIGHSCORE_COUNTS ? count + 1 : 0;
 }
 
 void SubmitHighScore(DifficultyLevel difficulty, PlaybackMode mode,

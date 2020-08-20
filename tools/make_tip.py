@@ -17,19 +17,24 @@ def main(*argv):
     tsp = argv[2].lower().endswith('.tsp')
     open_files = {}
     tasks = []
-
-    with open(argv[1], 'r') as f:
-        for line in f:
-            line = line.strip()
-            file, region = line, None
-            if ':' in line:
-                tok = line.split(':', 1)
-                file, region = tok[0], tuple(int(i) for i in tok[1].split(','))
-                assert len(region) == 4
-            tasks.append((file, region))
-
+    is_image = os.path.splitext(argv[1])[1].lower() in ['.png']
     cwd = os.getcwd()
-    os.chdir(os.path.dirname(os.path.abspath(argv[1])))
+
+    if is_image:
+        tasks.append((argv[1], None))
+    else:
+        with open(argv[1], 'r') as f:
+            for line in f:
+                line = line.strip()
+                file, region = line, None
+                if ':' in line:
+                    tok = line.split(':', 1)
+                    file, region = (tok[0],
+                            tuple(int(i) for i in tok[1].split(',')))
+                    assert len(region) == 4
+                tasks.append((file, region))
+        os.chdir(os.path.dirname(os.path.abspath(argv[1])))
+
     images = tip.apportion_images(tasks)
     assert len(images) < 65536
 

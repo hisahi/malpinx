@@ -9,12 +9,14 @@
 #include <random>
 #include "stage.hh"
 #include "explode.hh"
+#include "player.hh"
 
 Spritesheet explosionSprites;
 
-ExplosionSprite::ExplosionSprite(int id, Fix x, Fix y, ExplosionSize size,
-                                bool center)
-    : Sprite(id, nullptr, x, y, SPRITE_NOSCROLL, SpriteType::Explosion)
+ExplosionSprite::ExplosionSprite(Shooter &stg, int id, Fix x, Fix y,
+                ExplosionSize size, bool center, bool hurtsPlayer)
+    : Sprite(id, nullptr, x, y, SPRITE_COLLIDE_SPRITES, SpriteType::Explosion),
+      _stg(stg), hurtsPlayer(hurtsPlayer)
 {
     int i = static_cast<int>(size), si = -1;
     currentFrame = EXPLOSION_FRAMES_START[i];
@@ -30,6 +32,8 @@ ExplosionSprite::ExplosionSprite(int id, Fix x, Fix y, ExplosionSize size,
 
 void ExplosionSprite::tick()
 {
+    if (hurtsPlayer && _stg.isPlayerAlive() && hits(_stg.player.get()))
+        _stg.player->damage(10);
     if (!--_divider)
     {
         if (++currentFrame == lastFrame)

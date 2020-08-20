@@ -8,6 +8,7 @@ expsmal2.wav
 expmed1.wav
 expmed2.wav
 explarg1.wav
+explarg2.wav
 pulse.wav
 spray.wav
 beam.wav

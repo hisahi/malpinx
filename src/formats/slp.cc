@@ -31,7 +31,7 @@ Stage LoadStage(const std::string &path, Shooter &stg)
         throw std::runtime_error(SLP_build_message(
                         "Cannot open stage file", path));
     stream.exceptions(std::ios::eofbit | std::ios::failbit | std::ios::badbit);
-    if (ReadUInt16(stream) != 3)
+    if (ReadUInt16(stream) != 4)
         throw std::runtime_error(SLP_build_message(
                         "Cannot open stage file", path));
 
@@ -143,7 +143,7 @@ Stage LoadStage(const std::string &path, Shooter &stg)
 
     std::int32_t spriteScrollX = 0, deltaX;
     int spriteType, spriteDelay, spriteFlags, spriteSubtype,
-        spriteY, spriteX, spriteDrop;
+        spriteY, spriteX, spriteDrop, spriteMinDiff;
     for (;;)
     {
         ReadInt32(stream, deltaX);
@@ -162,7 +162,7 @@ Stage LoadStage(const std::string &path, Shooter &stg)
             spriteY = ReadInt32(stream);
             spriteX = ReadInt32(stream);
             spriteDrop = ReadUInt8(stream);
-            ReadUInt8(stream);
+            spriteMinDiff = ReadUInt8(stream);
             ReadUInt8(stream);
             ReadUInt8(stream);
 
@@ -174,7 +174,8 @@ Stage LoadStage(const std::string &path, Shooter &stg)
                 .subtype = spriteSubtype,
                 .y = spriteY,
                 .xrel = spriteX,
-                .drop = static_cast<PowerupType>(spriteDrop)
+                .drop = static_cast<PowerupType>(spriteDrop),
+                .minDifficulty = spriteMinDiff
             });
         }
     }

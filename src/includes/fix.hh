@@ -33,6 +33,8 @@ public:
     
     int round() const { return static_cast<int>(*this); }
     Fix abs() const { return Fix::raw(_v < 0 ? -_v : _v); }
+    Fix sign() const { return Fix::raw(_v < 0 ? 0
+                    : (_v < 0 ? -(1 << SHIFT) : (1 << SHIFT))); }
     std::string str() const {
         return std::to_string(static_cast<float>(*this)); }
     explicit operator std::string() const { return str(); }

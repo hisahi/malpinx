@@ -82,13 +82,8 @@ public:
     ForegroundLayer(std::shared_ptr<Image> bg,
                     int ox, int oy, Fix sxm, Fix sym);
     virtual void blit(Image &fb, LayerScroll scroll);
-    inline bool hitsSprite(Image &spriteImage, LayerScroll scroll,
-                Fix spriteX, Fix spriteY) const
-    {
-        return _img->overlapsTiled(spriteImage, 
-                (scroll.x + spriteX).round(), (scroll.y + spriteY).round(),
-                0, 0, spriteImage.width(), spriteImage.height());
-    }
+    virtual bool hitsSprite(Image &spriteImage, LayerScroll scroll,
+                Fix spriteX, Fix spriteY) const;
 protected:
     std::shared_ptr<Image> _img;
     int _offsetX;
@@ -113,6 +108,8 @@ public:
                     int ox, int oy, Fix sxm, Fix sym)
         : ForegroundLayer(bg, ox, oy, sxm, sym) {}
     void blit(Image &fb, LayerScroll scroll) override;
+    virtual bool hitsSprite(Image &spriteImage, LayerScroll scroll,
+                Fix spriteX, Fix spriteY) const override;
 };
 
 // text layer; consists of non-overlapping sprites

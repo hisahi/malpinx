@@ -59,7 +59,7 @@ void EnemySprite::killEnemy()
 
 void EnemySprite::explode()
 {
-    _stg.explode(_x + _width / 2, _y + _height / 2, _esize, false);
+    _stg.explode(_x + _width / 2, _y + _height / 2, _esize, false, false);
     killEnemy();
 }
 
@@ -74,7 +74,7 @@ int ScaleFireTicks(Shooter &stg, int value)
     case DifficultyLevel::HARD:
         return (value * 2) / 3;
     case DifficultyLevel::BIZARRE:
-        return value / 3;
+        return value / 2;
     }
     return value;
 }

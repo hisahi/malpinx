@@ -55,3 +55,28 @@ void PageInBaseData()
     LoadSounds("malpinx");
     explosionSprites = LoadSpritesheet("explanim");
 }
+
+static inline std::shared_ptr<Spritesheet> loadSprites(const std::string &s)
+{
+    return std::make_shared<Spritesheet>(LoadSpritesheet(s));
+}
+
+void ShooterAssets::load()
+{
+    menuSprites = loadSprites("menuspr");
+    playerShip = loadSprites("ship");
+    powerupSprites = loadSprites("powerups");
+    bulletSprites = loadSprites("bullets");
+    drone0 = loadSprites("drone0");
+    drone1 = loadSprites("drone1");
+    sigma = loadSprites("sigma");
+    enemy01 = loadSprites("enemy01");
+    enemy02 = loadSprites("enemy02");
+    enemy03 = loadSprites("enemy03");
+    enemy04 = loadSprites("enemy04");
+    enemy05 = loadSprites("enemy05");
+    enemy06 = loadSprites("enemy06");
+    enemy07 = loadSprites("enemy07");
+    enemy08 = loadSprites("enemy08");
+    boss1a = loadSprites("boss1a");
+}

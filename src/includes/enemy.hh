@@ -150,6 +150,26 @@ public:
     virtual void doEnemyTick() override;
 };
 
+class Enemy07 : public EnemySprite
+{
+public:
+    Enemy07(Shooter &stg, int id, Fix x, Fix y, int subtype, PowerupType drop);
+    virtual void doEnemyTick() override;
+    void explode() override;
+};
+
+class Enemy08 : public EnemySprite
+{
+    bool yflip;
+    Fix trackAngle;
+    Fix pointAngle;
+    Fix turnSpeed;
+    int fireTicks{-1};
+public:
+    Enemy08(Shooter &stg, int id, Fix x, Fix y, int subtype, PowerupType drop);
+    virtual void doEnemyTick() override;
+};
+
 class Boss1a : public BossSprite
 {
     Fix minY{0_x}, maxY{Fix(S_HEIGHT - 64)};

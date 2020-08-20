@@ -28,6 +28,7 @@ struct ObjectSpawn
     int y;
     int xrel;
     PowerupType drop;
+    int minDifficulty;
 };
 
 struct Stage

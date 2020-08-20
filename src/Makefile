@@ -24,6 +24,7 @@ OBJS = base/vbase.o base/ibase.o base/abase.o formats/cfg.o formats/stream.o \
 		main/tiled.o main/stage.o main/object.o main/bullet.o main/sfx.o \
 		main/enemy/enemy01.o main/enemy/enemy02.o main/enemy/enemy03.o \
 		main/enemy/enemy04.o main/enemy/enemy05.o main/enemy/enemy06.o \
+		main/enemy/enemy07.o main/enemy/enemy08.o \
 		main/enemy/boss1a.o \
 		main/m_title.o main/m_game.o main/player.o main/malpinx.o
 

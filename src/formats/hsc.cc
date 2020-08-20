@@ -27,7 +27,7 @@ std::vector<ScoreEntry> LoadHighScoreTable(std::istream &stream)
         s = static_cast<char>(ReadUInt8(stream));
         score = ReadUInt32(stream);
         result.push_back({
-            .name{a, b, c},
+            .name = {a, b, c},
             .stage = s,
             .score = score
         });

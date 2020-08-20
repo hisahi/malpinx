@@ -28,33 +28,10 @@
 
 std::shared_ptr<Shooter> stg;
 
-static inline std::shared_ptr<Spritesheet> loadSprites(const std::string &s)
-{
-    return std::make_shared<Spritesheet>(LoadSpritesheet(s));
-}
-
-static void LoadAssets()
-{
-    stg->menuSprites = LoadSpritesheet("menuspr");
-    stg->assets.playerShip = loadSprites("ship");
-    stg->assets.powerupSprites = loadSprites("powerups");
-    stg->assets.bulletSprites = loadSprites("bullets");
-    stg->assets.drone0 = loadSprites("drone0");
-    stg->assets.drone1 = loadSprites("drone1");
-    stg->assets.sigma = loadSprites("sigma");
-    stg->assets.enemy01 = loadSprites("enemy01");
-    stg->assets.enemy02 = loadSprites("enemy02");
-    stg->assets.enemy03 = loadSprites("enemy03");
-    stg->assets.enemy04 = loadSprites("enemy04");
-    stg->assets.enemy05 = loadSprites("enemy05");
-    stg->assets.enemy06 = loadSprites("enemy06");
-    stg->assets.boss1a = loadSprites("boss1a");
-}
-
 void StartNewGame()
 {
     stg = std::make_shared<Shooter>();
-    LoadAssets();
+    stg->assets.load();
     stg->fade.fadeOut(S_MAXCLR);
     stg->spawnPlayer(false);
     stg->continues = startContinues;
@@ -172,7 +149,7 @@ void Shooter::blit(Image &fb)
     {
         pauseBuffer.blit(fb);
         menu.blit(fb);
-        menuSprites.blit(fb, 0, 124, 124 + 16 * pauseCursor);
+        assets.menuSprites->blit(fb, 0, 124, 124 + 16 * pauseCursor);
         return;
     }
     if (stage)
@@ -897,26 +874,41 @@ void Shooter::spawnPowerup(Fix x, Fix y, PowerupType type)
         *this, nextSpriteID(), x - 8, y - 8, type));
 }
 
-void Shooter::explode(Fix centerX, Fix centerY, ExplosionSize size, bool quiet)
+static inline void explosionSound(ExplosionSize size)
+{
+    switch (size)
+    {
+    case ExplosionSize::Small1:
+        PlaySound(SoundEffect::ExplosionSmall1); break;
+    case ExplosionSize::Small2:
+        PlaySound(SoundEffect::ExplosionSmall2); break;
+    case ExplosionSize::Medium1:
+        PlaySound(SoundEffect::ExplosionMedium1); break;
+    case ExplosionSize::Medium2:
+        PlaySound(SoundEffect::ExplosionMedium2); break;
+    case ExplosionSize::Large:
+        PlaySound(SoundEffect::ExplosionLarge1); break;
+    case ExplosionSize::LargeBlue:
+        PlaySound(SoundEffect::ExplosionLarge2); break;
+    }
+}
+
+void Shooter::explode(Fix centerX, Fix centerY, ExplosionSize size,
+                    bool quiet, bool hurtsPlayer)
 {
     stg->spriteLayer4.push_back(std::make_shared<ExplosionSprite>(
-        stg->nextSpriteID(), centerX, centerY, size, true));
-    if (!quiet)
-    {
-        switch (size)
-        {
-        case ExplosionSize::Small1:
-            PlaySound(SoundEffect::ExplosionSmall1); break;
-        case ExplosionSize::Small2:
-            PlaySound(SoundEffect::ExplosionSmall2); break;
-        case ExplosionSize::Medium1:
-            PlaySound(SoundEffect::ExplosionMedium1); break;
-        case ExplosionSize::Medium2:
-            PlaySound(SoundEffect::ExplosionMedium2); break;
-        case ExplosionSize::Large:
-            PlaySound(SoundEffect::ExplosionLarge); break;
-        }
-    }
+        *this, stg->nextSpriteID(), centerX, centerY, size, true, hurtsPlayer));
+    if (!quiet) explosionSound(size);
+}
+
+void Shooter::explodeNoScroll(Fix centerX, Fix centerY, ExplosionSize size,
+                    bool quiet)
+{
+    auto expl = std::make_shared<ExplosionSprite>(
+        *this, stg->nextSpriteID(), centerX, centerY, size, true, false);
+    expl->addFlags(SPRITE_NOSCROLL);
+    stg->spriteLayer4.push_back(std::move(expl));
+    if (!quiet) explosionSound(size);
 }
 
 void Shooter::killPlayer()
@@ -924,7 +916,8 @@ void Shooter::killPlayer()
     for (auto &drone: drones)
         drone->explode();
     drones.clear();
-    explode(player->x() + 16, player->y() + 8, ExplosionSize::Large, false);
+    explodeNoScroll(player->x() + 16, player->y() + 8, ExplosionSize::Large,
+                false);
     _respawnTicks = 50;
     _noMiss = false;
     player->kill();

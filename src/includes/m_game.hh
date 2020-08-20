@@ -18,6 +18,7 @@
 #include "sprite.hh"
 #include "layer.hh"
 #include "modes.hh"
+#include "gamedata.hh"
 
 enum class ExplosionSize;
 enum class PowerupType;
@@ -29,23 +30,6 @@ constexpr int DEFAULT_LIVES = 3;
 constexpr int MAXIMUM_LIVES_NORMAL = 99;
 constexpr int MAXIMUM_LIVES_INFINITE = 9;
 constexpr int ONEUP_EVERY_POINTS = 100000;
-
-struct ShooterAssets
-{
-    std::shared_ptr<Spritesheet> playerShip;
-    std::shared_ptr<Spritesheet> powerupSprites;
-    std::shared_ptr<Spritesheet> bulletSprites;
-    std::shared_ptr<Spritesheet> sigma;
-    std::shared_ptr<Spritesheet> drone0;
-    std::shared_ptr<Spritesheet> drone1;
-    std::shared_ptr<Spritesheet> enemy01;
-    std::shared_ptr<Spritesheet> enemy02;
-    std::shared_ptr<Spritesheet> enemy03;
-    std::shared_ptr<Spritesheet> enemy04;
-    std::shared_ptr<Spritesheet> enemy05;
-    std::shared_ptr<Spritesheet> enemy06;
-    std::shared_ptr<Spritesheet> boss1a;
-};
 
 enum class HUDElement
 {
@@ -108,7 +92,6 @@ struct Shooter
     char lives{DEFAULT_LIVES};
     std::array<signed char, 4> weaponLevels{{0,-1,-1,-1}};
     char playerSpeed{2};
-    Spritesheet menuSprites;
     char continues;
     Fix maximumScrollY{0};
     int lastPlayerY;
@@ -139,7 +122,10 @@ struct Shooter
     void runScript(int delay, int scriptNum);
     int nextSpriteID() { return _nextSpriteID++; }
     void nextBonus(Fix x, Fix y);
-    void explode(Fix centerX, Fix centerY, ExplosionSize size, bool quiet);
+    void explode(Fix centerX, Fix centerY, ExplosionSize size,
+                bool quiet, bool hurtsPlayer);
+    void explodeNoScroll(Fix centerX, Fix centerY, ExplosionSize size,
+                bool quiet);
     void spawnScore(Fix x, Fix y, int score);
     inline bool isPlayerAlive() { return static_cast<bool>(player); }
     Fix2D vecToPlayer(Fix x, Fix y);

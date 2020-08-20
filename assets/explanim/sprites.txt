@@ -24,6 +24,14 @@ large1.png:160,0,40,40
 large1.png:200,0,40,40
 large1.png:240,0,40,40
 large1.png:280,0,40,40
+large2.png:0,0,40,40
+large2.png:40,0,40,40
+large2.png:80,0,40,40
+large2.png:120,0,40,40
+large2.png:160,0,40,40
+large2.png:200,0,40,40
+large2.png:240,0,40,40
+large2.png:280,0,40,40
 tinyw.png:0,0,5,5
 tinyw.png:5,0,5,5
 tinyr.png:0,0,5,5

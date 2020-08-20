@@ -111,7 +111,7 @@ def main(*argv):
     #print(groups)
 
     with open(argv[2], 'wb') as out:
-        out.write(struct.pack('<HHHH', 3, stageheight, stagey, len(layers)))
+        out.write(struct.pack('<HHHH', 4, stageheight, stagey, len(layers)))
         for layer in layers:
             out.write(layer)
         x = 0
@@ -124,8 +124,9 @@ def main(*argv):
             for sprite in sprites:
                 t, delay, subtype, ox, oy, extra = sprite
                 drop = int(extra.get('drop', 0))
+                diff = int(extra.get('diff', 0))
                 out.write(struct.pack('<BHBHHiiBBBB', t, delay & 0xFFFF,
-                        delay >> 16, 0, subtype, oy, ox, drop, 0, 0, 0))
+                        delay >> 16, 0, subtype, oy, ox, drop, diff, 0, 0))
             out.write(b'\0')
         print(x)
 

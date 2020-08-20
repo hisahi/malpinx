@@ -45,6 +45,20 @@ static inline REALLY_INLINE void doBlit(Image &fb,
     static_assert(!(tiled && fast), "cannot use tiling with fast blit");
     static_assert(!additive || fast, "additive must be used with fast blit");
 
+    if (!tiled)
+    {
+        if (sx < 0)
+        {
+            dx -= sx;
+            sx = 0;
+        }
+        if (sy < 0)
+        {
+            dy -= sy;
+            sy = 0;
+        }
+    }
+
     // sprite clipping
     if (dx < 0)
     {
@@ -228,7 +242,28 @@ static inline REALLY_INLINE bool overlapsImage(Image &other,
                     int mw, int mh, const std::vector<Color> &_data,
                     int x, int y, int ox, int oy, int w, int h)
 {
-    int fbs = other.width();
+    int fbs = other.width(), fbh = other.height();
+    if (!tiled)
+    {
+        if (x < 0)
+        {
+            w += x;
+            ox -= x;
+            x = 0;
+        }
+        if (y < 0)
+        {
+            y += h;
+            oy -= y;
+            y = 0;
+        }
+
+        w = std::min({ w, mw - x, fbs - ox });
+        h = std::min({ h, mh - y, fbh - oy });
+    }
+
+    if (w <= 0 || h <= 0) return false;
+
     int osrcx = remainder(x, mw), srcx = osrcx, srcy = remainder(y, mh);
     auto self = _data.begin() + (srcy * mw + srcx);
     auto othr = other.buffer().begin() + (oy * fbs + ox);

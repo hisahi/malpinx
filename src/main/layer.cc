@@ -41,10 +41,29 @@ void ForegroundLayer::blit(Image &fb, LayerScroll scroll)
         (scroll.y * _scrollYMul).round() - _offsetY, S_WIDTH, S_HEIGHT);
 }
 
+
+bool ForegroundLayer::hitsSprite(Image &spriteImage, LayerScroll scroll,
+                Fix spriteX, Fix spriteY) const
+{
+    return _img->overlapsTiled(spriteImage, 
+            (scroll.x + spriteX).round() - _offsetX,
+            (scroll.y + spriteY).round() - _offsetY,
+            0, 0, spriteImage.width(), spriteImage.height());
+}
+
 void NonTiledForegroundLayer::blit(Image &fb, LayerScroll scroll)
 {
     _img->blit(fb, 0, 0, (scroll.x * _scrollXMul).round() - _offsetX,
         (scroll.y * _scrollYMul).round() - _offsetY, S_WIDTH, S_HEIGHT);
+}
+
+bool NonTiledForegroundLayer::hitsSprite(Image &spriteImage, LayerScroll scroll,
+                Fix spriteX, Fix spriteY) const
+{
+    return _img->overlaps(spriteImage, 
+            (scroll.x + spriteX).round() - _offsetX,
+            (scroll.y + spriteY).round() - _offsetY,
+            0, 0, spriteImage.width(), spriteImage.height());
 }
 
 ColorWindow::ColorWindow(int x, int y, int w, int h)

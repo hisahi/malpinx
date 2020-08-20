@@ -50,7 +50,7 @@ void Enemy06::doEnemyTick()
         if (_stg.isPlayerAlive())
         {
             FireEnemyBullet(_stg, BulletType::Enemy6, _x - 2, _y + 12,
-                Fix2D(-6_x, 0_x));
+                Fix2D(-6_x, 0_x), true);
         }
         if (_dx > 0 && _stg.difficulty == DifficultyLevel::HARD)
             interval = 30;

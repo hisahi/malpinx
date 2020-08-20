@@ -95,8 +95,9 @@ void TitleScreen::nameEntry(DifficultyLevel diff, PlaybackMode pmode, int rank,
     nameEntryChars[1] = nameEntryChars[2] = 0;
     nameEntryCharIndex = 0;
     highScoreEntry = {
+        .name = {0, 0, 0},
         .stage = static_cast<char>(stageNum),
-        .score = score
+        .score = static_cast<std::uint32_t>(score)
     };
     highScoreCharBlink = 0;
     nameEntryCharIndexCopy = 1;

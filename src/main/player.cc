@@ -23,9 +23,11 @@ PlayerSprite::PlayerSprite(int id, std::shared_ptr<Image> img, Fix x, Fix y,
     std::shared_ptr<Shooter> stg)
     : Sprite(id, img, x, y, flags, SpriteType::Player), fireDelay(0),
         sheet(playerSprites), game(stg), deltaX(0), deltaY(0), invulTicks(0),
+        activeSprite(-1),
         rightEdge(Fix(S_WIDTH - img->width())),
         bottomEdge(Fix(S_GHEIGHT - img->height()))
 {
+    setActiveSprite(0);
 }
 
 inline void PlayerSprite::moveTick()
@@ -213,7 +215,7 @@ void DroneSprite::blit(Image &fb, int xoff, int yoff) const
 
 void DroneSprite::explode()
 {
-    game.explode(_x + 8, _y + 8, ExplosionSize::Medium2, true);
+    game.explodeNoScroll(_x + 8, _y + 8, ExplosionSize::Medium2, true);
     kill();
 }
 

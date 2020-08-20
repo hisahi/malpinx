@@ -33,12 +33,13 @@ void Enemy04::doEnemyTick()
     {
         if (_stg.isPlayerAlive())
         {
-            Fix2D delta = FixNorm(_stg.vecToPlayer(_x, _y), 3_x);
-            FireEnemyBullet(_stg, BulletType::Enemy4, _x + 5, _y + 5, delta);
-            FireEnemyBullet(_stg, BulletType::Enemy4, _x + 5, _y + 5,
-                    FixRotate(delta, Fix::PI / 8));
-            FireEnemyBullet(_stg, BulletType::Enemy4, _x + 5, _y + 5,
-                    FixRotate(delta, -Fix::PI / 8));
+            Fix2D delta = FixNorm(_stg.vecToPlayer(_x + 8, _y + 8), 3_x);
+            FireEnemyBullet(_stg, BulletType::Enemy4, _x + 4, _y + 4,
+                    delta, false);
+            FireEnemyBullet(_stg, BulletType::Enemy4, _x + 4, _y + 4,
+                    FixRotate(delta, Fix::PI / 8), false);
+            FireEnemyBullet(_stg, BulletType::Enemy4, _x + 4, _y + 4,
+                    FixRotate(delta, -Fix::PI / 8), false);
         }
         fireTicks += ScaleFireTicks(_stg, 90);
     }

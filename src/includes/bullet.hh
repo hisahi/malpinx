@@ -21,6 +21,7 @@ enum class BulletType
     Track1, Track2, Track3, TrackDrone,
     Enemy3, Enemy4, Enemy6,
     Boss1aBeam,
+    Boss1bBullet, Boss1bRing,
     Sigma,
     SuicideBullet
 };
@@ -61,7 +62,7 @@ int FireWeapon(Shooter &stg, int weapon, int level, Fix x, Fix y);
 int FireDroneWeapon(Shooter &stg, int weapon, Fix x, Fix y);
 int FireSigma(Shooter &stg, Fix x, Fix y);
 void FireEnemyBullet(Shooter &stg, BulletType type, Fix x, Fix y,
-            Fix dx, Fix dy, int scaleMode = 1);
+            Fix dx, Fix dy, bool scroll, int scaleMode = 1);
 void FireSuicideBullet(Shooter &stg, Fix x, Fix y);
 inline void FireEnemyBullet(Shooter &stg, BulletType type, Fix x, Fix y,
             Fix2D d, int scaleMode = 1)

@@ -127,6 +127,8 @@ void vbase_sync()
 
 void vbase_quit()
 {
+    SDL_DestroyTexture(screen);
+    SDL_FreeSurface(surface);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
