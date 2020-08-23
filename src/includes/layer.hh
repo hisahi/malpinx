@@ -26,6 +26,7 @@ public:
     ColorWindow(int x, int y, int w, int h);
     ColorWindow(Color clr, int x, int y, int w, int h);
     void blit(Image &fb);
+    bool hasColor() const;
     bool fade(int n = 1);
     void flash(Color clr);
 private:
@@ -42,6 +43,7 @@ class FadeWindow
 public:
     FadeWindow(int x, int y, int w, int h);
     void blit(Image &fb);
+    bool hasColor() const;
     bool fadeIn(int n = 1);
     bool fadeOut(int n = 1);
 private:

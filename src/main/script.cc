@@ -8,6 +8,8 @@
 
 #include <stdexcept>
 #include "object.hh"
+#include "sfx.hh"
+#include "songs.hh"
 
 ScriptSprite::ScriptSprite(Shooter &stg, int id, int scriptNo)
     : Sprite(id, nullptr, 0_x, 0_x, SPRITE_NODRAW | SPRITE_NOSCROLL,
@@ -22,6 +24,13 @@ void ScriptSprite::tick()
     {
     case 1:
         _stg.endStage();
+        kill();
+        return;
+    case 2:
+        FadeOutSong();
+        PlaySound(SoundEffect::BossAlarm, 1.0f, 0.0f, 6);
+        kill();
+        return;
     default:
         kill();
     }

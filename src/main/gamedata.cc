@@ -79,4 +79,5 @@ void ShooterAssets::load()
     enemy07 = loadSprites("enemy07");
     enemy08 = loadSprites("enemy08");
     boss1a = loadSprites("boss1a");
+    boss1b = loadSprites("boss1b");
 }

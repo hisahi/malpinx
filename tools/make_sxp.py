@@ -10,10 +10,10 @@ def make_8bit_mono(frame, width, channels):
     candidates = []
     for c in range(channels):
         if width > 1:
-            candidates.append(frame[((c + 1) * width) - 1])
+            candidates.append(unpack_sample(frame[((c + 1) * width) - 1]))
         else:
-            candidates.append(frame[c] ^ 0x80)
-    return int(round(sum(candidates) / len(candidates)))
+            candidates.append(unpack_sample(frame[c] ^ 0x80))
+    return pack_sample(sum(candidates) / len(candidates))
 
 
 def frac(x):

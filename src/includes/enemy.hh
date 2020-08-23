@@ -14,6 +14,8 @@
 #include "sfx.hh"
 #include "player.hh"
 #include "explode.hh"
+#include "songs.hh"
+#include "fixrng.hh"
 
 int ScaleFireTicks(Shooter &stg, int value);
 
@@ -24,6 +26,7 @@ public:
     virtual void doEnemyTick() = 0;
     virtual bool damage(int dmg) override;
     virtual void explode();
+    virtual void killEnemyByPlayer();
     virtual void killEnemy();
     void tick() override
     {
@@ -50,6 +53,14 @@ public:
     {
         return hits(_stg.player.get());
     };
+    inline bool hitsAnyForeground() const
+    {
+        if (_stg.stage)
+            for (auto &layer : _stg.stage->terrainLayers)
+                if (layer && hitsForeground(*layer, _stg.scroll))
+                    return true;
+        return false;
+    };
     inline void damagePlayerOnTouch() const
     {
         if (hitsPlayer())
@@ -71,6 +82,8 @@ protected:
     int _score{0};
     int _flash{0};
     int _hp{0};
+    bool _redShift{false};
+    bool _invulnerable{false};
     ExplosionSize _esize{ExplosionSize::Medium1};
     PowerupType _drop;
 };
@@ -86,6 +99,13 @@ protected:
     bool _scrollStopped{false};
     Fix _oldXScroll{0_x};
     Fix _targetXScroll{Fix(S_WIDTH)};
+
+    void isLevelBoss()
+    {
+        StopSong();
+        PlaySong(MusicTrack::Boss);
+    }
+
 public:
     void doEnemyTick() override
     {
@@ -135,6 +155,7 @@ class Enemy05 : public EnemySprite
 {
     int moveTicks{-1};
     Fix speed{0};
+    bool fg{false};
 public:
     Enemy05(Shooter &stg, int id, Fix x, Fix y, int subtype, PowerupType drop);
     virtual void doEnemyTick() override;
@@ -178,6 +199,22 @@ class Boss1a : public BossSprite
     int modeTicks{0};
 public:
     Boss1a(Shooter &stg, int id, Fix x, Fix y, int subtype, PowerupType drop);
+    virtual void doBossTick() override;
+    virtual void killEnemy() override;
+    virtual void explode() override;
+};
+
+class Boss1b : public BossSprite
+{
+    Fix minY{0_x}, maxY{Fix(S_HEIGHT - 64)};
+    Fix2D vecPl;
+    FixRandom explosionRng{647875107};
+    int mode{0};
+    int modeTicks{0};
+    int spawnTicks{0};
+    int explodeTicks{0};
+public:
+    Boss1b(Shooter &stg, int id, Fix x, Fix y, int subtype, PowerupType drop);
     virtual void doBossTick() override;
     virtual void killEnemy() override;
     virtual void explode() override;

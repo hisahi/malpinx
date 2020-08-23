@@ -38,6 +38,9 @@ constexpr int S_FADEOUT_MS = (S_COLORS * 1000 * 4) / S_TICKS;
 constexpr int S_SAMPLE_RATE_LO = 22050;
 constexpr int S_SAMPLE_RATE_HI = 44100;
 
+// cheat mode!
+constexpr bool M_INFINITE_LIVES = true;
+
 template <bool debug = M_DEBUG, typename... Args,
             typename std::enable_if<debug>::type* = nullptr>
 inline void DEBUG_LOG(Args... ignore) { }

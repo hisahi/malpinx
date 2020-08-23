@@ -13,7 +13,7 @@
 
 Boss1a::Boss1a(Shooter &stg, int id, Fix x, Fix y,
         int subtype, PowerupType drop)
-    : BossSprite(stg, id, x, y, 1500, drop)
+    : BossSprite(stg, id, x, y, 2000, drop)
 {
     _score = 2000;
     updateImage(_stg.assets.boss1a->getImage(0));
@@ -84,7 +84,7 @@ void Boss1a::doBossTick()
         if (_stg.isPlayerAlive())
         {
             minY = std::max(0_x, _stg.player->y() - 64);
-            maxY = std::min(Fix(S_HEIGHT - 64), _stg.player->y() + 24);
+            maxY = std::min(Fix(S_GHEIGHT - 64), _stg.player->y() + 24);
         }
         if ((_y < minY && _dy < 0) || (_y > maxY && _dy > 0))
             _dy = -_dy;
@@ -94,7 +94,7 @@ void Boss1a::doBossTick()
                 vecPl = FixNorm(_stg.vecToPlayer(_x + 23, _y + 42), 3.5_x);
             if ((modeTicks % 40) >= 20)
                 FireEnemyBullet(_stg, BulletType::Enemy4, _x + 23, _y + 42,
-                    FixRotate(vecPl, getBoss1aAngle(modeTicks / 4)));
+                    FixRotate(vecPl, getBoss1aAngle(modeTicks / 4)), true);
         }
         if (++modeTicks >= 160)
         {

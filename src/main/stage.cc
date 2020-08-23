@@ -39,3 +39,16 @@ void Stage::spawnSprites(LayerScroll scroll)
         nextSpawn = objectSpawns.begin();
     }
 }
+
+void Stage::skipObjects(LayerScroll scroll)
+{
+    Fix fsx = scroll.x + S_WIDTH;
+    while (nextSpawn != objectSpawns.end())
+    {
+        ObjectSpawn &os = *nextSpawn;
+        if (os.scrollX > fsx)
+            break;
+        objectSpawns.pop_front();
+        nextSpawn = objectSpawns.begin();
+    }
+}

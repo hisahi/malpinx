@@ -231,7 +231,7 @@ void Image::subtractSolid(Color color, int x, int y, int w, int h)
         {
             std::transform(it, it + w, it,
                     [color](const Color &c) { return c ? c - color : c; });
-            it += w;
+            it += _width;
         }
     }
 }

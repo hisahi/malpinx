@@ -40,7 +40,9 @@ enum class SoundEffect
     ScoreNotMax,
     FireSigma,
     BonusRackUp,
-    Boss1aBeam
+    Boss1aBeam,
+    Boss1bRingFire,
+    Boss1bRingMove
 };
 
 int PlaySound(int soundNum, float volume = 1.0f, float pan = 0.0f,
@@ -51,6 +53,8 @@ void PlayMenuSound(int soundNum, float volume = 1.0f, float pan = 0.0f);
 void PlayMenuSound(SoundEffect effect, float volume = 1.0f, float pan = 0.0f);
 void PlayGunSound(int soundNum, float volume = 1.0f, float pan = 0.0f);
 void PlayGunSound(SoundEffect effect, float volume = 1.0f, float pan = 0.0f);
+void PlayEffectSound(int soundNum, float volume = 1.0f, float pan = 0.0f);
+void PlayEffectSound(SoundEffect effect, float volume = 1.0f, float pan = 0.0f);
 void StopSounds();
 
 #endif // M_SFX_HH

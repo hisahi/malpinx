@@ -91,6 +91,11 @@ void ColorWindow::blit(Image &fb)
     }
 }
 
+bool ColorWindow::hasColor() const
+{
+    return static_cast<bool>(_color);
+}
+
 bool ColorWindow::fade(int n/* = 1*/)
 {
     return static_cast<bool>(_color -= Color(n, n, n));
@@ -119,6 +124,11 @@ void FadeWindow::blit(Image &fb)
             [=](const Color &c) { return c - m; });
         dst += stride;
     }
+}
+
+bool FadeWindow::hasColor() const
+{
+    return static_cast<bool>(_color);
 }
 
 bool FadeWindow::fadeOut(int n/* = 1*/)

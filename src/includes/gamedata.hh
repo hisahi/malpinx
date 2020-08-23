@@ -39,6 +39,7 @@ struct ShooterAssets
     std::shared_ptr<Spritesheet> enemy07;
     std::shared_ptr<Spritesheet> enemy08;
     std::shared_ptr<Spritesheet> boss1a;
+    std::shared_ptr<Spritesheet> boss1b;
 
     void load();
 };

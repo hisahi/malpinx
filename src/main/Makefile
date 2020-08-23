@@ -6,7 +6,7 @@ OBJS = config.o gamedata.o color.o image.o layer.o sprite.o songs.o sfx.o \
 	stage.o object.o explode.o powerup.o scores.o bullet.o enemy.o \
 	enemy/enemy01.o enemy/enemy02.o enemy/enemy03.o enemy/enemy04.o \
 	enemy/enemy05.o enemy/enemy06.o enemy/enemy07.o enemy/enemy08.o \
-	enemy/boss1a.o \
+	enemy/boss1a.o enemy/boss1b.o \
 	fonts.o script.o logic.o render.o malpinx.o
 HDIR = ../includes
 INCLUDES = $(HDIR)/cfg.hh $(HDIR)/config.hh $(HDIR)/backend.hh $(HDIR)/defs.hh \

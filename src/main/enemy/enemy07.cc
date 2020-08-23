@@ -44,4 +44,6 @@ void Enemy07::doEnemyTick()
         updateImage(_stg.assets.enemy07->getImage((_ticks >> 2) & 3));
     damagePlayerOnTouch();
     move();
+    if (_y < -_height - 8)
+        kill();
 }

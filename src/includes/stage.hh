@@ -45,6 +45,7 @@ struct Stage
     int spawnLevelY{100};
 
     void spawnSprites(LayerScroll scroll);
+    void skipObjects(LayerScroll scroll);
 };
 
 #endif // M_STAGE_HH

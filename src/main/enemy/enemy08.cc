@@ -61,6 +61,8 @@ void Enemy08::doEnemyTick()
         if (delta)
         {
             Fix deltaAngle = FixPolar2D(delta).angle;
+            if (deltaAngle < 0)
+                deltaAngle += Fix::TAU;
             int adjTicks = ScaleFireTicks(_stg, 15);
             int maxTicks = ScaleFireTicks(_stg, 60);
             Fix diffAngle = SubtractAngles(deltaAngle, trackAngle);
@@ -102,7 +104,7 @@ void Enemy08::doEnemyTick()
         {
             Fix2D o = Fix2D(FixPolar2D(8_x, pointAngle));
             FireEnemyBullet(_stg, BulletType::Enemy4,
-                _x + 8 + o.x, _y + 8 + o.y, o * (3_x / 4), true);
+                _x + 8 + o.x, _y + 8 + o.y, o * (3_x / 8), true);
             fireTicks += ScaleFireTicks(_stg, 60);
         }
     }

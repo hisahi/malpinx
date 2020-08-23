@@ -21,17 +21,21 @@ Enemy05::Enemy05(Shooter &stg, int id, Fix x, Fix y,
     switch (subtype)
     {
     case 0:
+    case 3:
         _dx = -SPEED;
         break;
     case 1:
+    case 4:
         _dy = SPEED;
         moveTicks += 30;
         break;
     case 2:
+    case 5:
         _dy = -SPEED;
         moveTicks += 30;
         break;
     }
+    fg = subtype >= 3;
 }
 
 void Enemy05::doEnemyTick()
@@ -39,6 +43,11 @@ void Enemy05::doEnemyTick()
     if (!(_ticks & 7))
         updateImage(_stg.assets.enemy05->getImage((_ticks >> 3) & 3));
     damagePlayerOnTouch();
+    if (fg && hitsAnyForeground())
+    {
+        explode();
+        return;
+    }
     if (_x <= -_width || (!moveTicks && (_x >= S_WIDTH
                         || _y >= S_HEIGHT || _y < -_height)))
     {

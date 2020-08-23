@@ -25,6 +25,7 @@
 #include "object.hh"
 #include "bullet.hh"
 #include "powerup.hh"
+#include "scores.hh"
 
 std::shared_ptr<Shooter> stg;
 
@@ -37,6 +38,8 @@ void StartNewGame()
     stg->continues = startContinues;
     stg->difficulty = difficulty;
     stg->pmode = pmode;
+    if (GetHighScoreCount(difficulty, pmode))
+        stg->highScore = GetHighScore(difficulty, pmode, 0).score;
     stg->popup = std::make_unique<ScreenPopup>();
     stg->spriteLayer0.reserve(256);
     stg->spriteLayer1.reserve(256);
@@ -182,12 +185,19 @@ void Shooter::blit(Image &fb)
                 sprite->blit(gameArea, 0, oy);
         for (auto &bl : stage->foregroundLayers)
             bl->blit(gameArea, stg->scroll);
+        flashfx.blit(gameArea);
         fade.blit(gameArea);
         gameArea.blitFast(fb, 0, S_HUDHEIGHT, 0, 0, S_WIDTH, S_GHEIGHT);
     } else
         hud.blit(fb);
     text.blit(fb);
     popup->blit(fb);
+}
+
+void Shooter::flashScreen(Color color, int permanence /*= 1*/)
+{
+    flashfx.flash(color);
+    _flashSpeed = permanence;
 }
 
 static inline bool tickSprite(Sprite &sprite)
@@ -341,6 +351,12 @@ void Shooter::updateHUD(HUDElement element)
                         rightAlignPad(std::to_string(lives), 2));
         break;
     }
+}
+
+static inline void DEBUG_SKIP(Shooter &stg, int skipN)
+{
+    stg.scroll.x = Fix(skipN);
+    stg.stage->skipObjects(stg.scroll);
 }
 
 void Shooter::loadStage(int stageNum)
@@ -754,11 +770,19 @@ void Shooter::tick()
         controlTick();
         ++totalTicks;
         if (stageFade > 0)
-            if (fade.fadeIn(1))
+            if ((totalFrames & 1) == 0 && fade.fadeIn(1))
                 stageFade = 0;
+        if (flashfx.hasColor() && totalTicks % _flashSpeed == 0)
+            flashfx.fade();
         if (_respawnTicks && !--_respawnTicks)
         {
-            if (!lives) tryContinue();
+            if (!lives)
+            {
+                if (M_INFINITE_LIVES)
+                    lives = DEFAULT_LIVES;
+                else
+                    tryContinue();
+            }
             --lives;
             updateHUD(HUDElement::Lives);
             respawnPlayer();
@@ -777,7 +801,7 @@ void Shooter::tick()
             tickSprite(*player);
     }
     if (stageFade < 0)
-        if (fade.fadeOut(1))
+        if ((totalFrames & (usedContinue ? 3 : 7)) == 0 && fade.fadeOut(1))
         {
             unloadStage();
             if (usedContinue)
@@ -865,7 +889,7 @@ bool Shooter::collectDrone()
 Fix2D Shooter::vecToPlayer(Fix x, Fix y)
 {
     if (!isPlayerAlive()) return Fix2D(0_x, 0_x);
-    return Fix2D(player->x() - x, player->y() - y);
+    return Fix2D(player->x() + 16 - x, player->y() + 8 - y);
 }
 
 void Shooter::spawnPowerup(Fix x, Fix y, PowerupType type)

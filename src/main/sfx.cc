@@ -51,6 +51,19 @@ void PlayGunSound(SoundEffect effect,
     PlayGunSound(static_cast<int>(effect), volume, pan);
 }
 
+void PlayEffectSound(int soundNum,
+            float volume /*= 1.0f*/, float pan /*= 0.0f*/)
+{
+    if (!sfxEnabled) return;
+    abase_sound_play(soundNum, volume, pan, 1, 2);
+}
+
+void PlayEffectSound(SoundEffect effect,
+            float volume /*= 1.0f*/, float pan /*= 0.0f*/)
+{
+    PlayEffectSound(static_cast<int>(effect), volume, pan);
+}
+
 void StopSounds()
 {
     abase_sound_stop_all();

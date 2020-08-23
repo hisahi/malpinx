@@ -44,6 +44,7 @@ enum class SpriteType
     Explosion,
     BulletPlayer,
     BulletEnemy,
+    BulletEnemySolid,
     Script,
     Temporary
 };

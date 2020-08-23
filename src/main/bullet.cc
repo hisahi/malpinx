@@ -47,6 +47,7 @@ BulletSprite::BulletSprite(Shooter &stg, int id, Fix x, Fix y, Fix dx, Fix dy,
         _expl(ExplosionSize::TinyWhite), _stg(stg), _damage(1), _pierce(false)
 {
     int frameCount = 1;
+    bool solid = false;
     switch (type)
     {
         case BulletType::PulseDrone:
@@ -59,11 +60,14 @@ BulletSprite::BulletSprite(Shooter &stg, int id, Fix x, Fix y, Fix dx, Fix dy,
             _damage = 6;
             goto pulse;
         case BulletType::Pulse3:
-            _damage = 8;
+            _damage = 7;
         pulse:
             updateImage(stg.assets.bulletSprites->getImage(_frame = 0));
             _expl = ExplosionSize::TinyRed;
             break;
+        case BulletType::SprayDrone:
+            _damage = 4;
+            goto spray;
         case BulletType::Spray1:
             _damage = 8;
             goto spray;
@@ -77,7 +81,7 @@ BulletSprite::BulletSprite(Shooter &stg, int id, Fix x, Fix y, Fix dx, Fix dy,
             _expl = ExplosionSize::TinyGreen;
             break;
         case BulletType::BeamDrone:
-            _damage = 8;
+            _damage = 7;
             goto beam;
         case BulletType::Beam1:
             _damage = 14;
@@ -93,16 +97,16 @@ BulletSprite::BulletSprite(Shooter &stg, int id, Fix x, Fix y, Fix dx, Fix dy,
             _pierce = true;
             break;
         case BulletType::TrackDrone:
-            _damage = 5;
+            _damage = 4;
             goto track;
         case BulletType::Track1:
             _damage = 6;
             goto track;
         case BulletType::Track2:
-            _damage = 9;
+            _damage = 8;
             goto track;
         case BulletType::Track3:
-            _damage = 12;
+            _damage = 10;
         track:
             updateImage(stg.assets.bulletSprites->getImage(_frame = 3));
             _animSpeed = 0;
@@ -151,19 +155,22 @@ BulletSprite::BulletSprite(Shooter &stg, int id, Fix x, Fix y, Fix dx, Fix dy,
             _expl = ExplosionSize::TinyRed;
             _pierce = true;
             break;
-        case BulletType::Boss1bBullet:
+        /*case BulletType::Boss1bBullet:
             updateImage(stg.assets.bulletSprites->getImage(_frame = 33));
             _damage = 10;
             _expl = ExplosionSize::TinyYellow;
-            break;
+            break; */
         case BulletType::Boss1bRing:
             updateImage(stg.assets.bulletSprites->getImage(_frame = 34));
             _damage = 20;
             _expl = ExplosionSize::TinyYellow;
+            solid = true;
             break;
     }
     if (source == BulletSource::Player)
         hitTargets.reserve(4);
+    else if (source == BulletSource::Enemy && solid)
+        Sprite::_type = SpriteType::BulletEnemySolid;
     _minFrame = _frame;
     _maxFrame = _minFrame + frameCount - 1;
     if (_img)
@@ -177,8 +184,26 @@ BulletSprite::BulletSprite(Shooter &stg, int id, Fix x, Fix y, Fix dx, Fix dy,
 
 void BulletSprite::explode()
 {
-    stg->explode(_x + (_img->width() / 2), _y + (_img->height() / 2),
-                _expl, true, false);
+    switch (_type)
+    {
+        case BulletType::Beam1:
+        case BulletType::Beam2:
+        case BulletType::Beam3:
+            stg->explode(_x + _width - (_height / 2),
+                         _y + (_height / 2),
+                        _expl, true, false);
+            break;
+        case BulletType::Boss1aBeam:
+            stg->explode(_x + (_height / 2),
+                         _y + (_height / 2),
+                        _expl, true, false);
+            break;
+        default:
+            stg->explode(_x + (_width / 2),
+                         _y + (_height / 2),
+                        _expl, true, false);
+            break;
+    }
     kill();
 }
 
@@ -287,9 +312,6 @@ void BulletSprite::tick()
             updateImage(_stg.assets.bulletSprites->getImage(_frame));
     }
 
-    int ox = S_WIDTH, oy = S_HEIGHT, nx, ny;
-    Fix2D _fvel = _vel / BULLET_DIV;
-
     switch (_type)
     {
     case BulletType::Track1:
@@ -301,7 +323,42 @@ void BulletSprite::tick()
     case BulletType::Track3:
         tickTrack(3);
         break;
+    case BulletType::Boss1bRing:
+    {
+        int ringBase = 30, ringEnd = 30;
+        switch (_stg.difficulty)
+        {
+        case DifficultyLevel::EASY:
+            ringBase = 60;
+            ringEnd = ringBase + 30;
+            break;
+        case DifficultyLevel::NORMAL:
+            ringBase = 45;
+            ringEnd = ringBase + 20;
+            break;
+        case DifficultyLevel::HARD:
+            ringBase = 30;
+            ringEnd = ringBase + 10;
+            break;
+        case DifficultyLevel::BIZARRE:
+            ringBase = 24;
+            ringEnd = ringBase + 6;
+            break;
+        }
+        if (_ticks == ringBase)
+            _vel = Fix2D(0_x, 0_x);
+        else if (!_vel && _ticks >= ringEnd && _stg.isPlayerAlive())
+        {
+            _vel = ScaleEnemyBullet(_stg, FixNorm(
+                _stg.vecToPlayer(_x + 16, _y + 16), 3.5_x), 1);
+            PlayEffectSound(SoundEffect::Boss1bRingMove);
+        }
+        break;
     }
+    }
+
+    int ox = S_WIDTH, oy = S_HEIGHT, nx, ny;
+    Fix2D _fvel = _vel / BULLET_DIV;
 
     for (int i = 0; i < BULLET_DIV; ++i)
     {
@@ -326,6 +383,13 @@ void BulletSprite::tick()
 
         if (_src == BulletSource::Player)
         {
+            for (auto &s : _stg.spriteLayer3)
+                if (s && s->type() == SpriteType::BulletEnemySolid && hits(*s))
+                {
+                    explode();
+                    return;
+                }
+
             hitTargets.clear();
             // check for enemies
             for (auto &s : _stg.spriteLayer2)
@@ -355,7 +419,9 @@ void BulletSprite::tick()
 
             if (_sigma)
                 for (auto &s : _stg.spriteLayer3)
-                    if (s && s->type() == SpriteType::BulletEnemy && hits(*s))
+                    if (s && (s->type() == SpriteType::BulletEnemy
+                                || s->type() == SpriteType::BulletEnemySolid)
+                            && hits(*s))
                         s->kill();
         }
         else if (_src == BulletSource::Enemy)
@@ -399,7 +465,7 @@ void SpawnEnemyBullet(Shooter &stg, Fix x, Fix y,
 
 void FireSuicideBullet(Shooter &stg, Fix x, Fix y)
 {
-    Fix2D d(FixPolar2D(5_x, suicideAngleRng.nextAngle()));
+    Fix2D d(FixPolar2D(2.5_x, suicideAngleRng.nextAngle()));
     SpawnEnemyBullet(stg, x, y, d.x, d.y, BulletType::SuicideBullet, false);
 }
 
@@ -442,13 +508,13 @@ int FireWeapon(Shooter &stg, int weapon, int level, Fix x, Fix y)
                 3_x, 6_x * 13 / 15, BulletType::Spray1);
             break;
         case 1:
-            SpawnPlayerBullet(stg, x - 3, y - 4, 
-                6_x * 13 / 15, -3_x, BulletType::Spray2);
-            SpawnPlayerBullet(stg, x - 3, y - 2, 
-                6_x * 13 / 15, 3_x, BulletType::Spray2);
             SpawnPlayerBullet(stg, x - 36, y - 3, 
                 -6_x, 0_x, BulletType::Spray2);
-            SpawnPlayerBullet(stg, x - 4, y - 3, 
+            SpawnPlayerBullet(stg, x - 3, y - 4, 
+                3_x, -6_x * 13 / 15, BulletType::Spray2);
+            SpawnPlayerBullet(stg, x - 3, y - 2, 
+                3_x, 6_x * 13 / 15, BulletType::Spray2);
+            SpawnPlayerBullet(stg, x - 4, y - 3,
                 6_x, 0_x, BulletType::Spray2);
             break;
         case 2:
@@ -459,7 +525,7 @@ int FireWeapon(Shooter &stg, int weapon, int level, Fix x, Fix y)
             SpawnPlayerBullet(stg, x - 4, y - 3, 
                 6_x, 0_x, BulletType::Spray3);
             SpawnPlayerBullet(stg, x - 2, y - 6, 
-                3-x, -6_x * 13 / 15, BulletType::Spray3);
+                -3_x, -6_x * 13 / 15, BulletType::Spray3);
             SpawnPlayerBullet(stg, x - 2, y, 
                 3_x, 6_x * 13 / 15, BulletType::Spray3);
             SpawnPlayerBullet(stg, x - 36, y - 4, 
@@ -516,19 +582,19 @@ int FireDroneWeapon(Shooter &stg, int weapon, Fix x, Fix y)
     case 0: // pulse
         SpawnPlayerBullet(stg, x - 4, y - 2,
                     8_x, 0_x, BulletType::PulseDrone);
-        return 4;
+        return 8;
     case 1: // spray
         SpawnPlayerBullet(stg, x - 4, y - 3, 
-                    6_x, 0_x, BulletType::Spray1);
-        return 5;
+                    6_x, 0_x, BulletType::SprayDrone);
+        return 12;
     case 2: // beam
         SpawnPlayerBullet(stg, x - 16, y - 3,
                     16_x, 0_x, BulletType::BeamDrone);
-        return 6;
+        return 12;
     case 3: // track
         SpawnPlayerBullet(stg, x - 4, y - 2,
                     TRACK_VEL, 0_x, BulletType::TrackDrone);
-        return 6;
+        return 10;
     }
     return 0;
 }
@@ -540,8 +606,7 @@ int FireSigma(Shooter &stg, Fix x, Fix y)
     return 30;
 }
 
-void FireEnemyBullet(Shooter &stg, BulletType type, Fix x, Fix y,
-            Fix dx, Fix dy, bool scroll, int scaleMode /*= 1*/)
+Fix2D ScaleEnemyBullet(Shooter &stg, Fix2D vel, int scaleMode)
 {
     switch (scaleMode)
     {
@@ -549,17 +614,21 @@ void FireEnemyBullet(Shooter &stg, BulletType type, Fix x, Fix y,
         switch (stg.difficulty)
         {
         case DifficultyLevel::EASY:
-            dx *= 0.625_x;
-            dy *= 0.625_x;
-            break;
+            return vel * 0.625_x;
         case DifficultyLevel::NORMAL:
-            break;
+            return vel;
         case DifficultyLevel::HARD:
         case DifficultyLevel::BIZARRE:
-            dx *= 1.5_x;
-            dy *= 1.5_x;
-            break;
+            return vel * 1.5_x;
         }
     }
-    SpawnEnemyBullet(stg, x, y, dx, dy, type, scroll);
+    return vel;
+}
+
+void FireEnemyBullet(Shooter &stg, BulletType type, Fix x, Fix y,
+            Fix2D vel, bool scroll, int scaleMode /*= 1*/)
+{
+    if (scaleMode)
+        vel = ScaleEnemyBullet(stg, vel, scaleMode);
+    SpawnEnemyBullet(stg, x, y, vel.x, vel.y, type, scroll);
 }

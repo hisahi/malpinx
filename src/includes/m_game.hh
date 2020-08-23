@@ -96,6 +96,7 @@ struct Shooter
     Fix maximumScrollY{0};
     int lastPlayerY;
     int sigmas{1};
+    ColorWindow flashfx{0, 0, S_WIDTH, S_GHEIGHT};
     FadeWindow fade{0, 0, S_WIDTH, S_GHEIGHT};
     DifficultyLevel difficulty;
     PlaybackMode pmode;
@@ -119,6 +120,7 @@ struct Shooter
     void loadStage(int stageNum);
     void endStage();
     void unloadStage();
+    void flashScreen(Color color, int permanence = 1);
     void runScript(int delay, int scriptNum);
     int nextSpriteID() { return _nextSpriteID++; }
     void nextBonus(Fix x, Fix y);
@@ -146,12 +148,13 @@ struct Shooter
     int stageFade{0};
     int totalFrames{0};
     int totalTicks{0};
+    unsigned long highScore;
 private:
     int _nextBonus{0};
     unsigned long score;
-    unsigned long highScore;
     unsigned long gameEndBonus;
     int pauseCursor;
+    int _flashSpeed{1};
     int _nextSpriteID{0};
     int _respawnTicks;
     bool _isGameOver{false};
