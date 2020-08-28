@@ -44,3 +44,7 @@ tinyp.png:0,0,5,5
 tinyp.png:5,0,5,5
 tinyy.png:0,0,5,5
 tinyy.png:5,0,5,5
+splash.png:0,0,32,8
+splash.png:0,8,32,8
+splash.png:0,16,32,8
+splash.png:0,24,32,8

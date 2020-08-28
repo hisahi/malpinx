@@ -29,6 +29,8 @@ public:
     void blitFast(Image &dst, int dx, int dy, int sx, int sy, int sw, int sh);
     void blitAdditive(Image &dst, int dx, int dy,
                         int sx, int sy, int sw, int sh);
+    void blitAdditiveTiled(Image &dst, int dx, int dy,
+                        int sx, int sy, int sw, int sh);
     void clear();
     void fill(Color color);
     bool overlaps(Image &other, int x, int y, int ox, int oy,

@@ -93,6 +93,7 @@ struct Shooter
     std::array<signed char, 4> weaponLevels{{0,-1,-1,-1}};
     char playerSpeed{2};
     char continues;
+    Fix minimumScrollY{0};
     Fix maximumScrollY{0};
     int lastPlayerY;
     int sigmas{1};

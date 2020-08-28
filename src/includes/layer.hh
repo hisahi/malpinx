@@ -69,7 +69,21 @@ public:
     BackgroundLayer(std::shared_ptr<Image> bg,
                     int ox, int oy, Fix sxm, Fix sym);
     virtual void blit(Image &fb, LayerScroll scroll);
+    void blitIfShown(Image &fb, LayerScroll scroll)
+    {
+        if (!_hidden)
+            blit(fb, scroll);
+    }
+    void show()
+    {
+        _hidden = false;
+    }
+    void hide()
+    {
+        _hidden = true;
+    }
 protected:
+    bool _hidden{false};
     std::shared_ptr<Image> _img;
     int _offsetX;
     int _offsetY;
@@ -85,7 +99,7 @@ public:
                     int ox, int oy, Fix sxm, Fix sym);
     virtual void blit(Image &fb, LayerScroll scroll);
     virtual bool hitsSprite(Image &spriteImage, LayerScroll scroll,
-                Fix spriteX, Fix spriteY) const;
+                const Hitbox &box, Fix spriteX, Fix spriteY) const;
 protected:
     std::shared_ptr<Image> _img;
     int _offsetX;
@@ -103,6 +117,55 @@ public:
     void blit(Image &fb, LayerScroll scroll) override;
 };
 
+class HTiledBackgroundLayer : public BackgroundLayer
+{
+public:
+    HTiledBackgroundLayer(std::shared_ptr<Image> bg,
+                    int ox, int oy, Fix sxm, Fix sym)
+        : BackgroundLayer(bg, ox, oy, sxm, sym) {}
+    void blit(Image &fb, LayerScroll scroll) override;
+};
+
+class AdditiveBackgroundLayer : public BackgroundLayer
+{
+public:
+    AdditiveBackgroundLayer(std::shared_ptr<Image> bg,
+                    int ox, int oy, Fix sxm, Fix sym)
+        : BackgroundLayer(bg, ox, oy, sxm, sym) {}
+    void blit(Image &fb, LayerScroll scroll) override;
+};
+
+class HTiledAdditiveBackgroundLayer : public BackgroundLayer
+{
+public:
+    HTiledAdditiveBackgroundLayer(std::shared_ptr<Image> bg,
+                    int ox, int oy, Fix sxm, Fix sym)
+        : BackgroundLayer(bg, ox, oy, sxm, sym) {}
+    void blit(Image &fb, LayerScroll scroll) override;
+};
+
+class HTiledParallaxBackgroundLayer : public BackgroundLayer
+{
+public:
+    HTiledParallaxBackgroundLayer(std::shared_ptr<Image> bg,
+                    int ox, int oy, Fix sxm, Fix sym, int meta)
+        : BackgroundLayer(bg, ox, oy, sxm, sym), sign(meta ? -1 : 1) {}
+    void blit(Image &fb, LayerScroll scroll) override;
+private:
+    int sign;
+};
+
+class HTiledWavyBackgroundLayer : public BackgroundLayer
+{
+public:
+    HTiledWavyBackgroundLayer(std::shared_ptr<Image> bg,
+                    int ox, int oy, Fix sxm, Fix sym, int meta)
+        : BackgroundLayer(bg, ox, oy, sxm, sym) {}
+    void blit(Image &fb, LayerScroll scroll) override;
+private:
+    int phase{0};
+};
+
 class NonTiledForegroundLayer : public ForegroundLayer
 {
 public:
@@ -111,7 +174,7 @@ public:
         : ForegroundLayer(bg, ox, oy, sxm, sym) {}
     void blit(Image &fb, LayerScroll scroll) override;
     virtual bool hitsSprite(Image &spriteImage, LayerScroll scroll,
-                Fix spriteX, Fix spriteY) const override;
+                const Hitbox &box, Fix spriteX, Fix spriteY) const override;
 };
 
 // text layer; consists of non-overlapping sprites

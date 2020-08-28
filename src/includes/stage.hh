@@ -46,6 +46,8 @@ struct Stage
 
     void spawnSprites(LayerScroll scroll);
     void skipObjects(LayerScroll scroll);
+    void hideLayer(int index);
+    void showLayer(int index);
 };
 
 #endif // M_STAGE_HH

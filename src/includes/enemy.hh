@@ -191,6 +191,61 @@ public:
     virtual void doEnemyTick() override;
 };
 
+class Enemy09 : public EnemySprite
+{
+    int fireTicks{-1};
+public:
+    Enemy09(Shooter &stg, int id, Fix x, Fix y, int subtype, PowerupType drop);
+    virtual void doEnemyTick() override;
+};
+
+class Enemy10 : public EnemySprite
+{
+    int fireTicks{-1};
+    int sineMul;
+public:
+    Enemy10(Shooter &stg, int id, Fix x, Fix y, int subtype, PowerupType drop);
+    virtual void doEnemyTick() override;
+};
+
+class Enemy11 : public EnemySprite
+{
+    int fireTicks{-1};
+    int bombTicks{-1};
+public:
+    Enemy11(Shooter &stg, int id, Fix x, Fix y, int subtype, PowerupType drop);
+    virtual void doEnemyTick() override;
+};
+
+class Enemy12 : public EnemySprite
+{
+    int fireTicks{-1};
+    int angle{0};
+    int angleDiff{1};
+public:
+    Enemy12(Shooter &stg, int id, Fix x, Fix y, int subtype, PowerupType drop);
+    virtual void doEnemyTick() override;
+};
+
+class Enemy13 : public EnemySprite
+{
+    Fix origY;
+    Fix ddy;
+public:
+    Enemy13(Shooter &stg, int id, Fix x, Fix y, int subtype, PowerupType drop);
+    virtual void doEnemyTick() override;
+};
+
+class Enemy14 : public EnemySprite
+{
+    Fix origY;
+    Fix ddy;
+    int fireTicks{-1};
+public:
+    Enemy14(Shooter &stg, int id, Fix x, Fix y, int subtype, PowerupType drop);
+    virtual void doEnemyTick() override;
+};
+
 class Boss1a : public BossSprite
 {
     Fix minY{0_x}, maxY{Fix(S_HEIGHT - 64)};

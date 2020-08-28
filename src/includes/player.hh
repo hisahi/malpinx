@@ -29,13 +29,14 @@ public:
     void giveShield();
     void setActiveSprite(int index);
     void onWeaponChange();
-    void updateY(Fix y, Fix bottom);
+    void updateY(Fix y, Fix top, Fix bottom);
 private:
     std::shared_ptr<Spritesheet> sheet;
     std::shared_ptr<Shooter> game;
     int fireDelay{0};
     int sigmaDelay{0};
     int activeSprite;
+    Fix topEdge;
     Fix rightEdge;
     Fix bottomEdge;
     Fix deltaX;

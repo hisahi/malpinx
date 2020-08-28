@@ -54,6 +54,7 @@ void StartNewGame()
         ++stg->sigmas;
     }
     stg->drawHUD();
+    //if (M_DEBUG) stg->stageNum += 1;
 }
 
 void UnloadGame()
@@ -106,22 +107,26 @@ void ScreenPopup::showString(std::string text)
 void ScreenPopup::showStage(int num) 
 {
     if (num == STAGE_COUNT) // FINAL STAGE
-        showString(" \x09\x0b\x0e\x06\x0c \x12\x13\x06\x0a\x08");
+        showString("\x09\x0b\x0e\x06\x0c \x12\x13\x06\x0a\x08");
     else
-        showString(" \x12\x13\x06\x0a\x08 \x01" + static_cast<char>(num));
+    {
+        std::string text = "\x12\x13\x06\x0a\x08 \x01";
+        text[6] += num - 1;
+        showString(text);
+    }
 }
 
 void ScreenPopup::showComplete()
 {
     // COMPLETE
-    showString(" \x07\x0f\x0d\x10\x0c\x08\x13\x08");
+    showString("\x07\x0f\x0d\x10\x0c\x08\x13\x08");
     permanent = true;
 }
 
 void ScreenPopup::showGameOver()
 {
     // GAME OVER
-    showString(" \x0a\x06\x0d\x08 \x0f\x14\x08\x11");
+    showString("\x0a\x06\x0d\x08 \x0f\x14\x08\x11");
     permanent = true;
 }
 
@@ -159,7 +164,7 @@ void Shooter::blit(Image &fb)
     {
         int oy = static_cast<int>(-stg->scroll.y);
         for (auto &bl : stage->backgroundLayers)
-            bl->blit(gameArea, stg->scroll);
+            bl->blitIfShown(gameArea, stg->scroll);
         hud.blit(fb);
         for (auto &sprite : spriteLayer0)
             if (!sprite->hasFlag(SPRITE_NODRAW))
@@ -184,7 +189,7 @@ void Shooter::blit(Image &fb)
             if (!sprite->hasFlag(SPRITE_NODRAW))
                 sprite->blit(gameArea, 0, oy);
         for (auto &bl : stage->foregroundLayers)
-            bl->blit(gameArea, stg->scroll);
+            bl->blitIfShown(gameArea, stg->scroll);
         flashfx.blit(gameArea);
         fade.blit(gameArea);
         gameArea.blitFast(fb, 0, S_HUDHEIGHT, 0, 0, S_WIDTH, S_GHEIGHT);
@@ -376,7 +381,6 @@ void Shooter::loadStage(int stageNum)
     stage = std::make_unique<Stage>(
                 LoadStage("stage" + std::to_string(stageNum), *this));
     int py = stage->spawnLevelY;
-    player->updateY(Fix(py), Fix(stage->levelHeight));
     scroll.x = 0_x;
     scroll.y = clamp(Fix(py - (S_GHEIGHT - 16) / 2), 0_x, maximumScrollY);
     popup->showStage(stageNum);
@@ -384,7 +388,9 @@ void Shooter::loadStage(int stageNum)
     stageFade = 1;
     ResetBullets(stageNum);
     colGridHeight = stage->levelHeight;
+    minimumScrollY = 0_x;
     maximumScrollY = Fix(stage->levelHeight - S_GHEIGHT);
+    player->updateY(Fix(py), 0_x, Fix(stage->levelHeight));
     switch (stageNum)
     {
     case 1:
@@ -712,11 +718,11 @@ inline void Shooter::updateYScroll()
         lastPlayerY = static_cast<int>(player->y());
     int oldScrollY = static_cast<int>(scroll.y);
     int py = lastPlayerY - oldScrollY;
-    if (py < 96 && scroll.y > 0)
+    if (py < 96 && scroll.y > minimumScrollY)
     {
         int dist = py;
         int speed = std::min((103 - dist) / 8, 6);
-        scroll.y = std::max(0_x, scroll.y - speed);
+        scroll.y = std::max(minimumScrollY, scroll.y - speed);
     }
     else if (py > S_GHEIGHT - 96 && scroll.y < maximumScrollY)
     {
@@ -778,7 +784,8 @@ void Shooter::tick()
         {
             if (!lives)
             {
-                if (M_INFINITE_LIVES)
+                static_assert(!(!M_DEBUG && M_INFINITE_LIVES));
+                if constexpr (M_INFINITE_LIVES)
                     lives = DEFAULT_LIVES;
                 else
                     tryContinue();
@@ -914,6 +921,8 @@ static inline void explosionSound(ExplosionSize size)
         PlaySound(SoundEffect::ExplosionLarge1); break;
     case ExplosionSize::LargeBlue:
         PlaySound(SoundEffect::ExplosionLarge2); break;
+    case ExplosionSize::WaterSplash:
+        PlaySound(SoundEffect::WaterSplash); break;
     }
 }
 

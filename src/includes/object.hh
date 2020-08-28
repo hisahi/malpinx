@@ -24,6 +24,7 @@ enum class ObjectType
 
     Enemy01 = 101,
     Enemy02, Enemy03, Enemy04, Enemy05, Enemy06, Enemy07, Enemy08,
+    Enemy09, Enemy10, Enemy11, Enemy12, Enemy13, Enemy14,
 
     Boss1a = 201, Boss1b
 };

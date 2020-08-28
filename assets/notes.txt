@@ -55,6 +55,14 @@ malpinx formats, all numbers little-endian
 							0 = cfp/dfp (tiled)
 							1 = tilemap (always tiled)
 							2 = cfp/dfp (not tiled)
+							3 = cfp/dfp, horizontally tiled
+								(only background supported)
+							4 = cfp/dfp, horizontally tiled, additive rendering
+								(only background supported)
+							5 = cfp/dfp, horizontally tiled, parallax
+								(only background supported)
+							6 = cfp/dfp, horizontally tiled, wavy
+								(only background supported)
 					8-bit layer flags
 					char[14]: filename (without extension)
 					32-bit layer scroll X speed multiplier

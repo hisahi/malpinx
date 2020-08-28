@@ -27,7 +27,8 @@ PlayerSprite::PlayerSprite(int id, std::shared_ptr<Image> img, Fix x, Fix y,
         rightEdge(Fix(S_WIDTH - img->width())),
         bottomEdge(Fix(S_GHEIGHT - img->height()))
 {
-    setActiveSprite(0);
+    updateImage(sheet->getImage(activeSprite = 0));
+    updateHitbox(2, 2, _width - 4, _height - 4);
 }
 
 inline void PlayerSprite::moveTick()
@@ -75,8 +76,8 @@ inline void PlayerSprite::moveTick()
         _x = rightEdge;
         deltaX = 0_x;
     }
-    if (_y < 0) {
-        _y = 0_x;
+    if (_y < topEdge) {
+        _y = topEdge;
         deltaY = 0_x;
         setActiveSprite(1);
         resetTicks = 4;
@@ -91,9 +92,10 @@ inline void PlayerSprite::moveTick()
         setActiveSprite(0);
 }
 
-void PlayerSprite::updateY(Fix y, Fix bottom)
+void PlayerSprite::updateY(Fix y, Fix top, Fix bottom)
 {
     _y = y;
+    topEdge = top;
     bottomEdge = bottom - _img->height();
 }
 
@@ -133,7 +135,7 @@ inline void PlayerSprite::collisionTick()
 
     for (auto &layer : stg->stage->terrainLayers)
     {
-        if (layer->hitsSprite(*_img, stg->scroll, _x, _y))
+        if (layer->hitsSprite(*_img, stg->scroll, _hitbox, _x, _y))
         {
             stg->killPlayer();
             return;
@@ -187,7 +189,7 @@ inline void PlayerSprite::setActiveSprite(int index)
 {
     if (activeSprite != index)
     {
-        updateImage(sheet->getImage(index));
+        updateImage(sheet->getImage(index), true, false);
         activeSprite = index;
     }
 }
@@ -240,6 +242,9 @@ void DroneSprite::tick()
     {
         int index = 0;
         droneHitTargets.clear();
+        for (auto &s : game.spriteLayer3)
+            if (s && s->type() == SpriteType::BulletEnemy && hits(*s))
+                s->kill();
         for (auto &s : game.spriteLayer2)
             if (s && s->type() == SpriteType::Enemy && hits(*s))
                 droneHitTargets.push_back(s.get());

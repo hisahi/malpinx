@@ -52,3 +52,13 @@ void Stage::skipObjects(LayerScroll scroll)
         nextSpawn = objectSpawns.begin();
     }
 }
+
+void Stage::hideLayer(int index)
+{
+    backgroundLayers[index]->hide();
+}
+
+void Stage::showLayer(int index)
+{
+    backgroundLayers[index]->show();
+}

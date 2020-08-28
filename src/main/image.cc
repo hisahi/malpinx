@@ -43,9 +43,8 @@ static inline REALLY_INLINE void doBlit(Image &fb,
                 int dx, int dy, int sx, int sy, int sw, int sh)
 {
     static_assert(!(tiled && fast), "cannot use tiling with fast blit");
-    static_assert(!additive || fast, "additive must be used with fast blit");
 
-    if (!tiled)
+    if constexpr (!tiled)
     {
         if (sx < 0)
         {
@@ -75,7 +74,7 @@ static inline REALLY_INLINE void doBlit(Image &fb,
     if (sw <= 0 || sh <= 0) return;
 
     int fbs = fb.width(), fbh = fb.height();
-    if (tiled)
+    if constexpr (tiled)
     {
         sw = std::min({ sw, fbs - dx });
         sh = std::min({ sh, fbh - dy });
@@ -99,9 +98,9 @@ static inline REALLY_INLINE void doBlit(Image &fb,
     {
         row_end = src + sw, til_nxt = src + mw;
         srcx = osrcx;
-        if (fast)
+        if constexpr (fast)
         {
-            if (additive)
+            if constexpr (additive)
                 std::transform(src, row_end, dst, dst,
                     [](const Color &a, const Color &b) { return a + b; });
             else
@@ -113,22 +112,35 @@ static inline REALLY_INLINE void doBlit(Image &fb,
         {
             for (xo = 0; xo < sw; ++xo, ++src, ++dst)
             {
-                mask = maskTable[(*src).isTransparent()];
-                *dst = ((*dst).v & ~mask) | ((*src).v & mask);
+                if constexpr (additive)
+                {
+                    *dst += *src;
+                }
+                else
+                {
+                    mask = maskTable[(*src).isTransparent()];
+                    *dst = ((*dst).v & ~mask) | ((*src).v & mask);
+                }
                 //if (!(*src).isTransparent())
                 //    *dst = *src;
-                if (tiled && ++srcx == mw)
+                if constexpr (tiled)
                 {
-                    src -= mw;
-                    srcx -= mw;
+                    if (++srcx == mw)
+                    {
+                        src -= mw;
+                        srcx -= mw;
+                    }
                 }
             }
             dst += stripe_off;
             src = til_nxt;
-            if (tiled && ++srcy == mh)
+            if constexpr (tiled)
             {
-                src -= _data.size();
-                srcy -= mh;
+                if (++srcy == mh)
+                {
+                    src -= _data.size();
+                    srcy -= mh;
+                }
             }
         }
     }
@@ -159,6 +171,13 @@ void Image::blitAdditive(Image &fb, int dx, int dy,
                 int sx, int sy, int sw, int sh)
 {
     doBlit<false, true, true>(fb, _width, _height, _data,
+            dx, dy, sx, sy, sw, sh);
+}
+
+void Image::blitAdditiveTiled(Image &fb, int dx, int dy,
+                int sx, int sy, int sw, int sh)
+{
+    doBlit<true, false, true>(fb, _width, _height, _data,
             dx, dy, sx, sy, sw, sh);
 }
 

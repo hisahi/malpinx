@@ -42,7 +42,8 @@ enum class SoundEffect
     BonusRackUp,
     Boss1aBeam,
     Boss1bRingFire,
-    Boss1bRingMove
+    Boss1bRingMove,
+    WaterSplash
 };
 
 int PlaySound(int soundNum, float volume = 1.0f, float pan = 0.0f,

@@ -78,6 +78,12 @@ void ShooterAssets::load()
     enemy06 = loadSprites("enemy06");
     enemy07 = loadSprites("enemy07");
     enemy08 = loadSprites("enemy08");
+    enemy09 = loadSprites("enemy09");
+    enemy10 = loadSprites("enemy10");
+    enemy11 = loadSprites("enemy11");
+    enemy12 = loadSprites("enemy12");
+    enemy13 = loadSprites("enemy13");
+    enemy14 = loadSprites("enemy14");
     boss1a = loadSprites("boss1a");
     boss1b = loadSprites("boss1b");
 }

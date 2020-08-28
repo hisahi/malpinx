@@ -33,26 +33,25 @@ void Sprite::updateHitbox(int x, int y, int w, int h)
 }
 
 void Sprite::updateImage(const std::shared_ptr<Image>& img,
-                        bool hitbox /*= true */)
+                        bool hitmask /*= true */, bool hitbox /*= true */)
 {
     _img = img;
     if (!_img)
         _width = _height = 0;
     else
         _width = img->width(), _height = img->height();
-    if (hitbox)
-    {
-        updateHitbox(0, 0, _width, _height);
+    if (hitmask)
         _mask = _img;
-    }
+    if (hitbox)
+        updateHitbox(0, 0, _width, _height);
 }
 
 void Sprite::updateImageCentered(const std::shared_ptr<Image>& img,
-                        bool hitbox /*= true */)
+                        bool hitmask /*= true */, bool hitbox /*= true */)
 {
     _x += _width / 2_x;
     _y += _height / 2_x;
-    updateImage(img, hitbox);
+    updateImage(img, hitmask, hitbox);
     _x -= _width / 2_x;
     _y -= _height / 2_x;
 }
@@ -79,7 +78,7 @@ void Sprite::computeCollisionGrid()
 
 bool Sprite::hitsForeground(ForegroundLayer &layer, LayerScroll scroll) const
 {
-    return layer.hitsSprite(*_img, scroll, _x, _y);
+    return layer.hitsSprite(*_img, scroll, _hitbox, _x, _y);
 }
 
 bool Sprite::boxCheck(const Sprite &other) const

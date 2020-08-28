@@ -14,6 +14,7 @@
 enum class MusicTrack
 {
     Title,
+    StageClear,
     Complete,
     GameOver,
     NameEntry,
@@ -26,7 +27,7 @@ enum class MusicTrack
     FinalStage
 };
 
-// Complete and GameOver should NOT loop!
+// StageClear, Complete and GameOver should NOT loop!
 // abase should be able to tell if it has stopped playing!
 
 void LoadSongList();

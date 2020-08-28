@@ -47,7 +47,7 @@ Stage LoadStage(const std::string &path, Shooter &stg)
     for (int i = 0; i < layers; ++i)
     {
         int layerType = ReadUInt8(stream);
-        ReadUInt8(stream);
+        int layerMeta = ReadUInt8(stream);
         stream.read(&filenameArr[0], 14);
         filename = std::string(filenameArr.data());
 
@@ -89,6 +89,30 @@ Stage LoadStage(const std::string &path, Shooter &stg)
                 std::make_unique<NonTiledBackgroundLayer>(
                     std::make_shared<Image>(LoadPIC(filename)),
                     offsetX, offsetY, layerXMult, layerYMult));
+            break;
+        case 0x30:
+            stage.backgroundLayers.push_back(
+                std::make_unique<HTiledBackgroundLayer>(
+                    std::make_shared<Image>(LoadPIC(filename)),
+                    offsetX, offsetY, layerXMult, layerYMult));
+            break;
+        case 0x40:
+            stage.backgroundLayers.push_back(
+                std::make_unique<HTiledAdditiveBackgroundLayer>(
+                    std::make_shared<Image>(LoadPIC(filename)),
+                    offsetX, offsetY, layerXMult, layerYMult));
+            break;
+        case 0x50:
+            stage.backgroundLayers.push_back(
+                std::make_unique<HTiledParallaxBackgroundLayer>(
+                    std::make_shared<Image>(LoadPIC(filename)),
+                    offsetX, offsetY, layerXMult, layerYMult, layerMeta));
+            break;
+        case 0x60:
+            stage.backgroundLayers.push_back(
+                std::make_unique<HTiledWavyBackgroundLayer>(
+                    std::make_shared<Image>(LoadPIC(filename)),
+                    offsetX, offsetY, layerXMult, layerYMult, layerMeta));
             break;
 
         case 0x01:

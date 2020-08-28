@@ -6,6 +6,8 @@ OBJS = config.o gamedata.o color.o image.o layer.o sprite.o songs.o sfx.o \
 	stage.o object.o explode.o powerup.o scores.o bullet.o enemy.o \
 	enemy/enemy01.o enemy/enemy02.o enemy/enemy03.o enemy/enemy04.o \
 	enemy/enemy05.o enemy/enemy06.o enemy/enemy07.o enemy/enemy08.o \
+	enemy/enemy09.o enemy/enemy10.o enemy/enemy11.o enemy/enemy12.o \
+	enemy/enemy13.o enemy/enemy14.o \
 	enemy/boss1a.o enemy/boss1b.o \
 	fonts.o script.o logic.o render.o malpinx.o
 HDIR = ../includes

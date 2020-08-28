@@ -20,6 +20,11 @@ inline std::shared_ptr<Sprite> spawnEnemy(Shooter &stg, int id,
     return std::make_shared<T>(stg, id, x, y, os.subtype, os.drop);
 }
 
+#define CASE_ENEMY_SPAWN(T) \
+    case ObjectType:: T :\
+        result = spawnEnemy<T>(stg, id, sx, sy, spawn); \
+        break;
+
 std::shared_ptr<Sprite> spawnObject(Shooter &stg, ObjectSpawn spawn,
                     LayerScroll scroll, int &layer)
 {
@@ -39,36 +44,22 @@ std::shared_ptr<Sprite> spawnObject(Shooter &stg, ObjectSpawn spawn,
     case ObjectType::Script:
         result = std::make_shared<ScriptSprite>(stg, id, spawn.subtype);
         break;
-    case ObjectType::Enemy01:
-        result = spawnEnemy<Enemy01>(stg, id, sx, sy, spawn);
-        break;
-    case ObjectType::Enemy02:
-        result = spawnEnemy<Enemy02>(stg, id, sx, sy, spawn);
-        break;
-    case ObjectType::Enemy03:
-        result = spawnEnemy<Enemy03>(stg, id, sx, sy, spawn);
-        break;
-    case ObjectType::Enemy04:
-        result = spawnEnemy<Enemy04>(stg, id, sx, sy, spawn);
-        break;
-    case ObjectType::Enemy05:
-        result = spawnEnemy<Enemy05>(stg, id, sx, sy, spawn);
-        break;
-    case ObjectType::Enemy06:
-        result = spawnEnemy<Enemy06>(stg, id, sx, sy, spawn);
-        break;
-    case ObjectType::Enemy07:
-        result = spawnEnemy<Enemy07>(stg, id, sx, sy, spawn);
-        break;
-    case ObjectType::Enemy08:
-        result = spawnEnemy<Enemy08>(stg, id, sx, sy, spawn);
-        break;
-    case ObjectType::Boss1a:
-        result = spawnEnemy<Boss1a>(stg, id, sx, sy, spawn);
-        break;
-    case ObjectType::Boss1b:
-        result = spawnEnemy<Boss1b>(stg, id, sx, sy, spawn);
-        break;
+    CASE_ENEMY_SPAWN(Enemy01);
+    CASE_ENEMY_SPAWN(Enemy02);
+    CASE_ENEMY_SPAWN(Enemy03);
+    CASE_ENEMY_SPAWN(Enemy04);
+    CASE_ENEMY_SPAWN(Enemy05);
+    CASE_ENEMY_SPAWN(Enemy06);
+    CASE_ENEMY_SPAWN(Enemy07);
+    CASE_ENEMY_SPAWN(Enemy08);
+    CASE_ENEMY_SPAWN(Enemy09);
+    CASE_ENEMY_SPAWN(Enemy10);
+    CASE_ENEMY_SPAWN(Enemy11);
+    CASE_ENEMY_SPAWN(Enemy12);
+    CASE_ENEMY_SPAWN(Enemy13);
+    CASE_ENEMY_SPAWN(Enemy14);
+    CASE_ENEMY_SPAWN(Boss1a);
+    CASE_ENEMY_SPAWN(Boss1b);
     default:
         result = std::make_shared<BlankSprite>(id);
     }

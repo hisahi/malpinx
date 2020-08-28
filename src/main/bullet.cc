@@ -375,7 +375,7 @@ void BulletSprite::tick()
 
         if (this->hasFlag(SPRITE_COLLIDE_FG))
             for (auto &layer : _stg.stage->terrainLayers)
-                if (layer->hitsSprite(*_img, _stg.scroll, _x, _y))
+                if (layer->hitsSprite(*_img, _stg.scroll, _hitbox, _x, _y))
                 {
                     explode();
                     return;
@@ -620,6 +620,18 @@ Fix2D ScaleEnemyBullet(Shooter &stg, Fix2D vel, int scaleMode)
         case DifficultyLevel::HARD:
         case DifficultyLevel::BIZARRE:
             return vel * 1.5_x;
+        }
+    case 2:
+        switch (stg.difficulty)
+        {
+        case DifficultyLevel::EASY:
+            return vel * 0.75_x;
+        case DifficultyLevel::NORMAL:
+            return vel;
+        case DifficultyLevel::HARD:
+            return vel * 1.75_x;
+        case DifficultyLevel::BIZARRE:
+            return vel * 2_x;
         }
     }
     return vel;

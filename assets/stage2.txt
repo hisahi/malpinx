@@ -1,2 +1,24 @@
-layerbi space, 1/2, 1/2, 0, 0
-sprite 600, 1, 0, 1, 0, 50
+height 256, 80
+layerbh s2sky, 1/2, 1, 0, 0
+layerbh s2mount, 7/8, 1, 0, 0
+layerba s2clouds, 3/4, 1, 0, 0
+layerbx s2water, 1, 1, 0, 160
+layerbx s2wateru, 3/2, 1, 0, 256, 1
+layerbw s2wcave, 1/2, 1, 0, 328
+
+sprite 0, 1, 0, 3, 0, 0
+sprite 0, 1, 0, 200, 0, 0
+
+sprite 350, 113, 0, 0, -64, 144
+
+# boss sneak peek: ~4300
+# miniboss 1: ~5100
+# under surface
+#sprite 800, 1, 0, 202, 0, 0
+# miniboss 2: ~9600
+# onto surface
+#sprite 800, 1, 0, 201, 0, 0
+# level boss: ~11200
+
+# level end
+#sprite 400, 1, 0, 1, 0, 50

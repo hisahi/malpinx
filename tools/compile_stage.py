@@ -4,8 +4,8 @@ import struct
 import array
 
 
-# layer??		b/t/f = background/terrain/foreground
-	# i/t/p = (tiled) image, tilemap, (nontiled) image
+# layer??		b/t/f/a = background/terrain/foreground/additive bg
+	# i/t/p/h = (tiled) image, tilemap, (nontiled) image, horiz. tiled image
 	# filename,xm,ym,ox,oy
 # 
 # wave x,type,delay,subtype,ox,y
@@ -41,17 +41,24 @@ def main(*argv):
             line = line.strip()
             if line.startswith('#'):
                 continue
+            elif line.startswith('height'):
+                tok = [x.strip() for x in line.split(maxsplit = 1)[1]
+                                            .split(',')]
+                stageheight, stagey = int(tok[0]), int(tok[1])
             elif line.startswith('layer'):
                 data = bytearray()
                 tok = [x.strip() for x in line.split(maxsplit = 1)[1]
                                             .split(',')]
-                fn, xsm, ysm, ox, oy = tok
+                fn, xsm, ysm, ox, oy, *leftover = tok
                 xsm, ysm, ox, oy = fix(xsm), fix(ysm), int(ox), int(oy)
+                meta = 0
+                if len(leftover) > 0:
+                    meta = int(leftover[0])
                 layer_type = 'btf'.find(line[5])
-                layer_format = 'itp'.find(line[6])
+                layer_format = 'itphaxw'.find(line[6])
                 assert layer_type >= 0 and layer_format >= 0
                 data.append((layer_format << 4) | layer_type)
-                data += struct.pack('B', 0)
+                data += struct.pack('B', meta)
                 data += fn[:13].ljust(14, '\0').encode('ascii')
                 data += struct.pack('<IIiiii', xsm, ysm, ox, oy, 0, -1)
                 layers.append(data)

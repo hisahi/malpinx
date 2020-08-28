@@ -38,6 +38,12 @@ struct ShooterAssets
     std::shared_ptr<Spritesheet> enemy06;
     std::shared_ptr<Spritesheet> enemy07;
     std::shared_ptr<Spritesheet> enemy08;
+    std::shared_ptr<Spritesheet> enemy09;
+    std::shared_ptr<Spritesheet> enemy10;
+    std::shared_ptr<Spritesheet> enemy11;
+    std::shared_ptr<Spritesheet> enemy12;
+    std::shared_ptr<Spritesheet> enemy13;
+    std::shared_ptr<Spritesheet> enemy14;
     std::shared_ptr<Spritesheet> boss1a;
     std::shared_ptr<Spritesheet> boss1b;
 

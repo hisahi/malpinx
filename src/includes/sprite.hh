@@ -79,9 +79,10 @@ public:
     }
     void computeCollisionGrid();
     void updateHitbox(int x, int y, int w, int h);
-    void updateImage(const std::shared_ptr<Image>& img, bool hitbox = true);
+    void updateImage(const std::shared_ptr<Image>& img,
+                            bool hitmask = true, bool hitbox = true);
     void updateImageCentered(const std::shared_ptr<Image>& img,
-                            bool hitbox = true);
+                            bool hitmask = true, bool hitbox = true);
     bool hitsForeground(ForegroundLayer &layer, LayerScroll scroll) const;
     bool boxCheck(const Sprite &other) const;
     bool pixelCheck(const Sprite &other) const;

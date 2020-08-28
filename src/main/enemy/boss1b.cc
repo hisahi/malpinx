@@ -57,10 +57,17 @@ void Boss1b::doBossTick()
     {
         if (explodeTicks % 15 == 0)
         {
-            _stg.explode(
-                _x - 32 + (explosionRng.nextFix() * (_width + 32)),
-                _y - 32 + (explosionRng.nextFix() * (_height + 32)),
-                ExplosionSize::Medium2, false, false);
+            Fix ex = _x - 32 + (explosionRng.nextFix() * (_width + 32));
+            Fix ey = _y - 32 + (explosionRng.nextFix() * (_height + 32));
+            _stg.explode(ex, ey, ExplosionSize::Medium2, false, false);
+            if (_stg.difficulty == DifficultyLevel::BIZARRE)
+            {
+                FireSuicideBullet(_stg, ex, ey);
+                FireSuicideBullet(_stg, ex, ey);
+                FireSuicideBullet(_stg, ex, ey);
+                FireSuicideBullet(_stg, ex, ey);
+                FireSuicideBullet(_stg, ex, ey);
+            }
         }
         if (!--explodeTicks)
         {
